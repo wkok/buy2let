@@ -1,0 +1,135 @@
+(ns wkok.buy2let.report.events
+  (:require [re-frame.core :as rf]
+            [clojure.string :as s]
+            [wkok.buy2let.shared :as shared]
+            [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.backend.impl :as impl]
+            [day8.re-frame.http-fx]))
+
+
+(rf/reg-event-fx
+ ::report-set-property
+ (fn [cofx [_ p]]
+   (let [db (:db cofx)
+         property (keyword p)
+         months (shared/month-range (get-in db [:report :from])
+                                    (get-in db [:report :to]))
+         local-db-fx (-> (:db cofx)
+                         (assoc-in [:site :active-property] property)
+                         (assoc-in [:report :result :months] months)
+                         (assoc-in [:site :show-progress] false)
+                         shared/calc-totals)
+         remote-db-fx (when (not (= "--select--" p))
+                        (shared/get-ledger-fx db property months))]
+     (if (empty? (vals remote-db-fx))
+       {:db local-db-fx}
+       (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
+              remote-db-fx)))))
+
+(rf/reg-event-fx
+  ::report-set-year
+  (fn [cofx [_ type y]]
+    (let [db (:db cofx)
+          property (get-in db [:site :active-property])
+          months (case type
+                   :from (shared/month-range {:year (keyword y) :month (get-in db [:report :from :month])}
+                                             (get-in db [:report :to]))
+                   :to (shared/month-range (get-in db [:report :from])
+                                           {:year (keyword y) :month (get-in db [:report :to :month])}))
+          local-db-fx (-> (:db cofx)
+                    (assoc-in [:report type :year] (keyword y))
+                    (assoc-in [:report :result :months] months)
+                    (assoc-in [:site :show-progress] false)
+                    shared/calc-totals)
+          remote-db-fx (when (not (= "--select--" property))
+                         (shared/get-ledger-fx db property months))]
+      (if (empty? remote-db-fx)
+        {:db local-db-fx}
+        (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
+               remote-db-fx)))))
+
+(rf/reg-event-fx
+  ::report-set-month
+  (fn [cofx [_ type m]]
+    (let [db (:db cofx)
+          property (get-in db [:site :active-property])
+          months (case type
+                   :from (shared/month-range {:year (get-in db [:report :from :year]) :month (keyword m)}
+                                             (get-in db [:report :to]))
+                   :to (shared/month-range (get-in db [:report :from])
+                                           {:year (get-in db [:report :to :year]) :month (keyword m)}))
+          local-db-fx (-> (:db cofx)
+                    (assoc-in [:report type :month] (keyword m))
+                    (assoc-in [:report :result :months] months)
+                    (assoc-in [:site :show-progress] false)
+                    shared/calc-totals)
+          remote-db-fx (when (not (= "--select--" property))
+                         (shared/get-ledger-fx db property months))]
+      (if (empty? remote-db-fx)
+        {:db local-db-fx}
+        (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
+               remote-db-fx)))))
+
+(rf/reg-event-db
+  ::report-set-show-invoices
+  (fn [db [_ checked]]
+    (assoc-in db [:report :show-invoices] checked)))
+
+
+(defn calc-invoice-path [db property-charges month-year]
+  (let [year (-> (:year month-year) name)
+        month (-> (:month month-year) name)
+        account-id (-> (get-in db [:security :account]) name)
+        property-id (-> (get-in db [:site :active-property]) name)]
+    (->> (filter #(= true (get-in db [:ledger (get-in db [:site :active-property]) (:year month-year) (:month month-year) :breakdown (:id %) :invoiced]))
+                 property-charges)
+         (map (fn [charge]
+                {:storagePath (str "data/" account-id "/ledger/" property-id "/" year "/" month "/" (-> (:id charge) name))
+                 :localPath   (:name charge)
+                 :localName   (str year "-" month)})))))
+
+(defn calc-invoice-paths [db property-charges]
+  (mapcat #(calc-invoice-path db property-charges %) (get-in db [:report :result :months])))
+
+(defn calc-file-name [db]
+  (let [property-id (get-in db [:site :active-property])
+        property-name (-> (shared/by-id property-id (-> (:properties db) vals)) :name (s/replace #"[^A-Za-z0-9]+" ""))
+        from (str (-> (get-in db [:report :from :year]) name) "-" (-> (get-in db [:report :from :month]) name))
+        to (str (-> (get-in db [:report :to :year]) name) "-" (-> (get-in db [:report :to :month]) name))]
+    (str "Invoices-" property-name "-From-" from "-To-" to)))
+
+
+(rf/reg-event-fx
+ ::zip-invoices
+ [(rf/inject-cofx ::shared/gen-id)]
+ (fn [cofx [_ property-charges]]
+   (let [db (:db cofx)]
+     (merge {:db                (assoc-in db [:site :show-progress] true)}
+            (bp/zip-invoices-fx impl/backend
+                                (get-in db [:security :account])
+                                (-> (:id cofx) name)
+                                (calc-file-name db)
+                                (calc-invoice-paths db property-charges)
+                                #(do
+                                   (rf/dispatch [:download-invoices (:path %)])
+                                   (rf/dispatch [::se/show-progress false]))
+                                #(do
+                                   (rf/dispatch [::se/show-progress false])
+                                   (rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                              :message (str %)}])))))))
+
+
+(rf/reg-event-fx
+ :download-invoices
+ (fn [_ [_ path]]
+   (bp/blob-url-fx impl/backend path
+                   #(js/window.open %)
+                   #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                               :message %}]))))
+
+
+
+
+
+
