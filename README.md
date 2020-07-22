@@ -15,11 +15,14 @@ Coming soon..
 
 ### Prerequisites
 
-- [Clojure command line tools](https://www.clojure.org/guides/deps_and_cli)
+- [npm (NodeJS)](https://nodejs.org/en/)
+- [clj (Clojure command line tools)](https://www.clojure.org/guides/deps_and_cli)
 
 ### Run application:
 
 ```bash
+npm install
+
 clj -A:shadow-cljs watch app
 ```
 
