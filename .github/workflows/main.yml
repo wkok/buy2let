@@ -29,7 +29,7 @@ jobs:
 
     - name: Prerequisites
       run: |
-        sudo apt-get update -y,
+        sudo apt-get update -y &&
         sudo apt-get install -y rlwrap        
 
     # Runs a single command using the runners shell
