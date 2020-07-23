@@ -50,4 +50,4 @@ jobs:
           .shadow-cljs
           node_modules
           ~/.m2/repository
-        key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
