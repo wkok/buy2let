@@ -37,10 +37,10 @@ jobs:
         npm install &&
         clj -A:shadow-cljs release app
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: release
-        path: resources/public/
+    # - uses: actions/upload-artifact@v2
+    #   with:
+    #     name: release
+    #     path: resources/public/
 
     - name: Cache multiple paths
       uses: actions/cache@v2
