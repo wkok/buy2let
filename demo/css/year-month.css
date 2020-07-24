@@ -1,0 +1,12 @@
+.year-month {
+    display: flex;
+    flex-wrap: nowrap;
+    flex: auto;
+    padding-right: 1em;
+}
+
+.year-month select {
+    padding: 0.25em;
+    width: fit-content;
+}
+
