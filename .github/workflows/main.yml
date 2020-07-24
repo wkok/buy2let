@@ -45,7 +45,7 @@ jobs:
         FOLDER: resources/public
 
     - name: Publish Artifacts
-    - uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v2
       with:
         name: release
         path: resources/public/
