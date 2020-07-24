@@ -1,0 +1,81 @@
+.dialog-show {
+    display: block;
+}
+
+.dialog-hide {
+    display: none;
+}
+
+/* Set a style for all buttons */
+.dialog button {
+    /*padding: 1em 1em;*/
+    margin: 0.5em 0;
+    width: 100%;
+}
+
+.dialog-left-btn {
+    width: 100%;
+    padding-right: 0.5em;
+}
+
+.dialog-middle-btn {
+    width: 100%;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.dialog-right-btn {
+    width: 100%;
+    padding-left: 0.5em;
+}
+
+.dialog-btn-danger {
+    background-color: red;
+}
+
+/* Add padding and center-align text to the container */
+.dialog-container {
+    padding: 1em;
+    text-align: center;
+}
+
+/* The Modal (background) */
+.dialog {
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    padding-top: 3em;
+    /*background-color: #474e5d;*/
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.70); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.dialog-content {
+    background-color: #fefefe;
+    margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.dialog-close {
+    color: #aaa;
+    float: right;
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.dialog-close:hover,
+.dialog-close:focus {
+    color: #007bff;
+    cursor: pointer;
+}
+
+.dialog-toolbar {
+    display: flex;
+}
+
