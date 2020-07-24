@@ -4,6 +4,7 @@
             [clojure.walk :as w]
             [clojure.string :as s]
             [goog.string :as gstring]
+            goog.string.format   ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
             [cljc.java-time.month :as tm]
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
