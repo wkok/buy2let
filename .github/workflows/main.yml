@@ -37,15 +37,15 @@ jobs:
       with:
         tools-deps: '1.10.1.469'      
 
-    - name: Setup APT Packages
-      run: |
-        sudo apt-get update -y &&
-        sudo apt-get install -y rlwrap        
+    # - name: Setup APT Packages
+    #   run: |
+    #     sudo apt-get update -y &&
+    #     sudo apt-get install -y rlwrap        
 
     - name: Compile
       run: |
         npm install &&
-        clj -A:shadow-cljs release app
+        clojure -A:shadow-cljs release app
 
     # - uses: actions/upload-artifact@v2
     #   with:
