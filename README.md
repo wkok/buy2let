@@ -1,15 +1,15 @@
-# re-frame buy2let
+# re-frame-buy2let
 
 A [re-frame](http://day8.github.io/re-frame/) application designed to
 
 - serve as a showcase of some ClojureScript / re-frame concepts I've learned
 - invite comments / suggestions as to ClojureScript / re-frame usage & best practices
 - serve as an example of a real world ClojureScript / re-frame application
-- be useful as a portfolio management tool for a buy-to-let property investor
+- be useful as a portfolio management tool for a [buy-to-let](https://en.wikipedia.org/wiki/Buy_to_let) property investor
 
 ## Demo
 
-View the [Online Demo](https://wkok.github.io/re-frame-buy2let)
+View the [Online Demo](https://wkok.github.io/re-frame-buy2let/demo)
 
 ### Notes
 
