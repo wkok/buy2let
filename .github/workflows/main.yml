@@ -22,6 +22,15 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    - name: Cache multiple paths
+      uses: actions/cache@v2
+      with:
+        path: |
+          .cpcache
+          .shadow-cljs
+          node_modules
+          ~/.m2/repository
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
     - name: Setup Clojure
       uses: DeLaGuardo/setup-clojure@2.0
       with:
@@ -42,12 +51,3 @@ jobs:
         name: release
         path: resources/public/
 
-    - name: Cache multiple paths
-      uses: actions/cache@v2
-      with:
-        path: |
-          .cpcache
-          .shadow-cljs
-          node_modules
-          ~/.m2/repository
-        key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
