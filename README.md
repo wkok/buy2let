@@ -88,4 +88,3 @@ This means the local app-db will be opportunistically updated, giving instant af
 
 This is based on the assumption that 90% of server updates will succeed, so it is mostly unnecessary for the user to have to wait for the server to respond before updating the screen. But this is explained in more detail on [purelyfunctional.tv](https://purelyfunctional.tv/guide/optimistic-update-in-re-frame/)
 
-
