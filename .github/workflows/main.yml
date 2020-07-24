@@ -41,7 +41,7 @@ jobs:
       run: |
         mkdir -p site/demo
         cp README.md site/README.md
-        cp -R resources/public/ site/demo/
+        cp -R resources/public/* site/demo/
 
     - name: Deploy Pages
       uses: JamesIves/github-pages-deploy-action@3.5.8
