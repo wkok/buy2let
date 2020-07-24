@@ -9,7 +9,13 @@ A [re-frame](http://day8.github.io/re-frame/) application designed to
 
 ## Demo
 
-Coming soon..
+View the [Online Demo](https://wkok.github.io/re-frame-buy2let)
+
+### Notes
+
+- Authentication with your social network will not actually be attempted. Clicking any of the social sign in buttons will merely navigate to the dashboard while in demo mode.
+- The demo stores all data locally in your browser. New data entered will be lost when reloading the page
+- Invoices / attachments will not be uploaded / stored on the demo server & therefore won't download when clicking the paperclip
 
 ## Development Mode
 
