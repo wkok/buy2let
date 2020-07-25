@@ -9,9 +9,9 @@
             [wkok.buy2let.backend.protocol :as bp]))
 
 (rf/reg-event-fx
-  ::initialize-db
-  (fn [_ _]
-    {:db (-> db/default-db
+  :initialize-db
+  (fn [_ [_ seed]]
+    {:db (-> (merge db/default-db seed)
              (assoc-in [:site :location :hash] (-> js/window .-location .-hash)))})) ;used for deep linking
 
 (rf/reg-event-fx

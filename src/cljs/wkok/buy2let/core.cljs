@@ -2,7 +2,6 @@
   (:require
     [reagent.core :as ra]
     [re-frame.core :as rf]
-    [wkok.buy2let.db.events :as dbe]
     [wkok.buy2let.site.views :as views]
     [wkok.buy2let.config :as config]
     [wkok.buy2let.backend.protocol :as bp]
@@ -30,6 +29,6 @@
 
 (defn init []
   (dev-setup)
-  (rf/dispatch-sync [::dbe/initialize-db])
+  (rf/dispatch-sync [:initialize-db])
   (bp/init impl/backend)
   (mount-root))
