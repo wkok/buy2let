@@ -1,5 +1,7 @@
 # re-frame-buy2let
 
+![CI](https://github.com/wkok/re-frame-buy2let/workflows/CI/badge.svg)
+
 A [re-frame](http://day8.github.io/re-frame/) application designed to
 
 - serve as a showcase of some of the ClojureScript / re-frame concepts I've learned
