@@ -1,4 +1,4 @@
-{:paths   ["src/cljs" "src/clj"]
+{:paths   ["src/cljs" "src/clj" "test"]
  :deps    {reagent                     {:mvn/version "0.8.1"}
            re-frame                    {:mvn/version "0.10.9"}
            compojure                   {:mvn/version "1.6.1"}

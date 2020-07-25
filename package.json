@@ -1,11 +1,16 @@
 {
+  "author": "Werner Kok",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/wkok/re-frame-buy2let.git"
   },
-  "license": "MIT",
   "devDependencies": {
     "check-prop-types": "^1.1.2",
+    "karma": "^2.0.5",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cljs-test": "^0.1.0",
+    "karma-junit-reporter": "^2.0.1",
     "shadow-cljs": "2.8.56"
   },
   "dependencies": {
