@@ -16,7 +16,7 @@ module.exports = function (config) {
       singleRun: true
     },
 
-    reporters: ['junit'],
+    reporters: ['progress', 'junit'],
 
     // the default configuration
     junitReporter: {
