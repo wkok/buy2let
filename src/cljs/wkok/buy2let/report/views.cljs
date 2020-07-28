@@ -190,5 +190,5 @@
                               (sort-by :name))
         ledger @(rf/subscribe [:ledger-property (:id property)])]
 
-    ;; (rf/dispatch [::re/report-set-property property-id])    ;Refresh as property might have been changed from another view
+    (rf/dispatch [::re/report-set-property property-id])    ;Refresh as property might have been changed from another view
     [view-panel property report ledger properties property-charges]))
