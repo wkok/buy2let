@@ -70,12 +70,21 @@
     {})
 
   (unlink-provider [_ provider]
-    (rf/dispatch [::se/dialog {:heading "Not implemented"
-                               :message (str "Please implement backend effect to unlink: " provider)}]))
+    (let [p (case provider
+              :google "google.com"
+              :facebook "facebook.com"
+              :twitter "twitter.com"
+              :github "github.com")]
+      (rf/dispatch [:unlink-succeeded p])))
 
   (link-provider [_ provider]
-    (rf/dispatch [::se/dialog {:heading "Not implemented"
-                               :message (str "Please implement backend effect to link: " provider)}]))
+    (let [p (case provider
+              :google "google.com"
+              :facebook "facebook.com"
+              :twitter "twitter.com"
+              :github "github.com")]
+      (rf/dispatch [::se/dialog {:heading "Not implemented"
+                                 :message (str "When implemented, this would redirect to " p " for authorization")}])))
 
   (google-sign-in-fx [_]
     (do-sign-in))
@@ -88,6 +97,9 @@
 
   (github-sign-in-fx [_]
     (do-sign-in))
+
+  (delete-account-fx [_ user-id account-id on-success on-error]
+    (on-success))
 
   (get-ledger-year-fx [_ properties account-id this-year last-year]
     {})
