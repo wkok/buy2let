@@ -61,8 +61,8 @@
   (create-user-fx [_ _]
     {})
 
-  (get-user-fx 
-   [_ {:keys [auth _]}]
+  (get-user-fx
+    [_ {:keys [auth _]}]
     (rf/dispatch [:load-user auth {}])
     {})
 
@@ -70,8 +70,8 @@
     (rf/dispatch [:load-account {"id" "1234", "name" "Demo Account"}])
     {})
 
-  (unlink-provider 
-   [_ {:keys [provider _ _]}]
+  (unlink-provider
+    [_ {:keys [provider _ _]}]
     (let [p (case provider
               :google "google.com"
               :facebook "facebook.com"
@@ -100,7 +100,8 @@
   (github-sign-in-fx [_]
     (do-sign-in))
 
-  (delete-account-fx [_ _]
+  (delete-account-fx
+    [_ {:keys [on-success]}]
     (on-success))
 
   (get-ledger-year-fx [_ _]
