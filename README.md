@@ -70,12 +70,13 @@ Basically, the functions of the `Backend` [protocol](https://clojure.org/referen
 For example, to implement the persistence of a CRUD item (eg. Property, Charge, etc.) you'll implement the `Backend` [protocol](https://clojure.org/reference/protocols) function `save-crud-fx` and return an effect like
 
 ```clojure
-(save-crud-fx [_ account-id crud-type id item on-failure]
-    {:my-backend/save {:account-id account-id
-                       :crud-type crud-type
-                       :id id
-                       :item item
-                       :on-failure on-failure}})
+(save-crud-fx 
+  [_ {:keys [account-id crud-type id item on-error]}]
+  {:my-backend/save {:account-id account-id
+                     :crud-type crud-type
+                     :id id
+                     :item item
+                     :on-error on-error}})
 ```
 
 Then also register the effect (unless your backend library does this  for you)

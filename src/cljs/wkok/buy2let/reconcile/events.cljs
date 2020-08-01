@@ -24,7 +24,15 @@
       (if (empty? months)
         {:db db}
         (merge {:db             db}
-               (bp/get-ledger-month-fx impl/backend property account-id year month (:year prev) (:month prev)))))
+               (bp/get-ledger-month-fx impl/backend 
+                                       {:property property 
+                                        :account-id account-id 
+                                        :this-year year 
+                                        :this-month month 
+                                        :prev-year (:year prev) 
+                                        :prev-month (:month prev)
+                                        :on-success-this #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])
+                                        :on-success-prev #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])}))))
     {:db db}))
 
 
@@ -177,5 +185,10 @@
      (if (not-any? nil? [(:id property) year month charges-this-month])
        (merge {:db              (-> (assoc-in db [:ledger (:id property) year month] (:data charges-this-month))
                                     (assoc-in [:site :active-panel] :reconcile-view))}
-              (bp/save-reconcile-fx impl/backend account-id (:id property) year month charges-this-month))
+              (bp/save-reconcile-fx impl/backend
+                                    {:account-id account-id
+                                     :property-id (:id property)
+                                     :year year
+                                     :month month
+                                     :charges-this-month charges-this-month}))
        {:db db}))))

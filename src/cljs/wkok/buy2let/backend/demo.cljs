@@ -54,22 +54,24 @@
     (set! (.. js/window -location -href) "?")
     {})
 
-  (get-crud-fx [_ account]
+  (get-crud-fx [_ _]
     (rf/dispatch [::se/show-progress false])
     {})
 
-  (create-user-fx [_ user account]
+  (create-user-fx [_ _]
     {})
 
-  (get-user-fx [_ auth]
-    (rf/dispatch [:load-user auth {:data {}}])
+  (get-user-fx 
+   [_ {:keys [auth _]}]
+    (rf/dispatch [:load-user auth {}])
     {})
 
-  (get-account-fx [_ user]
-    (rf/dispatch [:load-account {:data {"id" "1234", "name" "Demo Account"}, :id "1234"}])
+  (get-account-fx [_ _]
+    (rf/dispatch [:load-account {"id" "1234", "name" "Demo Account"}])
     {})
 
-  (unlink-provider [_ provider]
+  (unlink-provider 
+   [_ {:keys [provider _ _]}]
     (let [p (case provider
               :google "google.com"
               :facebook "facebook.com"
@@ -98,28 +100,28 @@
   (github-sign-in-fx [_]
     (do-sign-in))
 
-  (delete-account-fx [_ user-id account-id on-success on-error]
+  (delete-account-fx [_ _]
     (on-success))
 
-  (get-ledger-year-fx [_ properties account-id this-year last-year]
+  (get-ledger-year-fx [_ _]
     {})
 
-  (get-ledger-month-fx [_ property account-id this-year this-month prev-year prev-month]
+  (get-ledger-month-fx [_ _]
     {})
 
-  (get-ledger-fx [_ property account-id months]
+  (get-ledger-fx [_ _]
     {})
 
-  (save-crud-fx [_ account-id crud-type id item on-failure]
+  (save-crud-fx [_ _]
     {})
 
-  (save-reconcile-fx [_ account-id property-id year month charges-this-month]
+  (save-reconcile-fx [_ _]
     {})
 
-  (blob-url-fx [_ path on-success on-error]
+  (blob-url-fx [_ _]
     {})
 
-  (zip-invoices-fx [_ account-id uuid file-name invoice-paths on-success on-error]
+  (zip-invoices-fx [_ _]
     (rf/dispatch [::se/show-progress false])
     {}))
 

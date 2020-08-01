@@ -60,8 +60,12 @@
          account-id @(rf/subscribe [::fs/account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}
-            (bp/save-crud-fx impl/backend account-id type id item
-                             #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}]))))))
+            (bp/save-crud-fx impl/backend 
+                             {:account-id account-id 
+                              :crud-type type 
+                              :id id 
+                              :item item
+                              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db
   ::crud-set-show-hidden

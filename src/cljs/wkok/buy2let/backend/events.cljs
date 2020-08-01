@@ -43,25 +43,27 @@
 (rf/reg-event-fx
   :get-user
   (fn [_ [_ auth]]
-    (bp/get-user-fx impl/backend auth)))
+    (bp/get-user-fx impl/backend 
+                    {:auth auth
+                     :on-success #(rf/dispatch [:load-user auth %])})))
 
 (rf/reg-event-fx
  :load-user
- (fn [cofx [_ auth result]]
-   (let [user (-> (shared/keywordize result)
-                  (-> (assoc :accounts (map #(keyword %) (get (:data result) "accounts")))))]
-     (if (registered? (:data result))
+ (fn [cofx [_ auth u]]
+   (let [user (assoc u :accounts (map #(keyword %) (:accounts u)))]
+     (if (registered? u)
        (merge {:db            (assoc-in (:db cofx) [:security :user] user)}
-              (bp/get-account-fx impl/backend user))
+              (bp/get-account-fx impl/backend
+                                 {:user user
+                                  :on-success #(rf/dispatch [:load-account %])}))
        (rf/dispatch [:create-user auth])))))
 
 (rf/reg-event-db
-  :load-account
-  (fn [db [_ result]]
-    (let [account (shared/keywordize result)]
-      (rf/dispatch [::dbe/get-crud (:id account)])
-      (-> (assoc-in db [:security :accounts] {(:id account) account})
-          (assoc-in [:security :account] (:id account)))))) ;TODO Account chooser
+ :load-account
+ (fn [db [_ account]]
+   (rf/dispatch [::dbe/get-crud (:id account)])
+   (-> (assoc-in db [:security :accounts] {(:id account) account})
+       (assoc-in [:security :account] (:id account))))) ;TODO Account chooser
 
 (rf/reg-event-fx
  :create-user
@@ -77,7 +79,11 @@
                                     (assoc-in [:security :accounts (:id account-item)] account-item)
                                     (assoc-in [:security :account] (:id account-item))
                                     (assoc-in [:site :show-progress] false))}
-            (bp/create-user-fx impl/backend user-item account-item)))))
+            (bp/create-user-fx impl/backend 
+                               {:user user-item 
+                                :account account-item
+                                :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                      :message (str %)}])})))))
 
 (rf/reg-event-fx
  ::sign-out
@@ -92,17 +98,19 @@
          account-id (get-in db [:security :account])
          user-id (get-in db [:security :user :id])]
      (merge {:db                (assoc-in db [:site :show-progress] true)}
-            (bp/delete-account-fx impl/backend user-id account-id
-                                  #(do
-                                     (rf/dispatch [::se/show-progress false])
-                                     (rf/dispatch [::se/dialog {:heading   "Account deleted"
-                                                                :message   "Successfully deleted your account. Hope to have you back soon!"
-                                                                :buttons   {:middle {:text     "Good bye"
-                                                                                     :on-click (fn [] (rf/dispatch [::sign-out]))}}
-                                                                :closeable false}]))
-                                  #(do
-                                     (rf/dispatch [::se/show-progress false])
-                                     (rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                                :message (str %)}])))))))
+            (bp/delete-account-fx impl/backend
+                                  {:user-id user-id
+                                   :account-id account-id
+                                   :on-success #(do
+                                                  (rf/dispatch [::se/show-progress false])
+                                                  (rf/dispatch [::se/dialog {:heading   "Account deleted"
+                                                                             :message   "Successfully deleted your account. Hope to have you back soon!"
+                                                                             :buttons   {:middle {:text     "Good bye"
+                                                                                                  :on-click (fn [] (rf/dispatch [::sign-out]))}}
+                                                                             :closeable false}]))
+                                   :on-error #(do
+                                                (rf/dispatch [::se/show-progress false])
+                                                (rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                           :message (str %)}]))})))))
 
 

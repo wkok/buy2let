@@ -1,7 +1,6 @@
 (ns wkok.buy2let.shared
   (:require [nano-id.core :as nid]
             [re-frame.core :as rf]
-            [clojure.walk :as w]
             [clojure.string :as s]
             [goog.string :as gstring]
             goog.string.format   ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
@@ -19,32 +18,6 @@
  ::gen-id
  (fn [cofx _]
    (assoc cofx :id (gen-id))))
-
-(defn keywordize-id [data]
-  (if (not (nil? (:id data)))
-    (assoc data :id (-> (:id data) keyword))
-    data))
-
-(defn keywordize [result]
-  (let [data (:data result)]
-    (when (not (nil? data))
-      (-> data
-          w/keywordize-keys
-          (keywordize-id)))))
-
-
-(defn to-crud [results]
-  (->> (map #(keywordize %) (:docs results))
-       (group-by :id)
-       (w/walk (fn [x] {(key x) (into {} (val x))}) identity)))
-
-
-(defn keywordize-col [crud col-key]
-  (->> (map (fn [x] (let [v (val x)
-                          k (key x)]
-                      {k (assoc v col-key
-                                (map #(keyword %) (col-key v)))})) crud)
-       (into {})))
 
 (defn by-id [id coll]
   (some #(when (= (:id %) id) %) coll))
@@ -156,11 +129,12 @@
    (let [db (:db cofx)
          account-id (get-in db [:security :account])
          path (blob-key account-id property-id year month (name (:id charge)))]
-     
-     (bp/blob-url-fx impl/backend path
-                         #(js/window.open %)
-                         #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                     :message %}])))))
+
+     (bp/blob-url-fx impl/backend
+                     {:path path
+                      :on-success #(js/window.open %)
+                      :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                            :message %}])}))))
 
 
 (defn get-ledger-fx [db property months]
@@ -168,7 +142,11 @@
         downloaded? #(contains? (get-in db [:ledger property %1]) %2)
         m (filter #(not (downloaded? (:year %) (:month %))) months)]
     (when (not (empty? m))
-      (bp/get-ledger-fx impl/backend property account-id m))))
+      (bp/get-ledger-fx impl/backend 
+                        {:property property 
+                         :account-id account-id 
+                         :months m
+                         :on-success #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])}))))
 
 (defn add-breakdown-amounts [left right]
   {:amount (-> (+ ((fnil identity 0) (:amount left))
@@ -203,9 +181,9 @@
 
 (rf/reg-event-db
  :load-ledger-month
- (fn [db [_ property year month result]]
-   (if (not (nil? (:data result)))
-     (-> (assoc-in db [:ledger property year month] (keywordize result))
+ (fn [db [_ property year month ledger]]
+   (if (not (nil? ledger))
+     (-> (assoc-in db [:ledger property year month] ledger)
          (assoc-in [:site :show-progress] false)
          calc-totals)
      (assoc-in db [:site :show-progress] false))))

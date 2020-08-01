@@ -107,26 +107,27 @@
    (let [db (:db cofx)]
      (merge {:db                (assoc-in db [:site :show-progress] true)}
             (bp/zip-invoices-fx impl/backend
-                                (get-in db [:security :account])
-                                (-> (:id cofx) name)
-                                (calc-file-name db)
-                                (calc-invoice-paths db property-charges)
-                                #(do
-                                   (rf/dispatch [:download-invoices (:path %)])
-                                   (rf/dispatch [::se/show-progress false]))
-                                #(do
-                                   (rf/dispatch [::se/show-progress false])
-                                   (rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                              :message (str %)}])))))))
+                                {:account-id (get-in db [:security :account])
+                                 :uuid (-> (:id cofx) name)
+                                 :file-name (calc-file-name db)
+                                 :invoice-paths (calc-invoice-paths db property-charges)
+                                 :on-success #(do
+                                                (rf/dispatch [:download-invoices (:path %)])
+                                                (rf/dispatch [::se/show-progress false]))
+                                 :on-error #(do
+                                              (rf/dispatch [::se/show-progress false])
+                                              (rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                         :message (str %)}]))})))))
 
 
 (rf/reg-event-fx
  :download-invoices
  (fn [_ [_ path]]
-   (bp/blob-url-fx impl/backend path
-                   #(js/window.open %)
-                   #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                               :message %}]))))
+   (bp/blob-url-fx impl/backend
+                   {:path path
+                    :on-success #(js/window.open %)
+                    :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                          :message %}])})))
 
 
 

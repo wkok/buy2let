@@ -17,31 +17,35 @@
 (rf/reg-event-fx
   ::get-crud
   (fn [_ [_ account]]
-    (bp/get-crud-fx impl/backend account)))
+    (bp/get-crud-fx impl/backend 
+                    {:account account
+                     :on-success-users #(rf/dispatch [:load-users %])
+                     :on-success-charges #(rf/dispatch [:load-charges %])
+                     :on-success-properties #(rf/dispatch [:load-properties %])})))
 
 (rf/reg-event-db
   :load-users
-  (fn [db [_ results]]
-    (assoc db :users (shared/to-crud results))))
+  (fn [db [_ users]]
+    (assoc db :users users)))
 
 (rf/reg-event-db
   :load-charges
-  (fn [db [_ results]]
-    (assoc db :charges (merge (shared/to-crud results)
+  (fn [db [_ charges]]
+    (assoc db :charges (merge charges
                               (:charges db/default-db)))))
 
 (rf/reg-event-fx
   :load-properties
-  (fn [cofx [_ results]]
+  (fn [cofx [_ properties]]
     (rf/dispatch [::get-ledger-year])
-    {:db                (-> (assoc (:db cofx) :properties (shared/to-crud results))
+    {:db                (-> (assoc (:db cofx) :properties properties)
                             (assoc-in [:site :show-progress] false))
      ::se/location-hash (get-in (:db cofx) [:site :location :hash])}))
 
 (rf/reg-event-db
   :load-ledger-year
-  (fn [db [_ property year result]]
-    (let [ledger (->> (map (fn [r] {(:id r) (:data r)}) (:docs result))
+  (fn [db [_ property year l]]
+    (let [ledger (->> (map (fn [r] {(:id r) (:data r)}) l)
                       (into {})
                       w/keywordize-keys)]
       (-> (assoc-in db [:ledger property year] ledger)
@@ -58,5 +62,10 @@
           last-year (-> last t/year str keyword)]
       (if-not (empty? (:properties db))
         (merge {:db             (assoc-in db [:site :show-progress] true)}
-               (bp/get-ledger-year-fx impl/backend (:properties db) account-id this-year last-year))
+               (bp/get-ledger-year-fx impl/backend 
+                                      {:properties (:properties db) 
+                                       :account-id account-id 
+                                       :this-year this-year 
+                                       :last-year last-year
+                                       :on-success #(rf/dispatch [:load-ledger-year %1 %2 %3])}))
         {:db db}))))

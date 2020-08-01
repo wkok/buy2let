@@ -17,22 +17,32 @@
     "Implement this function to initiate the authentication / sign-in process")
 
   (sign-out-fx [_]
-    "Implement this function by returning a Map of re-frame effect(s) responsible for signing out the user")
+    "Implement this function by returning a Map of re-frame effect(s) responsible for 
+     signing out the user")
 
-  (get-crud-fx [_ account]
-    "Implement this function by returning a Map of re-frame effect(s) responsible for pre-downloading any data from the server
-     after the user successfully signed in.")
+  (get-crud-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) responsible 
+     for pre-downloading any data from the server after the user successfully signed in.
+    Example options:
+     {:account :12345
+      :on-success-users #(js/console.log %)
+      :on-success-charges #(js/console.log %)
+      :on-success-properties #(js/console.log %)}")
 
-  (create-user-fx [_ user account]
-    "Implement this function by returning a Map of re-frame effect(s) to create / register a new user on the server")
+  (create-user-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) to create / register 
+     a new user on the server
+     Example options:
+     {:user :12345
+      :account :12345}")
 
-  (get-user-fx [_ auth]
+  (get-user-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user from the server")
 
-  (get-account-fx [_ user]
+  (get-account-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's account from the server")
 
-  (unlink-provider [_ provider]
+  (unlink-provider [_ options]
     "Implement this function to unlink an authenticated user from the authentication provider")
 
   (link-provider [_ provider]
@@ -50,7 +60,7 @@
   (github-sign-in-fx [_]
     "Implement this function by returning a Map of re-frame effect(s) responsible for initiating a Twitter sign in process")
 
-  (delete-account-fx [_ user-id account-id on-success on-error]
+  (delete-account-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for deleting a user's account")
 
 
@@ -58,15 +68,15 @@
   ;; Ledger
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (get-ledger-year-fx [_ properties account-id this-year last-year]
+  (get-ledger-year-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for downloading the 
      last two year's ledger for all properties, from the server")
 
-  (get-ledger-month-fx [_ property account-id this-year this-month prev-year prev-month]
+  (get-ledger-month-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for downloading this month 
      & last month's ledger for the property, from the server")
 
-  (get-ledger-fx [_ property account-id months]
+  (get-ledger-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for downloading the ledger 
                   for the collection of months from the server")
 
@@ -75,7 +85,7 @@
   ;; CRUD (Create Read Update Delete)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (save-crud-fx [_ account-id crud-type id item on-failure]
+  (save-crud-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for persisting the 
                  crud item to the database")
 
@@ -84,20 +94,20 @@
   ;; Reconcile
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (save-reconcile-fx [_ account-id property-id year month charges-this-month]
+  (save-reconcile-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for persisting the 
                  monthly reconciliation values to the database")
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Invoices & Blobs
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (blob-url-fx [_ path on-success on-error]
+  (blob-url-fx [_ options]
     "Implement this function by returning a re-frame effect responsible for generating a URL from
      where the blob represented with path can be downloaded. 
      Call on-success passing the URL of the blob
      Call on-error passing the error detail")
 
-  (zip-invoices-fx [_ account-id uuid file-name invoice-paths on-success on-error]
+  (zip-invoices-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) that returns a URL 
      from where the zipped invoices blob can be downloaded"))
 
