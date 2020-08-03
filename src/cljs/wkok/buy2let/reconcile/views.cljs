@@ -7,7 +7,7 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
             [tick.alpha.api :as t]
-            [fork.core :as fork]
+            [fork.re-frame :as fork]
             [clojure.string :as s]))
 
 
@@ -151,7 +151,7 @@
        (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign "#/reconcile/edit") :icon "fa-edit"}}])
        [:div
         [:div.reconcile-view-overview-container
-         (if (not (zero? profit))
+         (when (not (zero? profit))
            [:div.reconcile-view-overview-profit
             (if (neg? profit)
               [:div.reconcile-view-amount-neg
@@ -160,17 +160,17 @@
               [:div.reconcile-view-amount-pos
                [:h5 (shared/format-money profit)]
                [:label "(net profit)"]])])
-         (if (not (zero? owed))
+         (when (not (zero? owed))
            [:div.reconcile-view-overview-owed
             (if (pos? owed)
               [:div.reconcile-view-amount-owe
                [:h5 (shared/format-money owed)]
                [:label "(owed to owner)"]]
-              (if (neg? owed)
+              (when (neg? owed)
                 [:div.reconcile-view-amount-neg
                  [:h5 (shared/format-money owed)]
                  [:label "(owed to agent)"]]))])
-         (if (not (= cash profit))
+         (when (not (= cash profit))
            [:div.reconcile-view-overview-cash
             (if (neg? cash)
               [:div.reconcile-view-amount-neg

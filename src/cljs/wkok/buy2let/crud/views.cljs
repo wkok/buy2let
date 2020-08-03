@@ -3,7 +3,7 @@
             [clojure.string :as s]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
-            [fork.core :as fork]
+            [fork.re-frame :as fork]
             [clojure.walk :as w]
             [secretary.core :as sec]))
 

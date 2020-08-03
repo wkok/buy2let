@@ -29,5 +29,5 @@
 
 
 (doto (History.)
-  (events/listen EventType.NAVIGATE #(sec/dispatch! (.-token %)))
+  (events/listen EventType.NAVIGATE #(sec/dispatch! (.-token ^js/goog.history.Event %)))
   (.setEnabled true))
