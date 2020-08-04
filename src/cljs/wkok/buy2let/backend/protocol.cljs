@@ -14,7 +14,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (init-auth [_ render-fn]
-    "Implement this function to initiate the authentication / sign-in process")
+    "Implement this function to initiate the authentication / sign-in process
+       - Calling (render-fn nil) will render the sign-in screen again
+       - Calling (render-fn user) will render the main panel / dashboard")
 
   (sign-out-fx [_]
     "Implement this function by returning a Map of re-frame effect(s) responsible for 
