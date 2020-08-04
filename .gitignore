@@ -4,3 +4,4 @@
 /resources/public/js/compiled
 karma
 .calva
+.clj-kondo
