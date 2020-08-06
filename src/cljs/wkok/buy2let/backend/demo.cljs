@@ -67,7 +67,7 @@
     {})
 
   (get-account-fx [_ _]
-    (rf/dispatch [:load-account {"id" "1234", "name" "Demo Account"}])
+    (rf/dispatch [:load-account {:id :1234, :name "Demo Account"}])
     {})
 
   (unlink-provider

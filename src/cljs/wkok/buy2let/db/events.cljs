@@ -1,7 +1,6 @@
 (ns wkok.buy2let.db.events
   (:require [wkok.buy2let.db.db :as db]
             [re-frame.core :as rf]
-            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.effects :as se]
             [clojure.walk :as w]
             [tick.alpha.api :as t]

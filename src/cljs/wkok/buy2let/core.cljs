@@ -1,6 +1,5 @@
 (ns wkok.buy2let.core
   (:require
-    [reagent.core :as ra]
     [reagent.dom :as rd]
     [re-frame.core :as rf]
     [wkok.buy2let.site.views :as views]

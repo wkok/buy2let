@@ -6,7 +6,8 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.backend.effects]
-            [wkok.buy2let.backend.protocol :as bp]))
+            [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.spec :as spec]))
 
 (rf/reg-event-fx
  ::sign-in
@@ -60,10 +61,11 @@
 
 (rf/reg-event-db
  :load-account
- (fn [db [_ account]]
-   (rf/dispatch [::dbe/get-crud (:id account)])
-   (-> (assoc-in db [:security :accounts] {(:id account) account})
-       (assoc-in [:security :account] (:id account))))) ;TODO Account chooser
+ (fn [db [_ input]]
+   (let [account (spec/conform ::spec/account input)]
+     (rf/dispatch [::dbe/get-crud (:id account)])
+     (-> (assoc-in db [:security :accounts] {(:id account) account})
+         (assoc-in [:security :account] (:id account)))))) ;TODO Account chooser
 
 (rf/reg-event-fx
  :create-user
