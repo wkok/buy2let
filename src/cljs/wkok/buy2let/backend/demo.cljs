@@ -45,8 +45,8 @@
   (init-auth [_ render-fn]
     (if (str/includes? (-> js/window .-location .-href) "auth=demo")
       (let [auth {:uid "1234" :display-name "Demo User" :email "demo@email.com"}]
-        (rf/dispatch [:set-backend-user auth])
-        (rf/dispatch [:initialize-db demo-db])
+        (rf/dispatch [:get-user auth])
+        ;; (rf/dispatch [:initialize-db demo-db])
         (render-fn auth))
       (render-fn nil)))
 
@@ -63,7 +63,7 @@
 
   (get-user-fx
     [_ {:keys [auth _]}]
-    (rf/dispatch [:load-user auth {}])
+    (rf/dispatch [:load-user {:id :1234 :name "Demo User", :email "demo@email.com" :accounts [:1234]}])
     {})
 
   (get-account-fx [_ _]

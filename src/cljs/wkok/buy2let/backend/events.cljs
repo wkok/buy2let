@@ -46,18 +46,19 @@
   (fn [_ [_ auth]]
     (bp/get-user-fx impl/backend 
                     {:auth auth
-                     :on-success #(rf/dispatch [:load-user auth %])})))
+                     :on-success #(if (registered? %) 
+                                    (rf/dispatch [:load-user 
+                                                  (assoc % :accounts (map (fn [a] (keyword a)) (:accounts %)))])
+                                    (rf/dispatch [:create-user auth]))})))
 
 (rf/reg-event-fx
  :load-user
- (fn [cofx [_ auth u]]
-   (let [user (assoc u :accounts (map #(keyword %) (:accounts u)))]
-     (if (registered? u)
-       (merge {:db            (assoc-in (:db cofx) [:security :user] user)}
-              (bp/get-account-fx impl/backend
-                                 {:user user
-                                  :on-success #(rf/dispatch [:load-account %])}))
-       (rf/dispatch [:create-user auth])))))
+ (fn [cofx [_ input]]
+   (let [user (spec/conform ::spec/user input)]
+     (merge {:db            (assoc-in (:db cofx) [:security :user] user)}
+            (bp/get-account-fx impl/backend
+                               {:user user
+                                :on-success #(rf/dispatch [:load-account %])})))))
 
 (rf/reg-event-db
  :load-account
@@ -70,20 +71,21 @@
 (rf/reg-event-fx
  :create-user
  [(rf/inject-cofx ::shared/gen-id)]                        ; Generate account id
- (fn [cofx [_ auth]]
-   (let [user-item {:id       (keyword (:uid auth))
-                    :name     (:display-name auth)
-                    :email    (:email auth)
-                    :accounts [(:id cofx)]}
-         account-item {:id   (keyword (:id cofx))
-                       :name (:display-name auth)}]
-     (merge {:db                (-> (assoc-in (:db cofx) [:security :user] user-item)
-                                    (assoc-in [:security :accounts (:id account-item)] account-item)
-                                    (assoc-in [:security :account] (:id account-item))
+ (fn [cofx [_ input]]
+   (let [auth (spec/conform ::spec/auth input)
+         user {:id       (keyword (:uid auth))
+               :name     (:display-name auth)
+               :email    (:email auth)
+               :accounts [(:id cofx)]}
+         account {:id   (keyword (:id cofx))
+                  :name (:display-name auth)}]
+     (merge {:db                (-> (assoc-in (:db cofx) [:security :user] user)
+                                    (assoc-in [:security :accounts (:id account)] account)
+                                    (assoc-in [:security :account] (:id account))
                                     (assoc-in [:site :show-progress] false))}
-            (bp/create-user-fx impl/backend 
-                               {:user user-item 
-                                :account account-item
+            (bp/create-user-fx impl/backend
+                               {:user user
+                                :account account
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                       :message (str %)}])})))))
 

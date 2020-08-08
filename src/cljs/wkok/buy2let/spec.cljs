@@ -8,6 +8,10 @@
 
 (s/def ::id keyword?)
 (s/def ::name string?)
+(s/def ::email (s/and string? #(re-matches #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$" %)))
+(s/def ::accounts (s/coll-of keyword?))
+(s/def ::uid string?)
+(s/def ::display-name string?)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,6 +19,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (s/def ::account (s/keys :req-un [::id ::name]))
+(s/def ::user (s/keys :req-un [::id ::name ::email ::accounts]))
+(s/def ::auth (s/keys :req-un [::uid ::display-name ::email]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

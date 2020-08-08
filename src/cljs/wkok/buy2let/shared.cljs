@@ -8,8 +8,7 @@
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.backend.impl :as impl]
-            [reagent.core :as ra]))
+            [wkok.buy2let.backend.impl :as impl]))
 
 (defn gen-id []
   (-> (nid/nano-id) keyword))
@@ -189,18 +188,3 @@
      (assoc-in db [:site :show-progress] false))))
 
 
-; Some backends calls set-backend-user twice
-; This atom effectively allows processing of only one call when user successfully authenticated
-(defonce set-backend-user-called? (ra/atom false))
-
-(defn authenticated? [auth]
-  (not (nil? auth)))
-
-(rf/reg-event-db
- :set-backend-user
- (fn [db [_ auth]]
-   (when (and (authenticated? auth)
-              (not @set-backend-user-called?))
-     (reset! set-backend-user-called? true)
-     (rf/dispatch [:get-user auth]))
-   (assoc-in db [:security :auth] auth)))
