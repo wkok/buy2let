@@ -42,14 +42,15 @@
   (not (nil? user)))
 
 (rf/reg-event-fx
-  :get-user
-  (fn [_ [_ auth]]
-    (bp/get-user-fx impl/backend 
-                    {:auth auth
-                     :on-success #(if (registered? %) 
-                                    (rf/dispatch [:load-user 
-                                                  (assoc % :accounts (map (fn [a] (keyword a)) (:accounts %)))])
-                                    (rf/dispatch [:create-user auth]))})))
+ :get-user
+ (fn [_ [_ input]]
+   (let [auth (spec/conform ::spec/auth input)]
+     (bp/get-user-fx impl/backend
+                     {:auth auth
+                      :on-success #(if (registered? %)
+                                     (rf/dispatch [:load-user
+                                                   (assoc % :accounts (map (fn [a] (keyword a)) (:accounts %)))])
+                                     (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
  :load-user
@@ -92,7 +93,7 @@
 (rf/reg-event-fx
  ::sign-out
  (fn [_ _]
-   (merge {:db                db/default-db}
+   (merge {:db            db/default-db}
           (bp/sign-out-fx impl/backend))))
 
 (rf/reg-event-fx

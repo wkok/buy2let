@@ -5,7 +5,8 @@
             [clojure.walk :as w]
             [tick.alpha.api :as t]
             [wkok.buy2let.backend.impl :as impl]
-            [wkok.buy2let.backend.protocol :as bp]))
+            [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.spec :as spec]))
 
 (rf/reg-event-fx
   :initialize-db
@@ -24,22 +25,25 @@
 
 (rf/reg-event-db
   :load-users
-  (fn [db [_ users]]
-    (assoc db :users users)))
+  (fn [db [_ input]]
+    (let [users (spec/conform ::spec/crud-users input)]
+      (assoc db :users users))))
 
 (rf/reg-event-db
-  :load-charges
-  (fn [db [_ charges]]
-    (assoc db :charges (merge charges
-                              (:charges db/default-db)))))
+ :load-charges
+ (fn [db [_ input]]
+   (let [charges (spec/conform ::spec/crud-charges input)]
+     (assoc db :charges (merge charges
+                               (:charges db/default-db))))))
 
 (rf/reg-event-fx
-  :load-properties
-  (fn [cofx [_ properties]]
-    (rf/dispatch [::get-ledger-year])
-    {:db                (-> (assoc (:db cofx) :properties properties)
-                            (assoc-in [:site :show-progress] false))
-     ::se/location-hash (get-in (:db cofx) [:site :location :hash])}))
+ :load-properties
+ (fn [cofx [_ input]]
+   (let [properties (spec/conform ::spec/crud-properties input)]
+     (rf/dispatch [::get-ledger-year])
+     {:db                (-> (assoc (:db cofx) :properties properties)
+                             (assoc-in [:site :show-progress] false))
+      ::se/location-hash (get-in (:db cofx) [:site :location :hash])})))
 
 (rf/reg-event-db
   :load-ledger-year
