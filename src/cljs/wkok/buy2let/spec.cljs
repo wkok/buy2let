@@ -13,6 +13,9 @@
 (s/def ::uid string?)
 (s/def ::display-name string?)
 (s/def ::who-pays-whom #{"opa" "ac" "apo" "aps" "mi" "opb" "ops" "tpa" "tpo"})
+(s/def ::invoiced boolean?)
+(s/def ::amount float?)
+(s/def ::bank-interest float?)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,6 +38,27 @@
 (s/def ::crud-charges (s/map-of keyword? ::charge))
 (s/def ::crud-properties (s/map-of keyword? ::property))
 (s/def ::charges (s/map-of keyword? ::property-charge))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Ledger 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(s/def ::ledger-year (s/keys :req-un [::property-id ::year ::ledger-months]))
+(s/def ::ledger-months (s/map-of keyword? ::ledger))
+(s/def ::ledger-month (s/keys :req-un [::property-id ::year ::month ::ledger]))
+(s/def ::ledger (s/keys :req-un [::breakdown ::accounting ::totals]))
+(s/def ::accounting (s/keys :opt-un [::bank-interest ::bank-current ::supplier ::tenant ::agent-commission ::owner ::agent-current]))
+(s/def ::totals (s/map-of keyword? float?))
+(s/def ::breakdown (s/map-of keyword? ::breakdown-detail))
+(s/def ::breakdown-detail (s/keys :req-un [::invoiced] :opt-un [::amount]))
+(s/def ::bank-interest (s/map-of keyword? float?))
+(s/def ::bank-current (s/map-of keyword? float?))
+(s/def ::supplier (s/map-of keyword? float?))
+(s/def ::tenant (s/map-of keyword? float?))
+(s/def ::agent-commission (s/map-of keyword? float?))
+(s/def ::owner (s/map-of keyword? float?))
+(s/def ::agent-current (s/map-of keyword? float?))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

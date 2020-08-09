@@ -47,11 +47,9 @@
 
 (rf/reg-event-db
   :load-ledger-year
-  (fn [db [_ property year l]]
-    (let [ledger (->> (map (fn [r] {(:id r) (:data r)}) l)
-                      (into {})
-                      w/keywordize-keys)]
-      (-> (assoc-in db [:ledger property year] ledger)
+  (fn [db [_ input]]
+    (let [{:keys [property-id year ledger-months]} (spec/conform ::spec/ledger-year input)]
+      (-> (assoc-in db [:ledger property-id year] ledger-months)
           (assoc-in [:site :show-progress] false)))))
 
 (rf/reg-event-fx
@@ -70,5 +68,5 @@
                                        :account-id account-id 
                                        :this-year this-year 
                                        :last-year last-year
-                                       :on-success #(rf/dispatch [:load-ledger-year %1 %2 %3])}))
+                                       :on-success #(rf/dispatch [:load-ledger-year %])}))
         {:db db}))))

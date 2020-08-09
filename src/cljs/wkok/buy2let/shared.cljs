@@ -8,7 +8,8 @@
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.backend.impl :as impl]))
+            [wkok.buy2let.backend.impl :as impl]
+            [wkok.buy2let.spec :as spec]))
 
 (defn gen-id []
   (-> (nid/nano-id) keyword))
@@ -145,7 +146,7 @@
                         {:property property 
                          :account-id account-id 
                          :months m
-                         :on-success #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])}))))
+                         :on-success #(rf/dispatch [:load-ledger-month %])}))))
 
 (defn add-breakdown-amounts [left right]
   {:amount (-> (+ ((fnil identity 0) (:amount left))
@@ -180,11 +181,12 @@
 
 (rf/reg-event-db
  :load-ledger-month
- (fn [db [_ property year month ledger]]
-   (if (not (nil? ledger))
-     (-> (assoc-in db [:ledger property year month] ledger)
-         (assoc-in [:site :show-progress] false)
-         calc-totals)
-     (assoc-in db [:site :show-progress] false))))
+ (fn [db [_ input]]
+   (let [{:keys [property-id year month ledger]} (spec/conform ::spec/ledger-month input)]
+     (if (not (nil? ledger))
+       (-> (assoc-in db [:ledger property-id year month] ledger)
+           (assoc-in [:site :show-progress] false)
+           calc-totals)
+       (assoc-in db [:site :show-progress] false)))))
 
 

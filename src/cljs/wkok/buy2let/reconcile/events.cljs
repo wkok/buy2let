@@ -31,8 +31,8 @@
                                         :this-month month 
                                         :prev-year (:year prev) 
                                         :prev-month (:month prev)
-                                        :on-success-this #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])
-                                        :on-success-prev #(rf/dispatch [:load-ledger-month %1 %2 %3 %4])}))))
+                                        :on-success-this #(rf/dispatch [:load-ledger-month %])
+                                        :on-success-prev #(rf/dispatch [:load-ledger-month %])}))))
     {:db db}))
 
 
