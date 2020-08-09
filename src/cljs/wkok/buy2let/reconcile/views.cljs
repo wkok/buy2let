@@ -92,8 +92,8 @@
       (view-accounting-detail ledger property-charges)
       [view-accounting-total ledger]]]]
    [:div.reconcile-view-accounting
-    [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::re/reconcile-view-toggle])}
-     [:label "Simple view"]]]])
+    (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
+                   "Simple view")]])
 
 (defn view-overview-row [charge ledger property year month]
   [:tr
@@ -125,8 +125,8 @@
         ^{:key (:id charge)}
         [view-overview-row charge ledger property year month])]]]
    [:div.reconcile-view-accounting
-    [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::re/reconcile-view-toggle])}
-     [:label "Detailed view"]]]])
+    (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
+                   "Detailed view")]])
 
 (defn view-panel [property year month ledger properties property-charges charges]
   [:div
@@ -195,8 +195,8 @@
 (defn prev-month [charge values state]
   (when-let [amount (get-in values [:prev-month :breakdown (:id charge) :amount])]
     [:div.reconcile-edit-component-amount-prev
-     [:a {:href "javascript:void(0);" :on-click #(swap-amount amount (:id charge) state shared/format-money js/parseFloat Math/abs)}
-      [:label (str "(use previous: " (shared/format-money amount) ")")]]]))
+     (shared/anchor #(swap-amount amount (:id charge) state shared/format-money js/parseFloat Math/abs)
+                    (str "(use previous: " (shared/format-money amount) ")"))]))
 
 (defn edit-amount-field [charge values state]
   [:div.reconcile-edit-component-amount

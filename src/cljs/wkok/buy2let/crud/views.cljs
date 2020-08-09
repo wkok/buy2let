@@ -3,9 +3,9 @@
             [clojure.string :as s]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.shared :as shared]
             [fork.re-frame :as fork]
-            [clojure.walk :as w]
-            [secretary.core :as sec]))
+            [clojure.walk :as w]))
 
 
 (defn row [item type]
@@ -32,10 +32,10 @@
          [row item type])]]
      [:div.crud-show-hidden
       (if show-hidden
-        [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::ce/crud-set-show-hidden false])}
-         [:label "Hide hidden"]]
-        [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::ce/crud-set-show-hidden true])}
-         [:label "Show hidden"]])]]))
+        (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
+                       "Hide hidden")
+        (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
+                       "Show hidden"))]]))
 
 
 (defn edit-panel [type]

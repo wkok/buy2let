@@ -147,10 +147,10 @@
         [report-cash-row ledger months]]]]
      [:div.report-view-show-invoices
       (if (= true (:show-invoices report))
-        [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::re/report-set-show-invoices false])}
-         [:label "Hide invoices / notes"]]
-        [:a {:href "javascript:void(0);" :on-click #(rf/dispatch [::re/report-set-show-invoices true])}
-         [:label "Show invoices / notes"]])]]))
+        (shared/anchor #(rf/dispatch [::re/report-set-show-invoices false])
+                       "Hide invoices / notes")
+        (shared/anchor #(rf/dispatch [::re/report-set-show-invoices true])
+                       "Show invoices / notes"))]]))
 
 (defn view-panel [property report ledger properties property-charges]
   [:div

@@ -1,16 +1,17 @@
 (ns wkok.buy2let.site.views
   (:require
-    [re-frame.core :as rf]
-    [wkok.buy2let.site.subs :as subs]
-    [wkok.buy2let.site.events :as se]
-    [wkok.buy2let.reconcile.views :as reconcile]
-    [wkok.buy2let.report.views :as report]
-    [wkok.buy2let.dashboard.views :as dashboard]
-    [wkok.buy2let.settings.views :as settings]
-    [wkok.buy2let.crud.impl :as crud-impl]
-    [wkok.buy2let.backend.events :as be]
-    [wkok.buy2let.backend.subs :as bs]
-    [clojure.string :as s]))
+   [re-frame.core :as rf]
+   [wkok.buy2let.site.subs :as subs]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.reconcile.views :as reconcile]
+   [wkok.buy2let.report.views :as report]
+   [wkok.buy2let.dashboard.views :as dashboard]
+   [wkok.buy2let.settings.views :as settings]
+   [wkok.buy2let.crud.impl :as crud-impl]
+   [wkok.buy2let.backend.events :as be]
+   [wkok.buy2let.backend.subs :as bs]
+   [wkok.buy2let.shared :as shared]
+   [clojure.string :as s]))
 
 (defn nav-menu-item [href page active-page]
   [:li [:a {:href     href
@@ -20,14 +21,15 @@
 (defn nav-bar []
   (let [active-page @(rf/subscribe [::subs/active-page])]
     [:div.nav-bar
-     [:a.menu-toggle {:href     "javascript:void(0);" :aria-label "Open main menu"
-                      :on-click #(rf/dispatch [::se/show-nav-menu true])}
+     [:a.menu-toggle {:href     "#" :aria-label "Open main menu"
+                      :on-click #(do (.preventDefault %) 
+                                     (rf/dispatch [::se/show-nav-menu true]))}
       [:span.sr-only "Open main menu"]
       [:span.fa.fa-bars {:aria-hidden true}]]
      [:nav.main-menu {:aria-label    "Main menu"
                       :aria-expanded @(rf/subscribe [::subs/nav-menu-show])}
-      [:a.menu-close {:href     "javascript:void(0);" :aria-label "Close main menu"
-                      :on-click #(rf/dispatch [::se/show-nav-menu false])}
+      [:a.menu-close {:href     "#" :aria-label "Close main menu"
+                      :on-click #(do (.preventDefault %) (rf/dispatch [::se/show-nav-menu false]))}
        [:span.sr-only "Close main menu"]
        [:span.fa.fa-times {:aria-hidden true}]]
       [:ul
@@ -37,8 +39,8 @@
        [nav-menu-item "#/properties" :properties active-page]
        [nav-menu-item "#/charges" :charges active-page]
        [nav-menu-item "#/settings" :settings active-page]]]
-     [:a.backdrop {:href     "javascript:void(0);" :tab-index "-1" :aria-hidden true :hidden true
-                   :on-click #(rf/dispatch [::se/show-nav-menu false])}]
+     [:a.backdrop {:href     "#" :tab-index "-1" :aria-hidden true :hidden true
+                   :on-click #(do (.preventDefault %) (rf/dispatch [::se/show-nav-menu false]))}]
      [:label.active @(rf/subscribe [::subs/heading])]]))
 
 

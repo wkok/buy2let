@@ -190,3 +190,14 @@
        (assoc-in db [:site :show-progress] false)))))
 
 
+; See: https://github.com/facebook/react/issues/16382
+(defn anchor
+  ([on-click label]
+   [:a {:href "#" :on-click #(do (.preventDefault %)
+                                 (on-click))}
+    [:label label]])
+  ([on-click label class]
+   [:a {:class class
+        :href "#" :on-click #(do (.preventDefault %)
+                                 (on-click))}
+    [:label label]]))
