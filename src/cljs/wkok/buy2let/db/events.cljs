@@ -2,7 +2,6 @@
   (:require [wkok.buy2let.db.db :as db]
             [re-frame.core :as rf]
             [wkok.buy2let.site.effects :as se]
-            [clojure.walk :as w]
             [tick.alpha.api :as t]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.backend.protocol :as bp]
