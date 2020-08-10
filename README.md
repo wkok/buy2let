@@ -40,7 +40,8 @@ Wait a bit, then browse to [http://localhost:8280](http://localhost:8280)
 
 ## Styling
 
-No explicit CSS framework is used as I didn't want the code locked in to some opinionated CSS framework. 
+No explicit CSS framework is used as I didn't want the code locked in to an opinionated CSS framework too early. In future, this might change in order to support more feature rich UI elements. 
+
 As I am not a styling expert by any stretch of the imagination, I instead opted for using semantic html components (generated with [Hiccup](https://github.com/weavejester/hiccup)), stylable using any of the growing list of [Classless CSS themes](https://css-tricks.com/no-class-css-frameworks/)
 
 In this repository & the demo, I used [Marx](https://mblode.github.io/marx/), purely because I liked the general look & feel (& it's blue ;)
