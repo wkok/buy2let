@@ -8,13 +8,13 @@
 (defn do-sign-in []
   (set! (.. js/window -location -href) "?auth=demo"))
 
-(def property-charges {:agent-commission-id {:who-pays-whom "ac"}
-                       :levy-id {:who-pays-whom "aps"}
-                       :mortgage-interest-id {:who-pays-whom "mi"}
-                       :mortgage-repayment-id {:who-pays-whom "opb"}
-                       :payment-received-id {:who-pays-whom "apo"}
-                       :rates-taxes-id {:who-pays-whom "ops"}
-                       :rent-charged-id {:who-pays-whom "tpa"}})
+(def property-charges {:agent-commission-id {:who-pays-whom :ac}
+                       :levy-id {:who-pays-whom :aps}
+                       :mortgage-interest-id {:who-pays-whom :mi}
+                       :mortgage-repayment-id {:who-pays-whom :opb}
+                       :payment-received-id {:who-pays-whom :apo}
+                       :rates-taxes-id {:who-pays-whom :ops}
+                       :rent-charged-id {:who-pays-whom :tpa}})
 
 (def demo-db {:charges {:rent-charged-id {:id :rent-charged-id :name "Rent charged"}
                         :agent-commission-id {:id :agent-commission-id :name "Agent commission"}

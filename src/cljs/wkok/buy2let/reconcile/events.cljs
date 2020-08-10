@@ -96,7 +96,7 @@
   (if (= :agent-opening-balance charge-id)
     {:agent-current {charge-id amount}
      :owner         {charge-id (* -1 amount)}}
-    (case (-> (get-in (:charges property) [charge-id :who-pays-whom]) keyword)
+    (case (get-in (:charges property) [charge-id :who-pays-whom])
       :opa {:agent-current {charge-id amount}
             :owner         {charge-id (* -1 amount)}}
       :ac {:agent-commission {charge-id amount}

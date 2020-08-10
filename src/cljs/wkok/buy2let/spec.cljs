@@ -12,7 +12,7 @@
 (s/def ::accounts (s/coll-of keyword?))
 (s/def ::uid string?)
 (s/def ::display-name string?)
-(s/def ::who-pays-whom #{"opa" "ac" "apo" "aps" "mi" "opb" "ops" "tpa" "tpo"})
+(s/def ::who-pays-whom #{:opa :ac :apo :aps :mi :opb :ops :tpa :tpo})
 (s/def ::invoiced boolean?)
 (s/def ::amount float?)
 (s/def ::bank-interest float?)
