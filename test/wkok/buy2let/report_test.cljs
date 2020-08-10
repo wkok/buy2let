@@ -13,7 +13,6 @@
 (deftest set-prop-from-dash-nav-to-report-test
   (testing "Test navigation to report"
     (rf-test/run-test-sync
-     (rf/dispatch [:initialize-db demo/demo-db])
      (let [active-property (rf/subscribe [::ss/active-property])
            active-page (rf/subscribe [::ss/active-page])
            report (rf/subscribe [::rs/report])

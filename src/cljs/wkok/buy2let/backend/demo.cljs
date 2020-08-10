@@ -18,7 +18,6 @@
     (if (str/includes? (-> js/window .-location .-href) "auth=demo")
       (let [auth {:uid "1234" :display-name "Demo User" :email "demo@email.com"}]
         (rf/dispatch [:get-user auth])
-        ;; (rf/dispatch [:initialize-db demo-db])
         (render-fn auth))
       (render-fn nil)))
 
