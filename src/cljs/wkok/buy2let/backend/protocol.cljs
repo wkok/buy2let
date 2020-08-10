@@ -27,7 +27,7 @@
      for pre-downloading any data from the server after the user successfully signed in.
     Example options:
      {:account :12345
-      :on-success-users #(js/console.log %)
+      :on-success-delegates #(js/console.log %)
       :on-success-charges #(js/console.log %)
       :on-success-properties #(js/console.log %)}")
 

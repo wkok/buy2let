@@ -34,9 +34,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collections
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(s/def ::crud-users (s/map-of keyword? ::delegate))
+(s/def ::delegates (s/map-of keyword? ::delegate))
 (s/def ::crud-charges (s/map-of keyword? ::charge))
-(s/def ::crud-properties (s/map-of keyword? ::property))
+(s/def ::properties (s/map-of keyword? ::property))
 (s/def ::charges (s/map-of keyword? ::property-charge))
 
 

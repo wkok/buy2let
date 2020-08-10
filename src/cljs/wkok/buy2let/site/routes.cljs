@@ -22,9 +22,9 @@
   (defroute "/charges" [] (rf/dispatch [::ce/list-crud type/charge]))
   (defroute "/charges/add" [] (rf/dispatch [::ce/add-crud type/charge]))
   (defroute "/charges/edit/:id" [id] (rf/dispatch [::ce/edit-crud (keyword id) type/charge]))
-  (defroute "/users" [] (rf/dispatch [::ce/list-crud type/user]))
-  (defroute "/users/add" [] (rf/dispatch [::ce/add-crud type/user]))
-  (defroute "/users/edit/:id" [id] (rf/dispatch [::ce/edit-crud (keyword id) type/user]))
+  (defroute "/delegates" [] (rf/dispatch [::ce/list-crud type/delegate]))
+  (defroute "/delegates/add" [] (rf/dispatch [::ce/add-crud type/delegate]))
+  (defroute "/delegates/edit/:id" [id] (rf/dispatch [::ce/edit-crud (keyword id) type/delegate]))
   (defroute "/settings" [] (rf/dispatch [:set-active-page :settings "Settings"])))
 
 

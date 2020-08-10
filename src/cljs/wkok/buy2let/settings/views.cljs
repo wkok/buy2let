@@ -11,7 +11,7 @@
   (rf/dispatch [:set-fab-actions nil])
   [:div
    [:br]
-   [:div [:a {:href "#/users"} "Delegate access"]]
+   [:div [:a {:href "#/delegates"} "Delegate access"]]
    (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
      [:div
       [:hr]

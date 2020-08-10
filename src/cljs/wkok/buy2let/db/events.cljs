@@ -18,15 +18,14 @@
   (fn [_ [_ account]]
     (bp/get-crud-fx impl/backend 
                     {:account account
-                     :on-success-users #(rf/dispatch [:load-users %])
+                     :on-success-delegates #(rf/dispatch [:load-delegates %])
                      :on-success-charges #(rf/dispatch [:load-charges %])
                      :on-success-properties #(rf/dispatch [:load-properties %])})))
 
 (rf/reg-event-db
-  :load-users
+  :load-delegates
   (fn [db [_ input]]
-    (let [users (spec/conform ::spec/crud-users input)]
-      (assoc db :users users))))
+    (assoc db :delegates (spec/conform ::spec/delegates input))))
 
 (rf/reg-event-db
  :load-charges
@@ -38,7 +37,7 @@
 (rf/reg-event-fx
  :load-properties
  (fn [cofx [_ input]]
-   (let [properties (spec/conform ::spec/crud-properties input)]
+   (let [properties (spec/conform ::spec/properties input)]
      (rf/dispatch [::get-ledger-year])
      {:db                (-> (assoc (:db cofx) :properties properties)
                              (assoc-in [:site :show-progress] false))

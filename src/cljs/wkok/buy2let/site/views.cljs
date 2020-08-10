@@ -115,7 +115,7 @@
          :report [report/report]
          :properties [crud-impl/properties]
          :charges [crud-impl/charges]
-         :users [crud-impl/users]
+         :delegates [crud-impl/delegates]
          :settings [settings/settings]))]]
    [fab]])
 

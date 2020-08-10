@@ -15,8 +15,8 @@
     :charges-edit [crud/edit-panel type/charge]
     [crud/list-panel type/charge]))
 
-(defn users []
+(defn delegates []
   (case @(rf/subscribe [::subs/active-panel])
-    :users-edit [crud/edit-panel type/user]
-    [crud/list-panel type/user]))
+    :delegates-edit [crud/edit-panel type/delegate]
+    [crud/list-panel type/delegate]))
 

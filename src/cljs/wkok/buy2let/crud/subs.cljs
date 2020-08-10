@@ -21,9 +21,9 @@
          (sort-by :name))))
 
 (rf/reg-sub
-  ::users
+  ::delegates
   (fn [db]
-    (->> (:users db)
+    (->> (:delegates db)
          vals
          (sort-by :name))))
 

@@ -71,10 +71,10 @@
    :validate-fn #(validate-name %)
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon "fa-plus"}}}})
 
-(def user
-  {:type        :users
-   :subs        ::cs/users
+(def delegate
+  {:type        :delegates
+   :subs        ::cs/delegates
    :fields      [{:key :name :type :text :default true}
                  {:key :email :type :email}]
    :validate-fn #(merge (validate-name %) (validate-email %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/users/add") :icon "fa-plus"}}}})
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}})
