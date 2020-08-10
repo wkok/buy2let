@@ -6,7 +6,6 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.report.views :as rv]
-            [wkok.buy2let.backend.demo :as demo]
             wkok.buy2let.db.events))
 
 

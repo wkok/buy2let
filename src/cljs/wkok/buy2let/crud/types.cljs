@@ -1,8 +1,7 @@
 (ns wkok.buy2let.crud.types
   (:require [re-frame.core :as rf]
             [wkok.buy2let.crud.subs :as cs]
-            [clojure.string :as s]
-            [wkok.buy2let.crud.events :as ce]))
+            [clojure.string :as s]))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -23,7 +22,7 @@
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon "fa-plus"}}}
-   :extra       (fn [values state errors touched handle-change handle-blur]
+   :extra       (fn [values state errors touched _ handle-blur]
                   [:div
                    [:label "Charges to account for: "]
                    [:table
