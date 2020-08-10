@@ -10,7 +10,6 @@
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
-   [wkok.buy2let.shared :as shared]
    [clojure.string :as s]))
 
 (defn nav-menu-item [href page active-page]
