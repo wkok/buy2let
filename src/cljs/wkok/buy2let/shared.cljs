@@ -141,7 +141,9 @@
   (let [account-id (get-in db [:security :account])
         downloaded? #(contains? (get-in db [:ledger property %1]) %2)
         m (filter #(not (downloaded? (:year %) (:month %))) months)]
-    (when (not (empty? m))
+    (println "get-ledger-fx: " m)
+    (when (seq m)
+      (println "not empty!")
       (bp/get-ledger-fx impl/backend 
                         {:property property 
                          :account-id account-id 
