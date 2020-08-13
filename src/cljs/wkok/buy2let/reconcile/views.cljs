@@ -323,8 +323,6 @@
         month @(rf/subscribe [::rs/reconcile-month])
         ledger @(rf/subscribe [:ledger-months (:id property) year month])]
 
-    (if (nil? (:this-month ledger))
-      [view-panel property year month ledger properties property-charges charges]
-      (case @(rf/subscribe [::ss/active-panel])
-        :reconcile-edit [edit-panel property year month ledger property-charges]
-        [view-panel property year month ledger properties property-charges charges]))))
+    (case @(rf/subscribe [::ss/active-panel])
+      :reconcile-edit [edit-panel property year month ledger property-charges]
+      [view-panel property year month ledger properties property-charges charges])))
