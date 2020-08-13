@@ -68,6 +68,7 @@
         [:td.report-view-alternate-col.report-view-amount-col
          [:strong (shared/format-money owed)]]))))
 
+
 (defn report-cash-col [m ledger]
   (let [cash (-> (get-in ledger [(:year m) (:month m) :totals :owner]) shared/to-money)]
     (if (neg? cash)
@@ -78,6 +79,14 @@
          [:strong (shared/format-money cash)]]
         [:td.report-view-alternate-col.report-view-amount-col
          [:strong (shared/format-money cash)]]))))
+
+(defn report-edit-col [m property]
+  [:td.report-view-edit-col
+   [:button {:type :button :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
+                                                                      "/" (-> (:month m) name)
+                                                                      "/" (-> (:year m) name)
+                                                                      "/edit"))}
+    [:i.fas.fa-edit]]])
 
 (defn report-charge-row [charge ledger months report property]
   [:tr
@@ -122,6 +131,14 @@
      [report-cash-col m ledger])
    [:td.report-view-amount-col.report-view-alternate-col "-"]])
 
+(defn report-edit-row [property months]
+  [:tr
+   [:td]
+   (for [m months]
+     ^{:key m}
+     [report-edit-col m property])
+   [:td]])
+
 (defn zip-invoices-confirm [property-charges]
   (rf/dispatch [::se/dialog {:heading "Continue?"
                              :message "This will download all invoices for the selected period & might take a while"
@@ -144,7 +161,8 @@
           [report-charge-row charge ledger months report property])
         [report-profit-row ledger months report]
         [report-owed-row ledger months]
-        [report-cash-row ledger months]]]]
+        [report-cash-row ledger months]
+        [report-edit-row property months]]]]
      [:div.report-view-show-invoices
       (if (= true (:show-invoices report))
         (shared/anchor #(rf/dispatch [::re/report-set-show-invoices false])

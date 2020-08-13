@@ -74,6 +74,15 @@
     text-align: right;
 }
 
+.report-view-edit-col {
+    text-align: right;
+    padding-bottom: unset;
+}
+
+.report-view-edit-col button {
+    padding: 2px 13px;
+}
+
 .report-view-amount-owe {
     color: orange;
 }
