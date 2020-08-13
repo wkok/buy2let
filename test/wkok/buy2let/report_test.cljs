@@ -6,6 +6,7 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.report.views :as rv]
+            [wkok.buy2let.report.events :as repe]
             wkok.buy2let.db.events))
 
 
@@ -21,7 +22,11 @@
          (rf/dispatch [::se/set-active-property "property-one-id"])
          (is (= :property-one-id @active-property)))
        (testing "after navigating to Report"
-         (rf/dispatch [:set-active-page :report "Report"])
+         (rf/dispatch [::repe/view-report (repe/calc-options {:property-id :1234
+                                                              :from-month :7
+                                                              :from-year :2020
+                                                              :to-month :9
+                                                              :to-year :2020})])
          (is (= :report @active-page)))
        (testing "that the heading is Report"
          (is (= "Report" @heading)))
