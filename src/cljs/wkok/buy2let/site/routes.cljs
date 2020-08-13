@@ -13,8 +13,10 @@
   (set! (.-hash js/location) "/")
   (sec/set-config! :prefix "#")
   (defroute "/" [] (rf/dispatch [:set-active-page :dashboard "Dashboard"]))
-  (defroute "/reconcile" [] (rf/dispatch [::re/view-reconcile]))
-  (defroute "/reconcile/edit" [] (rf/dispatch [::re/edit-reconcile]))
+  (defroute "/reconcile/:property-id/:month/:year" [property-id month year]
+    (rf/dispatch [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})]))
+  (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
+    (rf/dispatch [::re/edit-reconcile (re/calc-options {:property-id property-id :year year :month month})]))
   (defroute "/report" [] (rf/dispatch [:set-active-page :report "Report"]))
   (defroute "/properties" [] (rf/dispatch [::ce/list-crud type/property]))
   (defroute "/properties/add" [] (rf/dispatch [::ce/add-crud type/property]))

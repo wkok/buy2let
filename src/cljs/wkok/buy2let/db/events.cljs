@@ -1,16 +1,16 @@
 (ns wkok.buy2let.db.events
-  (:require [wkok.buy2let.db.db :as db]
-            [re-frame.core :as rf]
+  (:require [re-frame.core :as rf]
             [wkok.buy2let.site.effects :as se]
             [tick.alpha.api :as t]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.spec :as spec]))
+            [wkok.buy2let.spec :as spec]
+            [wkok.buy2let.shared :as shared]))
 
 (rf/reg-event-fx
   :initialize-db
   (fn [_ [_ seed]]
-    {:db (-> (merge db/default-db seed)
+    {:db (-> (merge shared/default-db seed)
              (assoc-in [:site :location :hash] (-> js/window .-location .-hash)))})) ;used for deep linking
 
 (rf/reg-event-fx
@@ -32,7 +32,7 @@
  (fn [db [_ input]]
    (let [charges (spec/conform ::spec/crud-charges input)]
      (assoc db :charges (merge charges
-                               (:charges db/default-db))))))
+                               (:charges shared/default-db))))))
 
 (rf/reg-event-fx
  :load-properties

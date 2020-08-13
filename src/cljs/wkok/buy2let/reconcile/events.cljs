@@ -1,13 +1,15 @@
 (ns wkok.buy2let.reconcile.events
   (:require
-    [re-frame.core :as rf]
-    [clojure.set :as set]
-    [wkok.buy2let.shared :as shared]
-    [wkok.buy2let.crud.subs :as cs]
-    [wkok.buy2let.site.events :as se]
-    [wkok.buy2let.backend.protocol :as bp]
-    [wkok.buy2let.backend.impl :as impl]
-    [wkok.buy2let.backend.subs :as fs]))
+   [re-frame.core :as rf]
+   [clojure.set :as set]
+   [wkok.buy2let.shared :as shared]
+   [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.backend.protocol :as bp]
+   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.site.subs :as ss]
+   [wkok.buy2let.reconcile.subs :as rs]
+   [wkok.buy2let.backend.subs :as fs]))
 
 
 (defn download-month? [month db property year]
@@ -44,40 +46,37 @@
       (assoc-in db [:reconcile :view] :accounting))))
 
 
-
 (rf/reg-event-fx
-  ::reconcile-set-property
-  (fn [cofx [_ p]]
-    (let [db (:db cofx)
-          property (keyword p)
-          year (-> (get-in db [:reconcile :year]) keyword)
-          month (-> (get-in db [:reconcile :month]) keyword)]
-      (if (and (not (= "--select--" p)))
-        (-> (assoc-in db [:site :active-property] property)
-            (load-ledger-fx property year month))
-        {:db (assoc-in db [:site :active-property] p)}))))
+ ::reconcile-nav
+ (fn [cofx [_ _]]
+   (let [db (:db cofx)
+         property (-> (get-in db [:site :active-property]) name)
+         year (-> (get-in db [:reconcile :year]) name)
+         month (-> (get-in db [:reconcile :month]) name)]
+     (if (= "--select--" property)
+       (js/window.location.assign (str "#/reconcile"))
+       (js/window.location.assign (str "#/reconcile/" property "/" month "/" year))))))
 
 
-(rf/reg-event-fx
-  ::reconcile-set-year
-  (fn [cofx [_ y]]
-    (let [db (:db cofx)
-          property (get-in db [:site :active-property])
-          year (keyword y)
-          month (-> (get-in db [:reconcile :month]) keyword)]
-      (-> (assoc-in db [:reconcile :year] year)
-          (load-ledger-fx property year month)))))
+(rf/reg-event-db
+ ::reconcile-set-property
+ (fn [db [_ p]]
+   (rf/dispatch [::reconcile-nav])
+   (assoc-in db [:site :active-property] (keyword p))))
 
 
-(rf/reg-event-fx
-  ::reconcile-set-month
-  (fn [cofx [_ m]]
-    (let [db (:db cofx)
-          property (get-in db [:site :active-property])
-          year (-> (get-in db [:reconcile :year]) keyword)
-          month (keyword m)]
-      (-> (assoc-in db [:reconcile :month] month)
-          (load-ledger-fx property year month)))))
+(rf/reg-event-db
+ ::reconcile-set-year
+ (fn [db [_ y]]
+   (rf/dispatch [::reconcile-nav])
+   (assoc-in db [:reconcile :year] (keyword y))))
+
+
+(rf/reg-event-db
+ ::reconcile-set-month
+ (fn [db [_ m]]
+   (rf/dispatch [::reconcile-nav])
+   (assoc-in db [:reconcile :month] (keyword m))))
 
 
 (defn blob-key [account property year month charge-id]
@@ -159,16 +158,29 @@
      :blobs (as-blobs account property year month this-month-breakdown charges account-id)}))
 
 (rf/reg-event-db
-  ::edit-reconcile
-  #(-> (assoc-in % [:site :active-page] :reconcile)
-       (assoc-in [:site :active-panel] :reconcile-edit)
-       (assoc-in [:site :heading] "Reconcile")))
+ ::edit-reconcile
+ (fn [db [_ options]]
+   (let [{:keys [property-id year month]} options]
+     (-> (assoc-in db [:reconcile :month] month)
+         (assoc-in [:reconcile :year] year)
+         (assoc-in [:site :active-property] property-id)
+         (assoc-in [:site :active-page] :reconcile)
+         (assoc-in [:site :active-panel] :reconcile-edit)
+         (assoc-in [:site :heading] "Reconcile")))))
 
-(rf/reg-event-db
-  ::view-reconcile
-  #(-> (assoc-in % [:site :active-page] :reconcile)
-       (assoc-in [:site :active-panel] :reconcile-view)
-       (assoc-in [:site :heading] "Reconcile")))
+(rf/reg-event-fx
+ ::view-reconcile
+ (fn [cofx [_ options]]
+   (let [{:keys [property-id year month]} options
+         db (-> (assoc-in (:db cofx) [:reconcile :month] month)
+                (assoc-in [:reconcile :year] year)
+                (assoc-in [:site :active-property] property-id)
+                (assoc-in [:site :active-page] :reconcile)
+                (assoc-in [:site :active-panel] :reconcile-view)
+                (assoc-in [:site :heading] "Reconcile"))]
+     (if (not (= :--select-- property-id))
+       (load-ledger-fx db property-id year month)
+       {:db db}))))
 
 (rf/reg-event-fx
  ::save-reconcile
@@ -192,3 +204,22 @@
                                      :month month
                                      :charges-this-month charges-this-month}))
        {:db db}))))
+
+
+(defn calc-options
+  [{:keys [property-id year month]}]
+  (let [properties @(rf/subscribe [::cs/properties])
+        active-property (let [ap @(rf/subscribe [::ss/active-property])]
+                          (if (= "--select--" ap) nil ap))
+        reconcile-year @(rf/subscribe [::rs/reconcile-year])
+        reconcile-month @(rf/subscribe [::rs/reconcile-month])]
+    {:property-id (or (-> property-id keyword)
+                      active-property
+                      (->> properties first :id)
+                      :--select--)
+     :year (or (-> year keyword)
+               reconcile-year
+               (:this-year shared/default-cal))
+     :month (or (-> month keyword)
+                reconcile-month
+                (:this-month shared/default-cal))}))

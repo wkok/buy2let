@@ -51,7 +51,7 @@
               :initial-values     (if-let [old ((:type type) @(rf/subscribe [:form-old]))]
                                     (w/stringify-keys old)
                                     (w/stringify-keys (:defaults type)))}
-   (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? on-submit-response handle-submit]}]
+   (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? handle-submit]}]
      [:form.crud-edit-container {:id form-id :on-submit handle-submit}
       [:div.crud-edit-fields
        (doall

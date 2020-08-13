@@ -4,6 +4,7 @@
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.reconcile.views :as reconcile]
+   [wkok.buy2let.reconcile.events :as re]
    [wkok.buy2let.report.views :as report]
    [wkok.buy2let.dashboard.views :as dashboard]
    [wkok.buy2let.settings.views :as settings]
@@ -16,6 +17,12 @@
   [:li [:a {:href     href
             :class    (when (= page active-page) "active")
             :on-click #(rf/dispatch [::se/show-nav-menu false])} (-> page name s/capitalize)]])
+
+(defn build-reconcile-url []
+  (let [options (re/calc-options {})]
+    (str "#/reconcile/" (-> (:property-id options) name)
+         "/" (-> (:month options) name)
+         "/" (-> (:year options) name))))
 
 (defn nav-bar []
   (let [active-page @(rf/subscribe [::subs/active-page])]
@@ -33,7 +40,7 @@
        [:span.fa.fa-times {:aria-hidden true}]]
       [:ul
        [nav-menu-item "#/" :dashboard active-page]
-       [nav-menu-item "#/reconcile" :reconcile active-page]
+       [nav-menu-item (build-reconcile-url) :reconcile active-page]
        [nav-menu-item "#/report" :report active-page]
        [nav-menu-item "#/properties" :properties active-page]
        [nav-menu-item "#/charges" :charges active-page]

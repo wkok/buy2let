@@ -110,6 +110,8 @@
                                   (when (not (s/blank? note))
                                     [:i.far.fa-sticky-note {:on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}]))]])
 
+
+
 (defn view-overview [ledger property-charges property year month]
   [:div
    [:div.scrollable-x
@@ -127,6 +129,15 @@
    [:div.reconcile-view-accounting
     (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
                    "Detailed view")]])
+
+
+(defn build-edit-url []
+  (let [options (re/calc-options {})]
+    (str "#/reconcile/" (-> (:property-id options) name)
+         "/" (-> (:month options) name)
+         "/" (-> (:year options) name)
+         "/edit")))
+
 
 (defn view-panel [property year month ledger properties property-charges charges]
   [:div
@@ -148,7 +159,7 @@
                       shared/to-money)
            owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
            cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
-       (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign "#/reconcile/edit") :icon "fa-edit"}}])
+       (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon "fa-edit"}}])
        [:div
         [:div.reconcile-view-overview-container
          (when (not (zero? profit))
@@ -284,7 +295,7 @@
                                     500 "server error"}
                :on-submit          #(rf/dispatch [::re/save-reconcile (:values %)])
                :initial-values     ledger}
-    (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? on-submit-response handle-submit]}]
+    (fn [{:keys [values state form-id handle-blur submitting? handle-submit]}]
       [:form {:id form-id :on-submit handle-submit}
        [:hr]
        (doall
@@ -312,6 +323,8 @@
         month @(rf/subscribe [::rs/reconcile-month])
         ledger @(rf/subscribe [:ledger-months (:id property) year month])]
 
-    (case @(rf/subscribe [::ss/active-panel])
-      :reconcile-edit [edit-panel property year month ledger property-charges]
-      [view-panel property year month ledger properties property-charges charges])))
+    (if (nil? (:this-month ledger))
+      [view-panel property year month ledger properties property-charges charges]
+      (case @(rf/subscribe [::ss/active-panel])
+        :reconcile-edit [edit-panel property year month ledger property-charges]
+        [view-panel property year month ledger properties property-charges charges]))))

@@ -2,7 +2,6 @@
   (:require [re-frame.core :as rf]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.db.events :as dbe]
-            [wkok.buy2let.db.db :as db]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.backend.effects]
@@ -93,7 +92,7 @@
 (rf/reg-event-fx
  ::sign-out
  (fn [_ _]
-   (merge {:db            db/default-db}
+   (merge {:db            shared/default-db}
           (bp/sign-out-fx impl/backend))))
 
 (rf/reg-event-fx
