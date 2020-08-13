@@ -29,11 +29,7 @@
                :show-progress true
                :active-property      "--select--"
                :active-page :dashboard}
-   :report    {:from          {:year  (:last-year default-cal)
-                               :month (:last-month default-cal)}
-               :to            {:year  (:this-year default-cal)
-                               :month (:this-month default-cal)}
-               :show-invoices false}
+   :report    {:show-invoices false}
    :charges   {:agent-opening-balance {:id       :agent-opening-balance
                                        :name     "Opening balance"
                                        :reserved true}}})
