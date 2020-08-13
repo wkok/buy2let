@@ -3,10 +3,36 @@
             [clojure.string :as s]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.site.subs :as ss]
+            [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.backend.protocol :as bp]
             [wkok.buy2let.backend.impl :as impl]
             [day8.re-frame.http-fx]))
 
+(rf/reg-event-db
+ ::view-report
+ (fn [db [_ options]]
+   (let [{:keys [property-id from-month from-year to-month to-year]} options]
+     (-> (assoc-in db [:report :from :month] from-month)
+         (assoc-in [:report :from :year] from-year)
+         (assoc-in [:report :to :month] to-month)
+         (assoc-in [:report :to :year] to-year)
+         (assoc-in [:site :active-property] property-id)
+         (assoc-in [:site :active-page] :report)
+         (assoc-in [:site :heading] "Report")))))
+
+(rf/reg-event-fx
+ ::reconcile-nav
+ (fn [cofx [_ _]]
+   (let [db (:db cofx)
+         property (-> (get-in db [:site :active-property]) name)
+         from-year (-> (get-in db [:report :from :year]) name)
+         from-month (-> (get-in db [:report :from :month]) name)
+         to-year (-> (get-in db [:report :to :year]) name)
+         to-month (-> (get-in db [:report :to :month]) name)]
+     
+     (js/window.location.assign (str "#/report/" property "/" from-month "/" from-year "/" to-month "/" to-year)))))
 
 (rf/reg-event-fx
  ::report-set-property
@@ -22,32 +48,36 @@
                          shared/calc-totals)
          remote-db-fx (when (not (= "--select--" p))
                         (shared/get-ledger-fx db property months))]
+     
+     (rf/dispatch [::reconcile-nav])
      (if (empty? (vals remote-db-fx))
        {:db local-db-fx}
        (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
               remote-db-fx)))))
 
 (rf/reg-event-fx
-  ::report-set-year
-  (fn [cofx [_ type y]]
-    (let [db (:db cofx)
-          property (get-in db [:site :active-property])
-          months (case type
-                   :from (shared/month-range {:year (keyword y) :month (get-in db [:report :from :month])}
-                                             (get-in db [:report :to]))
-                   :to (shared/month-range (get-in db [:report :from])
-                                           {:year (keyword y) :month (get-in db [:report :to :month])}))
-          local-db-fx (-> (:db cofx)
-                    (assoc-in [:report type :year] (keyword y))
-                    (assoc-in [:report :result :months] months)
-                    (assoc-in [:site :show-progress] false)
-                    shared/calc-totals)
-          remote-db-fx (when (not (= "--select--" property))
-                         (shared/get-ledger-fx db property months))]
-      (if (empty? remote-db-fx)
-        {:db local-db-fx}
-        (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
-               remote-db-fx)))))
+ ::report-set-year
+ (fn [cofx [_ type y]]
+   (let [db (:db cofx)
+         property (get-in db [:site :active-property])
+         months (case type
+                  :from (shared/month-range {:year (keyword y) :month (get-in db [:report :from :month])}
+                                            (get-in db [:report :to]))
+                  :to (shared/month-range (get-in db [:report :from])
+                                          {:year (keyword y) :month (get-in db [:report :to :month])}))
+         local-db-fx (-> (:db cofx)
+                         (assoc-in [:report type :year] (keyword y))
+                         (assoc-in [:report :result :months] months)
+                         (assoc-in [:site :show-progress] false)
+                         shared/calc-totals)
+         remote-db-fx (when (not (= "--select--" property))
+                        (shared/get-ledger-fx db property months))]
+
+     (rf/dispatch [::reconcile-nav])
+     (if (empty? remote-db-fx)
+       {:db local-db-fx}
+       (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
+              remote-db-fx)))))
 
 (rf/reg-event-fx
   ::report-set-month
@@ -66,6 +96,8 @@
                     shared/calc-totals)
           remote-db-fx (when (not (= "--select--" property))
                          (shared/get-ledger-fx db property months))]
+
+     (rf/dispatch [::reconcile-nav])
       (if (empty? remote-db-fx)
         {:db local-db-fx}
         (merge {:db             (assoc-in local-db-fx [:site :show-progress] true)}
@@ -131,6 +163,31 @@
 
 
 
+(defn calc-options
+  [{:keys [property-id from-month from-year to-month to-year]}]
+  (let [properties @(rf/subscribe [::cs/properties])
+        active-property (let [ap @(rf/subscribe [::ss/active-property])]
+                          (if (= "--select--" ap) nil ap))
+        report-from-year @(rf/subscribe [::rs/report-year :from])
+        report-from-month @(rf/subscribe [::rs/report-month :from])
+        report-to-year @(rf/subscribe [::rs/report-year :to])
+        report-to-month @(rf/subscribe [::rs/report-month :to])]
+    {:property-id (or (-> property-id keyword)
+                      active-property
+                      (->> properties first :id)
+                      :--select--)
+     :from-year (or (-> from-year keyword)
+                    report-from-year
+                    (:last-year shared/default-cal))
+     :from-month (or (-> from-month keyword)
+                     report-from-month
+                     (:last-month shared/default-cal))
+     :to-year (or (-> to-year keyword)
+                  report-to-year
+                  (:this-year shared/default-cal))
+     :to-month (or (-> to-month keyword)
+                   report-to-month
+                   (:this-month shared/default-cal))}))
 
 
 

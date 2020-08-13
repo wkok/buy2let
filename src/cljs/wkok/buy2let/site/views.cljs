@@ -6,6 +6,7 @@
    [wkok.buy2let.reconcile.views :as reconcile]
    [wkok.buy2let.reconcile.events :as re]
    [wkok.buy2let.report.views :as report]
+   [wkok.buy2let.report.events :as repe]
    [wkok.buy2let.dashboard.views :as dashboard]
    [wkok.buy2let.settings.views :as settings]
    [wkok.buy2let.crud.impl :as crud-impl]
@@ -24,6 +25,14 @@
          "/" (-> (:month options) name)
          "/" (-> (:year options) name))))
 
+(defn build-report-url []
+  (let [options (repe/calc-options {})]
+    (str "#/report/" (-> (:property-id options) name)
+         "/" (-> (:from-month options) name)
+         "/" (-> (:from-year options) name)
+         "/" (-> (:to-month options) name)
+         "/" (-> (:to-year options) name))))
+
 (defn nav-bar []
   (let [active-page @(rf/subscribe [::subs/active-page])]
     [:div.nav-bar
@@ -41,7 +50,7 @@
       [:ul
        [nav-menu-item "#/" :dashboard active-page]
        [nav-menu-item (build-reconcile-url) :reconcile active-page]
-       [nav-menu-item "#/report" :report active-page]
+       [nav-menu-item (build-report-url) :report active-page]
        [nav-menu-item "#/properties" :properties active-page]
        [nav-menu-item "#/charges" :charges active-page]
        [nav-menu-item "#/settings" :settings active-page]]]

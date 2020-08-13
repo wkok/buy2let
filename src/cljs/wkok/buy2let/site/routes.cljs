@@ -3,6 +3,7 @@
             [goog.events :as events]
             [re-frame.core :as rf]
             [wkok.buy2let.reconcile.events :as re]
+            [wkok.buy2let.report.events :as repe]
             [wkok.buy2let.crud.types :as type]
             [wkok.buy2let.crud.events :as ce])
   (:import [goog History]
@@ -17,7 +18,12 @@
     (rf/dispatch [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})]))
   (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
     (rf/dispatch [::re/edit-reconcile (re/calc-options {:property-id property-id :year year :month month})]))
-  (defroute "/report" [] (rf/dispatch [:set-active-page :report "Report"]))
+  (defroute "/report/:property-id/:from-month/:from-year/:to-month/:to-year" [property-id
+                                                                              from-month from-year
+                                                                              to-month to-year]
+    (rf/dispatch [::repe/view-report (repe/calc-options {:property-id property-id
+                                                         :from-year from-year :from-month from-month
+                                                         :to-year to-year :to-month to-month})]))
   (defroute "/properties" [] (rf/dispatch [::ce/list-crud type/property]))
   (defroute "/properties/add" [] (rf/dispatch [::ce/add-crud type/property]))
   (defroute "/properties/edit/:id" [id] (rf/dispatch [::ce/edit-crud (keyword id) type/property]))

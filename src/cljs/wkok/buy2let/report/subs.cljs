@@ -1,7 +1,5 @@
 (ns wkok.buy2let.report.subs
-  (:require [re-frame.core :as rf]
-            [wkok.buy2let.shared :as shared]
-            [wkok.buy2let.crud.subs :as cs]))
+  (:require [re-frame.core :as rf]))
 
 (rf/reg-sub
   ::report
