@@ -1,11 +1,12 @@
 html, body {
     margin: 0;
-    height: 100%;
-    overflow: hidden
+    /* height: 100%; */
+    /* overflow: hidden; */
 }
 
 main {
     max-width: unset;
+    /* padding-top: 1em; */
 }
 
 table {
@@ -36,5 +37,7 @@ table {
     height: 100vh;
     padding-bottom: 30vh;
 }
+
+
 
 

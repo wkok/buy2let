@@ -122,7 +122,7 @@
    [dialog]
    [nav-bar]
    [progress-bar]
-   [:main.scrollable-y
+   [:main
     [:div
      (when-let [active-page @(rf/subscribe [::subs/active-page])]
        (condp = active-page
