@@ -1,12 +1,12 @@
 (ns wkok.buy2let.core
   (:require
-    [reagent.dom :as rd]
-    [re-frame.core :as rf]
-    [wkok.buy2let.site.views :as views]
-    [wkok.buy2let.config :as config]
-    [wkok.buy2let.backend.protocol :as bp]
-    [wkok.buy2let.backend.impl :as impl]
-    [wkok.buy2let.site.routes :as routes]))
+   [reagent.dom :as rd]
+   [re-frame.core :as rf]
+   [wkok.buy2let.site.views :as views]
+   [wkok.buy2let.config :as config]
+   [wkok.buy2let.backend.protocol :as bp]
+   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.site.routes :as routes]))
 
 
 (defn dev-setup []
@@ -14,17 +14,13 @@
     (println "dev mode")))
 
 
-(defn render [panel]
-  (rd/render panel (.getElementById js/document "app")))
-
-
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
   (routes/app-routes)
   (bp/init-auth impl/backend
-                #(if (nil? %)
-                   (render [views/sign-in-panel])
-                   (render [views/main-panel]))))
+                #(rd/render [views/main-panel] (.getElementById js/document "app"))
+                views/sign-in-panel))
+
 
 
 (defn init []

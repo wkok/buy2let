@@ -2,6 +2,7 @@
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as protocol]
+            [reagent.dom :as rd]
             [clojure.string :as str]))
 
 
@@ -14,12 +15,12 @@
 
   (init [_])
 
-  (init-auth [_ render-fn]
+  (init-auth [_ render-main-panel sign-in-panel]
     (if (str/includes? (-> js/window .-location .-href) "auth=demo")
       (let [auth {:uid "1234" :display-name "Demo User" :email "demo@email.com"}]
         (rf/dispatch [:get-user auth])
-        (render-fn auth))
-      (render-fn nil)))
+        (render-main-panel))
+      (rd/render [sign-in-panel] (.getElementById js/document "app"))))
 
   (sign-out-fx [_]
     (set! (.. js/window -location -href) "?")
