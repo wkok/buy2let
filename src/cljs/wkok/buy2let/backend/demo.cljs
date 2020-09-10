@@ -1,14 +1,26 @@
 (ns wkok.buy2let.backend.demo
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.period :as period]
             [wkok.buy2let.backend.protocol :as protocol]
             [reagent.dom :as rd]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [tick.alpha.api :as t]
+            [cljc.java-time.month :as tm]))
 
 
 (defn do-sign-in []
   (set! (.. js/window -location -href) "?auth=demo"))
 
+
+(defn last-three [month-year prev]
+  (let [result (period/prev-month (:month month-year)
+                                  (:year month-year))]
+    (if (= 2 (count prev))
+      (conj prev result)
+      (recur {:month (:month result)
+              :year (:year result)}
+             (conj prev result)))))
 
 (deftype DemoBackend []
   protocol/Backend
@@ -107,241 +119,246 @@
 
   (get-ledger-year-fx
     [_ {:keys [properties account-id this-year last-year on-success]}]
-    (on-success {:property-id :property-one-id
-                 :year :2020
-                 :ledger-months {:8 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1700
-                                                                  :rent-charged-id 2000}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1700
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200 :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -2000}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner 550
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -2000}
-                                     :breakdown {:agent-commission-id {:amount 100 :invoiced false}
-                                                 :agent-opening-balance {:amount 0 :invoiced false}
-                                                 :levy-id {:amount 200 :invoiced false}
-                                                 :mortgage-interest-id {:amount 900 :invoiced false}
-                                                 :mortgage-repayment-id {:amount 1000 :invoiced false :note "This is a note"}
-                                                 :payment-received-id {:amount 1700 :invoiced false}
-                                                 :rates-taxes-id {:amount 150 :invoiced false}
-                                                 :rent-charged-id {:amount 2000 :invoiced false}}}
-                                 :7 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1600
-                                                                  :rent-charged-id 1900}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1600
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200
-                                                             :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -1900}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner 450
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -1900}
-                                     :breakdown {:agent-commission-id {:amount 100
-                                                                       :invoiced false}
-                                                 :agent-opening-balance {:amount 0
-                                                                         :invoiced false}
-                                                 :levy-id {:amount 200
-                                                           :invoiced false}
-                                                 :mortgage-interest-id {:amount 900
-                                                                        :invoiced false
-                                                                        :note "This is a note"}
-                                                 :mortgage-repayment-id {:amount 1000
-                                                                         :invoiced false}
-                                                 :payment-received-id {:amount 1600
-                                                                       :invoiced false}
-                                                 :rates-taxes-id {:amount 150
-                                                                  :invoiced false}
-                                                 :rent-charged-id {:invoiced false
-                                                                   :amount 1900}}}
-                                 :6 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1500
-                                                                  :rent-charged-id 1800}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1500
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200
-                                                             :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -1800}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner 350
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -1800}
-                                     :breakdown {:agent-commission-id {:amount 100
-                                                                       :invoiced false}
-                                                 :agent-opening-balance {:amount 0
-                                                                         :invoiced false}
-                                                 :levy-id {:amount 200
-                                                           :invoiced false
-                                                           :note "This is a note"}
-                                                 :mortgage-interest-id {:amount 900
-                                                                        :invoiced false}
-                                                 :mortgage-repayment-id {:amount 1000
-                                                                         :invoiced false}
-                                                 :payment-received-id {:amount 1500
-                                                                       :invoiced false}
-                                                 :rates-taxes-id {:amount 150
-                                                                  :invoiced false}
-                                                 :rent-charged-id {:invoiced false
-                                                                   :amount 1800}}}}})
+    (let [today (t/today)
+          this-month-year {:month (-> today t/month tm/ordinal inc str keyword)
+                           :year (-> today t/year str keyword)}
+          last-three (last-three this-month-year [this-month-year])]
+      (on-success {:property-id :property-one-id
+                   :year (-> last-three first :year)
+                   :ledger-months {(-> last-three first :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                              :agent-current {:agent-commission-id -100
+                                                                                              :agent-opening-balance 0
+                                                                                              :levy-id -200
+                                                                                              :payment-received-id -1700
+                                                                                              :rent-charged-id 2000}
+                                                                              :owner {:agent-opening-balance 0
+                                                                                      :mortgage-repayment-id -1000
+                                                                                      :payment-received-id 1700
+                                                                                      :rates-taxes-id -150}
+                                                                              :supplier {:levy-id 200 :rates-taxes-id 150}
+                                                                              :bank-interest {:mortgage-interest-id 900}
+                                                                              :bank-current {:mortgage-interest-id -900
+                                                                                             :mortgage-repayment-id 1000}
+                                                                              :tenant {:rent-charged-id -2000}}
+                                                                 :totals {:agent-commission 100
+                                                                          :agent-current 0
+                                                                          :owner 550
+                                                                          :supplier 350
+                                                                          :bank-interest 900
+                                                                          :bank-current 100
+                                                                          :tenant -2000}
+                                                                 :breakdown {:agent-commission-id {:amount 100 :invoiced false}
+                                                                             :agent-opening-balance {:amount 0 :invoiced false}
+                                                                             :levy-id {:amount 200 :invoiced false}
+                                                                             :mortgage-interest-id {:amount 900 :invoiced false}
+                                                                             :mortgage-repayment-id {:amount 1000 :invoiced false :note "This is a note"}
+                                                                             :payment-received-id {:amount 1700 :invoiced false}
+                                                                             :rates-taxes-id {:amount 150 :invoiced false}
+                                                                             :rent-charged-id {:amount 2000 :invoiced false}}}
+                                   (-> last-three second :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                               :agent-current {:agent-commission-id -100
+                                                                                               :agent-opening-balance 0
+                                                                                               :levy-id -200
+                                                                                               :payment-received-id -1600
+                                                                                               :rent-charged-id 1900}
+                                                                               :owner {:agent-opening-balance 0
+                                                                                       :mortgage-repayment-id -1000
+                                                                                       :payment-received-id 1600
+                                                                                       :rates-taxes-id -150}
+                                                                               :supplier {:levy-id 200
+                                                                                          :rates-taxes-id 150}
+                                                                               :bank-interest {:mortgage-interest-id 900}
+                                                                               :bank-current {:mortgage-interest-id -900
+                                                                                              :mortgage-repayment-id 1000}
+                                                                               :tenant {:rent-charged-id -1900}}
+                                                                  :totals {:agent-commission 100
+                                                                           :agent-current 0
+                                                                           :owner 450
+                                                                           :supplier 350
+                                                                           :bank-interest 900
+                                                                           :bank-current 100
+                                                                           :tenant -1900}
+                                                                  :breakdown {:agent-commission-id {:amount 100
+                                                                                                    :invoiced false}
+                                                                              :agent-opening-balance {:amount 0
+                                                                                                      :invoiced false}
+                                                                              :levy-id {:amount 200
+                                                                                        :invoiced false}
+                                                                              :mortgage-interest-id {:amount 900
+                                                                                                     :invoiced false
+                                                                                                     :note "This is a note"}
+                                                                              :mortgage-repayment-id {:amount 1000
+                                                                                                      :invoiced false}
+                                                                              :payment-received-id {:amount 1600
+                                                                                                    :invoiced false}
+                                                                              :rates-taxes-id {:amount 150
+                                                                                               :invoiced false}
+                                                                              :rent-charged-id {:invoiced false
+                                                                                                :amount 1900}}}
+                                   (-> last-three last :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                             :agent-current {:agent-commission-id -100
+                                                                                             :agent-opening-balance 0
+                                                                                             :levy-id -200
+                                                                                             :payment-received-id -1500
+                                                                                             :rent-charged-id 1800}
+                                                                             :owner {:agent-opening-balance 0
+                                                                                     :mortgage-repayment-id -1000
+                                                                                     :payment-received-id 1500
+                                                                                     :rates-taxes-id -150}
+                                                                             :supplier {:levy-id 200
+                                                                                        :rates-taxes-id 150}
+                                                                             :bank-interest {:mortgage-interest-id 900}
+                                                                             :bank-current {:mortgage-interest-id -900
+                                                                                            :mortgage-repayment-id 1000}
+                                                                             :tenant {:rent-charged-id -1800}}
+                                                                :totals {:agent-commission 100
+                                                                         :agent-current 0
+                                                                         :owner 350
+                                                                         :supplier 350
+                                                                         :bank-interest 900
+                                                                         :bank-current 100
+                                                                         :tenant -1800}
+                                                                :breakdown {:agent-commission-id {:amount 100
+                                                                                                  :invoiced false}
+                                                                            :agent-opening-balance {:amount 0
+                                                                                                    :invoiced false}
+                                                                            :levy-id {:amount 200
+                                                                                      :invoiced false
+                                                                                      :note "This is a note"}
+                                                                            :mortgage-interest-id {:amount 900
+                                                                                                   :invoiced false}
+                                                                            :mortgage-repayment-id {:amount 1000
+                                                                                                    :invoiced false}
+                                                                            :payment-received-id {:amount 1500
+                                                                                                  :invoiced false}
+                                                                            :rates-taxes-id {:amount 150
+                                                                                             :invoiced false}
+                                                                            :rent-charged-id {:invoiced false
+                                                                                              :amount 1800}}}}})
 
-    (on-success {:property-id :property-two-id
-                 :year :2020
-                 :ledger-months {:8 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1000
-                                                                  :rent-charged-id 1300}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1000
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200
-                                                             :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -1300}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner -150
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -1300}
-                                     :breakdown {:agent-commission-id {:amount 100
-                                                                       :invoiced false}
-                                                 :agent-opening-balance {:amount 0
-                                                                         :invoiced false}
-                                                 :levy-id {:amount 200
-                                                           :invoiced false}
-                                                 :mortgage-interest-id {:amount 900
-                                                                        :invoiced false}
-                                                 :mortgage-repayment-id {:amount 1000
-                                                                         :invoiced false}
-                                                 :payment-received-id {:amount 1000
-                                                                       :invoiced false
-                                                                       :note "This is a note"}
-                                                 :rates-taxes-id {:amount 150
-                                                                  :invoiced false}
-                                                 :rent-charged-id {:amount 1300
-                                                                   :invoiced false}}}
-                                 :7 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1000
-                                                                  :rent-charged-id 1300}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1000
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200
-                                                             :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -1300}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner -150
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -1300}
-                                     :breakdown {:agent-commission-id {:amount 100
-                                                                       :invoiced false}
-                                                 :agent-opening-balance {:amount 0
-                                                                         :invoiced false}
-                                                 :levy-id {:amount 200
-                                                           :invoiced false}
-                                                 :mortgage-interest-id {:amount 900
-                                                                        :invoiced false}
-                                                 :mortgage-repayment-id {:amount 1000
-                                                                         :invoiced false}
-                                                 :payment-received-id {:amount 1000
-                                                                       :invoiced false}
-                                                 :rates-taxes-id {:amount 150
-                                                                  :invoiced false
-                                                                  :note "This is a note"}
-                                                 :rent-charged-id {:invoiced false
-                                                                   :amount 1300}}}
-                                 :6 {:accounting {:agent-commission {:agent-commission-id 100}
-                                                  :agent-current {:agent-commission-id -100
-                                                                  :agent-opening-balance 0
-                                                                  :levy-id -200
-                                                                  :payment-received-id -1100
-                                                                  :rent-charged-id 1400}
-                                                  :owner {:agent-opening-balance 0
-                                                          :mortgage-repayment-id -1000
-                                                          :payment-received-id 1100
-                                                          :rates-taxes-id -150}
-                                                  :supplier {:levy-id 200
-                                                             :rates-taxes-id 150}
-                                                  :bank-interest {:mortgage-interest-id 900}
-                                                  :bank-current {:mortgage-interest-id -900
-                                                                 :mortgage-repayment-id 1000}
-                                                  :tenant {:rent-charged-id -1400}}
-                                     :totals {:agent-commission 100
-                                              :agent-current 0
-                                              :owner -50
-                                              :supplier 350
-                                              :bank-interest 900
-                                              :bank-current 100
-                                              :tenant -1400}
-                                     :breakdown {:agent-commission-id {:amount 100
-                                                                       :invoiced false}
-                                                 :agent-opening-balance {:amount 0
-                                                                         :invoiced false}
-                                                 :levy-id {:amount 200
-                                                           :invoiced false}
-                                                 :mortgage-interest-id {:amount 900
-                                                                        :invoiced false}
-                                                 :mortgage-repayment-id {:amount 1000
-                                                                         :invoiced false}
-                                                 :payment-received-id {:amount 1100
-                                                                       :invoiced false}
-                                                 :rates-taxes-id {:amount 150
-                                                                  :invoiced false}
-                                                 :rent-charged-id {:invoiced false
-                                                                   :amount 1400
-                                                                   :note "This is a note"}}}}})
+      (on-success {:property-id :property-two-id
+                   :year (-> last-three first :year)
+                   :ledger-months {(-> last-three first :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                              :agent-current {:agent-commission-id -100
+                                                                                              :agent-opening-balance 0
+                                                                                              :levy-id -200
+                                                                                              :payment-received-id -1000
+                                                                                              :rent-charged-id 1300}
+                                                                              :owner {:agent-opening-balance 0
+                                                                                      :mortgage-repayment-id -1000
+                                                                                      :payment-received-id 1000
+                                                                                      :rates-taxes-id -150}
+                                                                              :supplier {:levy-id 200
+                                                                                         :rates-taxes-id 150}
+                                                                              :bank-interest {:mortgage-interest-id 900}
+                                                                              :bank-current {:mortgage-interest-id -900
+                                                                                             :mortgage-repayment-id 1000}
+                                                                              :tenant {:rent-charged-id -1300}}
+                                                                 :totals {:agent-commission 100
+                                                                          :agent-current 0
+                                                                          :owner -150
+                                                                          :supplier 350
+                                                                          :bank-interest 900
+                                                                          :bank-current 100
+                                                                          :tenant -1300}
+                                                                 :breakdown {:agent-commission-id {:amount 100
+                                                                                                   :invoiced false}
+                                                                             :agent-opening-balance {:amount 0
+                                                                                                     :invoiced false}
+                                                                             :levy-id {:amount 200
+                                                                                       :invoiced false}
+                                                                             :mortgage-interest-id {:amount 900
+                                                                                                    :invoiced false}
+                                                                             :mortgage-repayment-id {:amount 1000
+                                                                                                     :invoiced false}
+                                                                             :payment-received-id {:amount 1000
+                                                                                                   :invoiced false
+                                                                                                   :note "This is a note"}
+                                                                             :rates-taxes-id {:amount 150
+                                                                                              :invoiced false}
+                                                                             :rent-charged-id {:amount 1300
+                                                                                               :invoiced false}}}
+                                   (-> last-three second :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                               :agent-current {:agent-commission-id -100
+                                                                                               :agent-opening-balance 0
+                                                                                               :levy-id -200
+                                                                                               :payment-received-id -1000
+                                                                                               :rent-charged-id 1300}
+                                                                               :owner {:agent-opening-balance 0
+                                                                                       :mortgage-repayment-id -1000
+                                                                                       :payment-received-id 1000
+                                                                                       :rates-taxes-id -150}
+                                                                               :supplier {:levy-id 200
+                                                                                          :rates-taxes-id 150}
+                                                                               :bank-interest {:mortgage-interest-id 900}
+                                                                               :bank-current {:mortgage-interest-id -900
+                                                                                              :mortgage-repayment-id 1000}
+                                                                               :tenant {:rent-charged-id -1300}}
+                                                                  :totals {:agent-commission 100
+                                                                           :agent-current 0
+                                                                           :owner -150
+                                                                           :supplier 350
+                                                                           :bank-interest 900
+                                                                           :bank-current 100
+                                                                           :tenant -1300}
+                                                                  :breakdown {:agent-commission-id {:amount 100
+                                                                                                    :invoiced false}
+                                                                              :agent-opening-balance {:amount 0
+                                                                                                      :invoiced false}
+                                                                              :levy-id {:amount 200
+                                                                                        :invoiced false}
+                                                                              :mortgage-interest-id {:amount 900
+                                                                                                     :invoiced false}
+                                                                              :mortgage-repayment-id {:amount 1000
+                                                                                                      :invoiced false}
+                                                                              :payment-received-id {:amount 1000
+                                                                                                    :invoiced false}
+                                                                              :rates-taxes-id {:amount 150
+                                                                                               :invoiced false
+                                                                                               :note "This is a note"}
+                                                                              :rent-charged-id {:invoiced false
+                                                                                                :amount 1300}}}
+                                   (-> last-three last :month) {:accounting {:agent-commission {:agent-commission-id 100}
+                                                                             :agent-current {:agent-commission-id -100
+                                                                                             :agent-opening-balance 0
+                                                                                             :levy-id -200
+                                                                                             :payment-received-id -1100
+                                                                                             :rent-charged-id 1400}
+                                                                             :owner {:agent-opening-balance 0
+                                                                                     :mortgage-repayment-id -1000
+                                                                                     :payment-received-id 1100
+                                                                                     :rates-taxes-id -150}
+                                                                             :supplier {:levy-id 200
+                                                                                        :rates-taxes-id 150}
+                                                                             :bank-interest {:mortgage-interest-id 900}
+                                                                             :bank-current {:mortgage-interest-id -900
+                                                                                            :mortgage-repayment-id 1000}
+                                                                             :tenant {:rent-charged-id -1400}}
+                                                                :totals {:agent-commission 100
+                                                                         :agent-current 0
+                                                                         :owner -50
+                                                                         :supplier 350
+                                                                         :bank-interest 900
+                                                                         :bank-current 100
+                                                                         :tenant -1400}
+                                                                :breakdown {:agent-commission-id {:amount 100
+                                                                                                  :invoiced false}
+                                                                            :agent-opening-balance {:amount 0
+                                                                                                    :invoiced false}
+                                                                            :levy-id {:amount 200
+                                                                                      :invoiced false}
+                                                                            :mortgage-interest-id {:amount 900
+                                                                                                   :invoiced false}
+                                                                            :mortgage-repayment-id {:amount 1000
+                                                                                                    :invoiced false}
+                                                                            :payment-received-id {:amount 1100
+                                                                                                  :invoiced false}
+                                                                            :rates-taxes-id {:amount 150
+                                                                                             :invoiced false}
+                                                                            :rent-charged-id {:invoiced false
+                                                                                              :amount 1400
+                                                                                              :note "This is a note"}}}}}))
+
     {})
 
   (get-ledger-month-fx [_ _]

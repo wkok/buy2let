@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [clojure.set :as set]
    [wkok.buy2let.shared :as shared]
+   [wkok.buy2let.period :as period]
    [wkok.buy2let.crud.subs :as cs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.backend.protocol :as bp]
@@ -20,7 +21,7 @@
 (defn load-ledger-fx [db property year month]
   (if (not-any? nil? [property year month])
     (let [account-id @(rf/subscribe [::fs/account])
-          prev (shared/prev-month month year)
+          prev (period/prev-month month year)
           months (concat (download-month? month db property year)
                          (download-month? (:month prev) db property (:year prev)))]
       (if (empty? months)
