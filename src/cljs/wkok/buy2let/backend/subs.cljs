@@ -17,6 +17,11 @@
     (get-in db [:security :account])))
 
 (rf/reg-sub
+  ::accounts
+  (fn [db _]
+    (get-in db [:security :accounts])))
+
+(rf/reg-sub
  ::error
  (fn [db _]
    (get-in db [:backend :error])))

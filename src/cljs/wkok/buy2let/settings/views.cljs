@@ -32,7 +32,7 @@
               (shared/anchor #(rf/dispatch [::be/link :github]) "Link Github"))]
       [:hr]])
    [:div
-    [:div [:a {:href "#" :on-click #(rf/dispatch [::be/sign-out])} "Sign out"]]
+    [:div [:a {:href "#" :on-click #(rf/dispatch [:sign-out])} "Sign out"]]
     [:hr]
     [:br]
     [:div 

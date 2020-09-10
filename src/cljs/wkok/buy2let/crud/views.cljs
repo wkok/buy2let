@@ -57,18 +57,27 @@
        (doall
          (for [field (:fields type)]
            (let [field-name (name (:key field))]
-             ^{:key field-name}
-             [:div
-              [:label (-> field-name s/capitalize (str ": "))]
-              [:input {:name       field-name
-                       :type       (:type field)
-                       :auto-focus (and (:default field)
-                                        (nil? ((:type type) @(rf/subscribe [:form-old]))))
-                       :value      (values field-name "")
-                       :on-change  handle-change
-                       :on-blur    handle-blur}]
-              (when (touched field-name)
-                [:div.validation-error (get errors field-name)])])))
+             (if (= (:type field) :checkbox)
+               ^{:key field-name}
+               [:div
+                [:label [:input {:name      field-name
+                                 :type      :checkbox
+                                 :checked   (values "send-invite" true)
+                                 :on-change handle-change
+                                 :on-blur   handle-blur}]
+                 " Send invitation"]]
+               ^{:key field-name}
+               [:div
+                [:label (-> field-name s/capitalize (str ": "))]
+                [:input {:name       field-name
+                         :type       (:type field)
+                         :auto-focus (and (:default field)
+                                          (nil? ((:type type) @(rf/subscribe [:form-old]))))
+                         :value      (values field-name "")
+                         :on-change  handle-change
+                         :on-blur    handle-blur}]
+                (when (touched field-name)
+                  [:div.validation-error (get errors field-name)])]))))
        [:br]
        (if-let [extra-fn (:extra type)]
          (extra-fn values state errors touched handle-change handle-blur))

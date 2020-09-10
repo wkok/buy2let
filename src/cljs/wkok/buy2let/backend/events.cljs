@@ -4,9 +4,11 @@
             [wkok.buy2let.db.events :as dbe]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.impl :as impl]
+            [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.backend.effects]
             [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.spec :as spec]))
+            [wkok.buy2let.spec :as spec]
+            [reagent.core :as ra]))
 
 (rf/reg-event-fx
  ::sign-in
@@ -52,35 +54,83 @@
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
+ ::get-account
+ (fn [_ [_ account-id]]
+   (bp/get-account-fx impl/backend
+                      {:account-id account-id
+                       :on-success #(rf/dispatch [:load-account %])})))
+
+
+(def selected-account-id (ra/atom :none))
+(defn select-account []
+  (let [accounts @(rf/subscribe [::bs/accounts])]
+    [:div
+     [:select {:value     @selected-account-id
+               :on-change #(reset! selected-account-id (-> % .-target .-value))}
+      (for [account accounts]
+        ^{:key (key account)}
+        [:option {:value (key account)} (-> account val :name)])]
+     [:br]]))
+
+(defn account-dialog []
+  {:heading   "Which account?"
+   :message   "Please choose the account you want to access"
+   :panel     [select-account]
+   :buttons   {:middle {:text     "Continue"
+                        :on-click #(do
+                                     (rf/dispatch [:set-active-account @selected-account-id])
+                                    ;;  (rf/dispatch [::get-account @selected-account-id])
+                                     (rf/dispatch [::se/dialog]))}}
+   :closeable false})
+
+(defn choose-account-fx [db user]
+  (reset! selected-account-id (-> (:accounts user) first name))
+  (rf/dispatch [::se/dialog (account-dialog)])
+  (merge {:db (assoc-in db [:security :user] user)}
+         (bp/get-accounts-fx impl/backend
+                             {:account-ids (:accounts user)
+                              :on-success #(rf/dispatch [:load-account %])})))
+
+(defn get-account-fx [db user]
+  (merge {:db            (assoc-in db [:security :user] user)}
+         (bp/get-account-fx impl/backend
+                            {:account-id (first (:accounts user))
+                             :on-success #(do (rf/dispatch [:load-account %])
+                                              (rf/dispatch [:set-active-account (:id %)]))})))
+
+(rf/reg-event-fx
  :load-user
  (fn [cofx [_ input]]
    (let [user (spec/conform ::spec/user input)]
-     (merge {:db            (assoc-in (:db cofx) [:security :user] user)}
-            (bp/get-account-fx impl/backend
-                               {:user user
-                                :on-success #(rf/dispatch [:load-account %])})))))
+     (if (-> (:accounts user) second) ; User has access to more than one account
+       (choose-account-fx (:db cofx) user)
+       (get-account-fx (:db cofx) user)))))
 
 (rf/reg-event-db
  :load-account
  (fn [db [_ input]]
    (let [account (spec/conform ::spec/account input)]
-     (rf/dispatch [::dbe/get-crud (:id account)])
-     (-> (assoc-in db [:security :accounts] {(:id account) account})
-         (assoc-in [:security :account] (:id account)))))) ;TODO Account chooser
+     (update-in db [:security :accounts] #(assoc % (:id account) account)))))
+
+(rf/reg-event-db
+ :set-active-account
+ (fn [db [_ account-id]]
+   (rf/dispatch [::dbe/get-crud account-id])
+   (assoc-in db [:security :account] account-id)))
 
 (rf/reg-event-fx
  :create-user
  [(rf/inject-cofx ::shared/gen-id)]                        ; Generate account id
  (fn [cofx [_ input]]
    (let [auth (spec/conform ::spec/auth input)
-         user {:id       (keyword (:uid auth))
-               :name     (:display-name auth)
-               :email    (:email auth)
-               :accounts [(:id cofx)]}
+         user (spec/conform ::spec/user
+                            {:id       (keyword (:uid auth))
+                             :name     (:display-name auth)
+                             :email    (:email auth)
+                             :accounts [(:id cofx)]})
          account {:id   (keyword (:id cofx))
                   :name (:display-name auth)}]
      (merge {:db                (-> (assoc-in (:db cofx) [:security :user] user)
-                                    (assoc-in [:security :accounts (:id account)] account)
                                     (assoc-in [:security :account] (:id account))
                                     (assoc-in [:site :show-progress] false))}
             (bp/create-user-fx impl/backend
@@ -90,7 +140,7 @@
                                                                       :message (str %)}])})))))
 
 (rf/reg-event-fx
- ::sign-out
+ :sign-out
  (fn [_ _]
    (merge {:db            shared/default-db}
           (bp/sign-out-fx impl/backend))))
@@ -110,7 +160,7 @@
                                                   (rf/dispatch [::se/dialog {:heading   "Account deleted"
                                                                              :message   "Successfully deleted your account. Hope to have you back soon!"
                                                                              :buttons   {:middle {:text     "Good bye"
-                                                                                                  :on-click (fn [] (rf/dispatch [::sign-out]))}}
+                                                                                                  :on-click (fn [] (rf/dispatch [:sign-out]))}}
                                                                              :closeable false}]))
                                    :on-error #(do
                                                 (rf/dispatch [::se/show-progress false])

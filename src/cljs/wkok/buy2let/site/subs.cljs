@@ -48,6 +48,11 @@
   (fn [db _]
     (get-in db [:site :nav :show-menu])))
 
+(rf/reg-sub
+  ::security
+  (fn [db _]
+    (get db :security)))
+
 
 
 

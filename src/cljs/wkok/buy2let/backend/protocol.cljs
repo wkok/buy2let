@@ -41,6 +41,9 @@
   (get-account-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's account from the server")
 
+  (get-accounts-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's accounts accessible from the server")
+
   (unlink-provider [_ options]
     "Implement this function to unlink an authenticated user from the authentication provider")
 
