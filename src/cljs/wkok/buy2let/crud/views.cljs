@@ -33,9 +33,9 @@
      [:div.crud-show-hidden
       (if show-hidden
         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
-                       "Hide hidden")
+                       (str "Hide " (get type :hidden-label "hidden")))
         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
-                       "Show hidden"))]]))
+                       (str "Show " (get type :hidden-label "hidden"))))]]))
 
 
 (defn edit-panel [type]
@@ -78,7 +78,6 @@
                          :on-blur    handle-blur}]
                 (when (touched field-name)
                   [:div.validation-error (get errors field-name)])]))))
-       [:br]
        (if-let [extra-fn (:extra type)]
          (extra-fn values state errors touched handle-change handle-blur))
        [:label [:input {:name      "hidden"
@@ -86,12 +85,9 @@
                         :checked   (values "hidden" false)
                         :on-change handle-change
                         :on-blur   handle-blur}]
-        " Hidden"]]
+        (->> (get type :hidden-label "Hidden")
+             s/capitalize
+             (str " "))]]
       [:div.crud-edit-buttons-save-cancel.buttons-save-cancel
        [:button {:type :submit :disabled submitting?} "Save"]
-       [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]
-      ;(if-let [charge-id (get values "id")]
-      ;  [:div.crud-edit-buttons-delete
-      ;[:button {:type :button :on-click #(rf/dispatch [::ce/delete-crud charge-id type])} [:i.fa.fa-trash]]
-      ;])
-      ])])
+       [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])])

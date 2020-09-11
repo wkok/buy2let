@@ -24,6 +24,7 @@
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon "fa-plus"}}}
    :extra       (fn [values state errors touched _ handle-blur]
                   [:div
+                   [:br]
                    [:label "Charges to account for: "]
                    [:table
                     [:tbody
@@ -77,4 +78,5 @@
                  {:key :email :type :email}
                  {:key :send-invite :type :checkbox}]
    :validate-fn #(merge (validate-name %) (validate-email %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}})
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}
+   :hidden-label "revoked"})
