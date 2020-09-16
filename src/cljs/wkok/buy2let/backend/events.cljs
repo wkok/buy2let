@@ -49,8 +49,7 @@
      (bp/get-user-fx impl/backend
                      {:auth auth
                       :on-success #(if (registered? %)
-                                     (rf/dispatch [:load-user
-                                                   (assoc % :accounts (map (fn [a] (keyword a)) (:accounts %)))])
+                                     (rf/dispatch [:refresh-token %])
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
@@ -83,18 +82,19 @@
                                      (rf/dispatch [::se/dialog]))}}
    :closeable false})
 
+
 (defn choose-account-fx [db user]
-  (reset! selected-account-id (-> (:accounts user) first name))
+  (reset! selected-account-id (-> db :security :claims :accounts first name))
   (rf/dispatch [::se/dialog (account-dialog)])
   (merge {:db (assoc-in db [:security :user] user)}
          (bp/get-accounts-fx impl/backend
-                             {:account-ids (:accounts user)
+                             {:account-ids (-> db :security :claims :accounts)
                               :on-success #(rf/dispatch [:load-account %])})))
 
 (defn get-account-fx [db user]
   (merge {:db            (assoc-in db [:security :user] user)}
          (bp/get-account-fx impl/backend
-                            {:account-id (first (:accounts user))
+                            {:account-id (-> db :security :claims :accounts first)
                              :on-success #(do (rf/dispatch [:load-account %])
                                               (rf/dispatch [:set-active-account (:id %)]))})))
 
@@ -102,7 +102,7 @@
  :load-user
  (fn [cofx [_ input]]
    (let [user (spec/conform ::spec/user input)]
-     (if (-> (:accounts user) second) ; User has access to more than one account
+     (if (-> (:db cofx) :security :claims :accounts second) ; User has access to more than one account
        (choose-account-fx (:db cofx) user)
        (get-account-fx (:db cofx) user)))))
 
@@ -111,6 +111,20 @@
  (fn [db [_ input]]
    (let [account (spec/conform ::spec/account input)]
      (update-in db [:security :accounts] #(assoc % (:id account) account)))))
+
+(rf/reg-event-db
+ :load-claims
+ (fn [db [_ input]]
+   (let [claims (-> (spec/conform ::spec/claims (:claims input))
+                    (update-in [:accounts] #(map (fn [a] (keyword a)) %)))
+         user (spec/conform ::spec/user (:user input))]
+     (rf/dispatch [:load-user user])
+     (assoc-in db [:security :claims] claims))))
+
+(rf/reg-event-fx
+ :refresh-token
+ (fn [_ [_ user]]
+   (bp/refresh-token-fx impl/backend {:user user})))
 
 (rf/reg-event-db
  :set-active-account
@@ -126,13 +140,10 @@
          user (spec/conform ::spec/user
                             {:id       (keyword (:uid auth))
                              :name     (:display-name auth)
-                             :email    (:email auth)
-                             :accounts [(:id cofx)]})
+                             :email    (:email auth)})
          account {:id   (keyword (:id cofx))
                   :name (:display-name auth)}]
-     (merge {:db                (-> (assoc-in (:db cofx) [:security :user] user)
-                                    (assoc-in [:security :account] (:id account))
-                                    (assoc-in [:site :show-progress] false))}
+     (merge {:db                (assoc-in (:db cofx) [:site :show-progress] false)}
             (bp/create-user-fx impl/backend
                                {:user user
                                 :account account

@@ -12,7 +12,6 @@
                               :on-success #(rf/dispatch [:unlink-succeeded %])
                               :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message (str %)}])})))
 
-
 (rf/reg-fx
  :link-provider
  (fn [provider _]

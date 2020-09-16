@@ -38,6 +38,9 @@
   (get-user-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user from the server")
 
+  (refresh-token-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) to refresh the auth token from the server")
+
   (get-account-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's account from the server")
 

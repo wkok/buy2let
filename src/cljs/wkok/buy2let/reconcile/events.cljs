@@ -125,7 +125,8 @@
   (into {} (map #(hash-map (first %) (shared/to-money (apply + (vals (second %))))) accounting)))
 
 (defn add-opening-balances [breakdown prev-month]
-  (assoc-in breakdown [:agent-opening-balance :amount] (get-in prev-month [:totals :agent-current])))
+  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 
+                                                           0)))
 
 (defn as-data [property values]
   (let [this-month-breakdown (-> (get-in values [:this-month :breakdown])

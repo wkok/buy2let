@@ -9,7 +9,6 @@
 (s/def ::id keyword?)
 (s/def ::name string?)
 (s/def ::email (s/and string? #(re-matches #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$" %)))
-(s/def ::accounts (s/coll-of keyword?))
 (s/def ::uid string?)
 (s/def ::display-name string?)
 (s/def ::who-pays-whom #{:opa :ac :apo :aps :mi :opb :ops :tpa :tpo})
@@ -22,14 +21,14 @@
 ;;; Types
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(s/def ::claims (s/keys :req-un [::accounts]))
 (s/def ::account (s/keys :req-un [::id ::name]))
-(s/def ::user (s/keys :req-un [::id ::name ::email ::accounts]))
+(s/def ::user (s/keys :req-un [::id ::name ::email]))
 (s/def ::delegate (s/keys :req-un [::id ::name ::email]))
 (s/def ::auth (s/keys :req-un [::uid ::display-name ::email]))
 (s/def ::charge (s/keys :req-un [::id ::name]))
 (s/def ::property (s/keys :req-un [::id ::name ::charges]))
 (s/def ::property-charge (s/keys :req-un [::who-pays-whom]))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collections
