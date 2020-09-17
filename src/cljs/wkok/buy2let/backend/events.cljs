@@ -77,8 +77,7 @@
    :panel     [select-account]
    :buttons   {:middle {:text     "Continue"
                         :on-click #(do
-                                     (rf/dispatch [:set-active-account @selected-account-id])
-                                    ;;  (rf/dispatch [::get-account @selected-account-id])
+                                     (rf/dispatch [:set-active-account (keyword @selected-account-id)])
                                      (rf/dispatch [::se/dialog]))}}
    :closeable false})
 
@@ -115,11 +114,8 @@
 (rf/reg-event-db
  :load-claims
  (fn [db [_ input]]
-   (let [claims (-> (spec/conform ::spec/claims (:claims input))
-                    (update-in [:accounts] #(map (fn [a] (keyword a)) %)))
-         user (spec/conform ::spec/user (:user input))]
-     (rf/dispatch [:load-user user])
-     (assoc-in db [:security :claims] claims))))
+   (rf/dispatch [:load-user (spec/conform ::spec/user (:user input))])
+   (assoc-in db [:security :claims] (spec/conform ::spec/claims (:claims input)))))
 
 (rf/reg-event-fx
  :refresh-token
@@ -128,9 +124,10 @@
 
 (rf/reg-event-db
  :set-active-account
- (fn [db [_ account-id]]
-   (rf/dispatch [::dbe/get-crud account-id])
-   (assoc-in db [:security :account] account-id)))
+ (fn [db [_ input]]
+   (let [account-id (spec/conform ::spec/id input)]
+     (rf/dispatch [::dbe/get-crud account-id])
+     (assoc-in db [:security :account] account-id))))
 
 (rf/reg-event-fx
  :create-user

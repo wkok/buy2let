@@ -37,6 +37,7 @@
 (s/def ::crud-charges (s/map-of keyword? ::charge))
 (s/def ::properties (s/map-of keyword? ::property))
 (s/def ::charges (s/map-of keyword? ::property-charge))
+(s/def ::accounts (s/coll-of keyword?))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
