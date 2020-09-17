@@ -83,13 +83,15 @@
                    (if (s/includes? error "An account already exists with the same email address")
                      "Please choose the same network/email you used previously (Tip: you may link your account to more providers in Settings)"
                      error)
-                   "Choose your favourite network")]
+                   "with your email")]
      (rf/dispatch [::se/dialog {:heading   heading :message message
                                 :panel     [:div.providers
+                                            [:input {:type :email :value "demo@email.com" :on-change #()}]
+                                            [:input {:type :password :value "***********" :on-change #()}]
+                                            [:button {:on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]
+                                            [:label "- or -"]
                                             [:button {:on-click #(rf/dispatch [::be/sign-in :google])} "Google"]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :facebook])} "Facebook"]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :twitter])} "Twitter"]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :github])} "Github"]]
+                                            [:button {:on-click #(rf/dispatch [::be/sign-in :facebook])} "Facebook"]]
                                 :closeable false}]))])
 
 (defn main-panel []
