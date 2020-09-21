@@ -8,7 +8,10 @@
             [wkok.buy2let.backend.effects]
             [wkok.buy2let.backend.protocol :as bp]
             [wkok.buy2let.spec :as spec]
-            [reagent.core :as ra]))
+            [goog.crypt.base64 :as b64]
+            [reagent.core :as ra]
+            [cemerick.url :as url]
+            [cljs.reader]))
 
 (rf/reg-event-fx
  ::sign-in
@@ -38,6 +41,13 @@
   (fn [_ [_ provider]]
     {:unlink-provider provider}))
 
+(defn accepting-invitation? []
+  (when-let [invitation (-> js/window .-location .-href
+                            url/url
+                            (get-in [:query "invitation"]))]
+    (-> invitation
+        b64/decodeString
+        cljs.reader/read-string)))
 
 (defn registered? [user]
   (not (nil? user)))
@@ -49,7 +59,10 @@
      (bp/get-user-fx impl/backend
                      {:auth auth
                       :on-success #(if (registered? %)
-                                     (rf/dispatch [:refresh-token %])
+                                     (if-let [invitation (accepting-invitation?)]
+                                       (rf/dispatch [::accept-invitation {:invitation invitation
+                                                                          :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
+                                       (rf/dispatch [:refresh-token %]))
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
@@ -122,6 +135,11 @@
  (fn [_ [_ user]]
    (bp/refresh-token-fx impl/backend {:user user})))
 
+(rf/reg-event-fx
+ ::accept-invitation
+ (fn [_ [_ options]]
+   (bp/accept-invitation-fx impl/backend options)))
+
 (rf/reg-event-db
  :set-active-account
  (fn [db [_ input]]
@@ -140,10 +158,11 @@
                              :email    (:email auth)})
          account {:id   (keyword (:id cofx))
                   :name (:display-name auth)}]
-     (merge {:db                (assoc-in (:db cofx) [:site :show-progress] false)}
+     (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
             (bp/create-user-fx impl/backend
                                {:user user
                                 :account account
+                                :invitation (accepting-invitation?)
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                       :message (str %)}])})))))
 
