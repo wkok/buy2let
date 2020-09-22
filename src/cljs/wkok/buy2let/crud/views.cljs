@@ -38,6 +38,80 @@
                        (str "Show " (get type :hidden-label "hidden"))))]]))
 
 
+(defn build-checkbox
+  [field {:keys [values handle-change handle-blur]}]
+  (let [field-name (name (:key field))]
+    ^{:key field-name}
+    [:div
+     [:label [:input {:name      field-name
+                      :type      :checkbox
+                      :checked   (values "send-invite" true)
+                      :on-change handle-change
+                      :on-blur   handle-blur}]
+      (get field :label (s/capitalize field-name))]]))
+
+(defn build-input
+  [type field {:keys [values errors touched handle-change handle-blur]}]
+  (let [field-name (name (:key field))]
+    ^{:key field-name}
+    [:div
+     [:label (get field :label (-> field-name s/capitalize (str ": ")))]
+     [:input {:name       field-name
+              :type       (:type field)
+              :auto-focus (and (:default field)
+                               (nil? ((:type type) @(rf/subscribe [:form-old]))))
+              :value      (values field-name "")
+              :on-change  handle-change
+              :on-blur    handle-blur}]
+     (when (touched field-name)
+       [:div.validation-error (get errors field-name)])]))
+
+(defn build-select
+  [field {:keys [values handle-change handle-blur]}]
+  (let [field-name (name (:key field))]
+    ^{:key field-name}
+    [:div
+     [:label (get field :label (-> field-name s/capitalize (str ": ")))]
+     [:select {:name      field-name
+               :value     (values field-name (:default-values field))
+               :on-change handle-change
+               :on-blur   handle-blur}
+      (for [option (:options field)]
+        ^{:key (key option)}
+        [:option {:value (key option)} (-> option val)])]]))
+
+(defn build-multi-select
+  [field {:keys [values set-handle-change handle-blur]}]
+  (let [field-name (name (:key field))]
+    ^{:key field-name}
+    [:div
+     [:label (get field :label (-> field-name s/capitalize (str ": ")))]
+     [:select
+      {:name field-name
+       :multiple true
+       :value (values field-name [:viewer])
+       :on-change #(set-handle-change
+                    {:value (let [opts (array-seq (-> % .-target .-options))]
+                              (keep (fn [x]
+                                      (when (.-selected x)
+                                        (.-value x))) opts))
+                     :path [field-name]})
+       :on-blur handle-blur}
+      (for [option (:options field)]
+        ^{:key (key option)}
+        [:option {:value (key option)} (-> option val)])]]))
+
+(defn build-hidden
+  [type {:keys [values handle-change handle-blur]}]
+  [:label [:input {:name      "hidden"
+                   :type      :checkbox
+                   :checked   (values "hidden" false)
+                   :on-change handle-change
+                   :on-blur   handle-blur}]
+   (->> (get type :hidden-label "Hidden")
+        s/capitalize
+        (str " "))])
+
 (defn edit-panel [type]
   (rf/dispatch [:set-fab-actions nil])
   [fork/form {:form-id            "id"
@@ -51,43 +125,20 @@
               :initial-values     (if-let [old ((:type type) @(rf/subscribe [:form-old]))]
                                     (w/stringify-keys old)
                                     (w/stringify-keys (:defaults type)))}
-   (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? handle-submit]}]
+   (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? handle-submit] :as options}]
      [:form.crud-edit-container {:id form-id :on-submit handle-submit}
       [:div.crud-edit-fields
        (doall
-         (for [field (:fields type)]
-           (let [field-name (name (:key field))]
-             (if (= (:type field) :checkbox)
-               ^{:key field-name}
-               [:div
-                [:label [:input {:name      field-name
-                                 :type      :checkbox
-                                 :checked   (values "send-invite" true)
-                                 :on-change handle-change
-                                 :on-blur   handle-blur}]
-                 " Send invitation"]]
-               ^{:key field-name}
-               [:div
-                [:label (-> field-name s/capitalize (str ": "))]
-                [:input {:name       field-name
-                         :type       (:type field)
-                         :auto-focus (and (:default field)
-                                          (nil? ((:type type) @(rf/subscribe [:form-old]))))
-                         :value      (values field-name "")
-                         :on-change  handle-change
-                         :on-blur    handle-blur}]
-                (when (touched field-name)
-                  [:div.validation-error (get errors field-name)])]))))
+        (for [field (:fields type)]
+          (case (:type field)
+            :checkbox (build-checkbox field options)
+            :select (build-select field options)
+            :select-multi (build-multi-select field options)
+            (build-input type field options))))
        (if-let [extra-fn (:extra type)]
          (extra-fn values state errors touched handle-change handle-blur))
-       [:label [:input {:name      "hidden"
-                        :type      :checkbox
-                        :checked   (values "hidden" false)
-                        :on-change handle-change
-                        :on-blur   handle-blur}]
-        (->> (get type :hidden-label "Hidden")
-             s/capitalize
-             (str " "))]]
+       (build-hidden type options)]
       [:div.crud-edit-buttons-save-cancel.buttons-save-cancel
        [:button {:type :submit :disabled submitting?} "Save"]
-       [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])])
+       [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])]
+)

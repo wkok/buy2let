@@ -15,13 +15,14 @@
 (s/def ::invoiced boolean?)
 (s/def ::amount float?)
 (s/def ::bank-interest float?)
+(s/def ::role #{:viewer :editor})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Types
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(s/def ::claims (s/keys :req-un [::accounts]))
+(s/def ::claims (s/keys :req-un [::roles]))
 (s/def ::account (s/keys :req-un [::id ::name]))
 (s/def ::user (s/keys :req-un [::id ::name ::email]))
 (s/def ::delegate (s/keys :req-un [::id ::name ::email]))
@@ -37,7 +38,8 @@
 (s/def ::crud-charges (s/map-of keyword? ::charge))
 (s/def ::properties (s/map-of keyword? ::property))
 (s/def ::charges (s/map-of keyword? ::property-charge))
-(s/def ::accounts (s/coll-of keyword?))
+(s/def ::roles (s/map-of ::role ::role-accounts))
+(s/def ::role-accounts (s/coll-of ::id))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -94,29 +94,34 @@
                                      (rf/dispatch [::se/dialog]))}}
    :closeable false})
 
+(defn accounts-from [roles]
+  (->> (map #(val %) roles)
+       (reduce concat)
+       distinct))
 
-(defn choose-account-fx [db user]
-  (reset! selected-account-id (-> db :security :claims :accounts first name))
+(defn choose-account-fx [db user accounts]
+  (reset! selected-account-id (-> accounts first name))
   (rf/dispatch [::se/dialog (account-dialog)])
   (merge {:db (assoc-in db [:security :user] user)}
          (bp/get-accounts-fx impl/backend
-                             {:account-ids (-> db :security :claims :accounts)
+                             {:account-ids accounts
                               :on-success #(rf/dispatch [:load-account %])})))
 
-(defn get-account-fx [db user]
+(defn get-account-fx [db user accounts]
   (merge {:db            (assoc-in db [:security :user] user)}
          (bp/get-account-fx impl/backend
-                            {:account-id (-> db :security :claims :accounts first)
+                            {:account-id (first accounts)
                              :on-success #(do (rf/dispatch [:load-account %])
                                               (rf/dispatch [:set-active-account (:id %)]))})))
 
 (rf/reg-event-fx
  :load-user
  (fn [cofx [_ input]]
-   (let [user (spec/conform ::spec/user input)]
-     (if (-> (:db cofx) :security :claims :accounts second) ; User has access to more than one account
-       (choose-account-fx (:db cofx) user)
-       (get-account-fx (:db cofx) user)))))
+   (let [user (spec/conform ::spec/user input)
+         accounts (-> (:db cofx) :security :claims :roles accounts-from)]
+     (if (second accounts) ; User has access to more than one account
+       (choose-account-fx (:db cofx) user accounts)
+       (get-account-fx (:db cofx) user accounts)))))
 
 (rf/reg-event-db
  :load-account

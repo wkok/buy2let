@@ -76,7 +76,10 @@
    :subs        ::cs/delegates
    :fields      [{:key :name :type :text :default true}
                  {:key :email :type :email}
-                 {:key :send-invite :type :checkbox}]
+                 {:key :roles :type :select-multi
+                  :default-values [:viewer]
+                  :options {:viewer "Viewer" :editor "Editor"}}
+                 {:key :send-invite :type :checkbox :label " Send invitation"}]
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}
    :hidden-label "revoked"})
