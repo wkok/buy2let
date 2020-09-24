@@ -45,9 +45,11 @@
     [:div
      [:label [:input {:name      field-name
                       :type      :checkbox
-                      :checked   (values "send-invite" true)
+                      :checked   (values "send-invite")
                       :on-change handle-change
-                      :on-blur   handle-blur}]
+                      :on-blur   handle-blur
+                      :disabled  (some #(values % false)
+                                      (get-in field [:disabled :if-fields]))}]
       (get field :label (s/capitalize field-name))]]))
 
 (defn build-input
@@ -62,7 +64,9 @@
                                (nil? ((:type type) @(rf/subscribe [:form-old]))))
               :value      (values field-name "")
               :on-change  handle-change
-              :on-blur    handle-blur}]
+              :on-blur    handle-blur
+              :disabled   (some #(values % false)
+                                (get-in field [:disabled :if-fields]))}]
      (when (touched field-name)
        [:div.validation-error (get errors field-name)])]))
 
@@ -73,7 +77,7 @@
     [:div
      [:label (get field :label (-> field-name s/capitalize (str ": ")))]
      [:select {:name      field-name
-               :value     (values field-name (:default-values field))
+               :value     (values field-name)
                :on-change handle-change
                :on-blur   handle-blur}
       (for [option (:options field)]
@@ -96,7 +100,9 @@
                                       (when (.-selected x)
                                         (.-value x))) opts))
                      :path [field-name]})
-       :on-blur handle-blur}
+       :on-blur handle-blur
+       :disabled (some #(values % false) 
+                       (get-in field [:disabled :if-fields]))}
       (for [option (:options field)]
         ^{:key (key option)}
         [:option {:value (key option)} (-> option val)])]]))

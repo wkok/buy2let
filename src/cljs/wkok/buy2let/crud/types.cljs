@@ -1,6 +1,8 @@
 (ns wkok.buy2let.crud.types
   (:require [re-frame.core :as rf]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.site.subs :as ss]
+            [goog.crypt.base64 :as b64]
             [clojure.string :as s]))
 
 (defn validate-name [values]
@@ -71,15 +73,48 @@
    :validate-fn #(validate-name %)
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon "fa-plus"}}}})
 
+(defn calc-status [item]
+  (assoc item :status
+         (if (:hidden item)
+           :REVOKED
+           (if (:send-invite item)
+             :INVITED
+             :ACTIVE))))
+
+(defn create-invite [item]
+  (if (:send-invite item) 
+    (assoc item :invitation
+         (let [security @(rf/subscribe [::ss/security])
+               account-id (:account security)]
+           {:to (:email item)
+            :template {:name "invitation"
+                       :data {:delegate-name (:name item)
+                              :user-name (get-in security [:user :name])
+                              :account-name (-> (filter #(= account-id (key %)) (:accounts security))
+                                                first
+                                                val
+                                                :name)
+                              :accept-url (str (.. js/window -location -protocol) "//"
+                                               (.. js/window -location -host)
+                                               "?invitation=" (b64/encodeString {:delegate-id (:id item)
+                                                                                 :account-id account-id}))}}}))
+    item))
+
 (def delegate
   {:type        :delegates
    :subs        ::cs/delegates
    :fields      [{:key :name :type :text :default true}
-                 {:key :email :type :email}
+                 {:key :email :type :email
+                  :disabled {:if-fields ["status"]}}
                  {:key :roles :type :select-multi
-                  :default-values [:viewer]
-                  :options {:viewer "Viewer" :editor "Editor"}}
-                 {:key :send-invite :type :checkbox :label " Send invitation"}]
+                  :options {:viewer "View only" :editor "View & edit"}
+                  :disabled {:if-fields ["hidden"]}}
+                 {:key :send-invite :type :checkbox
+                  :label " Send invitation"
+                  :disabled {:if-fields ["hidden"]}}]
+   :defaults {:send-invite true
+              :roles [:viewer]}
+   :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}
    :hidden-label "revoked"})

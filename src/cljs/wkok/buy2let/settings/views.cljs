@@ -11,25 +11,16 @@
   (rf/dispatch [:set-fab-actions nil])
   [:div
    [:br]
-   [:div [:a {:href "#/delegates"} "Delegate access"]]
+   [:div [:a {:href "#/delegates"} "Invite users"]]
    (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
      [:div
       [:hr]
       [:div (if (some #(= (:providerId %) "google.com") auth)
               (shared/anchor #(rf/dispatch [::be/unlink :google]) "Unlink Google")
               (shared/anchor #(rf/dispatch [::be/link :google]) "Link Google"))]
-      [:br]
       [:div (if (some #(= (:providerId %) "facebook.com") auth)
               (shared/anchor #(rf/dispatch [::be/unlink :facebook]) "Unlink Facebook")
               (shared/anchor #(rf/dispatch [::be/link :facebook]) "Link Facebook"))]
-      [:br]
-      [:div (if (some #(= (:providerId %) "twitter.com") auth)
-              (shared/anchor #(rf/dispatch [::be/unlink :twitter]) "Unlink Twitter")
-              (shared/anchor #(rf/dispatch [::be/link :twitter]) "Link Twitter"))]
-      [:br]
-      [:div (if (some #(= (:providerId %) "github.com") auth)
-              (shared/anchor #(rf/dispatch [::be/unlink :github]) "Unlink Github")
-              (shared/anchor #(rf/dispatch [::be/link :github]) "Link Github"))]
       [:hr]])
    [:div
     [:div [:a {:href "#" :on-click #(rf/dispatch [:sign-out])} "Sign out"]]

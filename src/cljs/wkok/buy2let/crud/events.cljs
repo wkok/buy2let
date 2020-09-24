@@ -56,7 +56,8 @@
  [(rf/inject-cofx ::shared/gen-id)]
  (fn [cofx [_ type item]]
    (let [id (or (:id item) (:id cofx))
-         item (assoc item :id id)
+         calculated-fn (or (:calculated-fn type) identity)
+         item (-> (assoc item :id id) calculated-fn)
          account-id @(rf/subscribe [::fs/account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}

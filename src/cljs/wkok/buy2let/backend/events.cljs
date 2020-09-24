@@ -191,7 +191,7 @@
                                                   (rf/dispatch [::se/show-progress false])
                                                   (rf/dispatch [::se/dialog {:heading   "Account deleted"
                                                                              :message   "Successfully deleted your account. Hope to have you back soon!"
-                                                                             :buttons   {:middle {:text     "Good bye"
+                                                                             :buttons   {:middle {:text     "Goodbye"
                                                                                                   :on-click (fn [] (rf/dispatch [:sign-out]))}}
                                                                              :closeable false}]))
                                    :on-error #(do
