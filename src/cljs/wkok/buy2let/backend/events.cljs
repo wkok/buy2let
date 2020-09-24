@@ -119,6 +119,7 @@
  (fn [cofx [_ input]]
    (let [user (spec/conform ::spec/user input)
          accounts (-> (:db cofx) :security :claims :roles accounts-from)]
+     (rf/dispatch [::se/splash false])
      (if (second accounts) ; User has access to more than one account
        (choose-account-fx (:db cofx) user accounts)
        (get-account-fx (:db cofx) user accounts)))))

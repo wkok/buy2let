@@ -29,6 +29,11 @@
     (get-in db [:site :dialog])))
 
 (rf/reg-sub
+  ::splash
+  (fn [db _]
+    (get-in db [:site :splash])))
+
+(rf/reg-sub
   ::heading
   (fn [db _]
     (get-in db [:site :heading])))

@@ -69,6 +69,11 @@
   [:div.progress
    [:div {:class (if @(rf/subscribe [::subs/show-progress]) "indeterminate" "")}]])
 
+(defn splash []
+  (let [splash @(rf/subscribe [::subs/splash])]
+    [:div {:class (str "splash" (if splash " splash-show" " splash-hide"))}
+     [:div.splash-content
+      [:div.splash-loader]]]))
 
 (defn sign-in-panel []
   [:div
@@ -96,6 +101,7 @@
 
 (defn main-panel []
   [:div
+   [splash]
    [dialog/dialog]
    [nav-bar]
    [progress-bar]

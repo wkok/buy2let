@@ -28,7 +28,8 @@
   {:site      {:heading      "Dashboard"
                :show-progress true
                :active-property      "--select--"
-               :active-page :dashboard}
+               :active-page :dashboard
+               :splash true}
    :report    {:show-invoices false}
    :charges   {:agent-opening-balance {:id       :agent-opening-balance
                                        :name     "Opening balance"

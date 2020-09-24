@@ -31,6 +31,11 @@
     (assoc-in db [:site :dialog] dialog)))
 
 (rf/reg-event-db
+  ::splash
+  (fn [db [_ show]]
+    (assoc-in db [:site :splash] show)))
+
+(rf/reg-event-db
   ::show-nav-menu
   (fn [db [_ show]]
     (assoc-in db [:site :nav :show-menu] show)))
