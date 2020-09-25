@@ -73,7 +73,12 @@
   (let [splash @(rf/subscribe [::subs/splash])]
     [:div {:class (str "splash" (if splash " splash-show" " splash-hide"))}
      [:div.splash-content
-      [:div.splash-loader]]]))
+      [:div.splash-header
+       [:h3 "Buy2Let"]
+       [:img {:src "images/icon/icon-64.png"}]]
+      [:div.splash-loader]
+      [:div.splash-footer
+       [:h6 "PORTFOLIO MANAGEMENT"]]]]))
 
 (defn sign-in-panel []
   [:div
