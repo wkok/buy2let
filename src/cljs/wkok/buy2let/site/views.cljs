@@ -1,5 +1,6 @@
 (ns wkok.buy2let.site.views
   (:require
+   [reagent.core :as r]
    [re-frame.core :as rf]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
@@ -13,7 +14,12 @@
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
-   [clojure.string :as s]))
+   [clojure.string :as s]
+   ["@material-ui/core" :as mui]
+   ["@material-ui/core/styles" :refer [createMuiTheme withStyles]]
+   ["@material-ui/core/colors" :as mui-colors]
+   ["@material-ui/icons" :as icons]
+   [goog.object :as gobj]))
 
 (defn nav-menu-item [href page active-page]
   [:li [:a {:href     href
@@ -104,24 +110,142 @@
                                             [:button {:on-click #(rf/dispatch [::be/sign-in :facebook])} "Facebook"]]
                                 :closeable false}]))])
 
+(def custom-theme
+  (createMuiTheme
+   #js {:palette #js {:primary #js {:main (gobj/get (.-blue ^js/Mui.Colors mui-colors) 500)}}}))
+
+(defn custom-styles [^js/Mui.Theme theme]
+  (let [drawerWidth 240
+        sm (.up (.-breakpoints theme) "sm")]
+    (clj->js
+     {:root {:display :flex}
+      :drawer {sm {:width drawerWidth, :flexShrink 0}}
+      :appBar {sm {:width (str "calc(100% - " drawerWidth "px)") :marginLeft drawerWidth}}
+      :title {:flexGrow 1}
+      :menuButton {sm {:display :none}
+                   :marginRight (.spacing theme 2)}
+      :toolbar (.. theme -mixins -toolbar) ; necessary for content to be below app bar
+      :drawerPaper {:width drawerWidth}
+      :content {:flexGrow 1, :padding (.spacing theme 3)}})))
+
+(def with-custom-styles (withStyles custom-styles))
+
+(defn make [component]
+  (-> component
+      r/reactify-component
+      with-custom-styles))
+
+(defn handle-drawer-toggle []
+  (let [mobile-open @(rf/subscribe [::subs/nav-menu-show])]
+    (rf/dispatch [::se/show-nav-menu (not mobile-open)])))
+
+(def header
+  (make
+   (fn [{:keys [classes]}]
+     [:> mui/AppBar {:position :fixed
+                     :class (.-appBar classes)}
+      [:> mui/Toolbar {:variant :dense}
+       [:> mui/IconButton {:edge :start
+                           :color :inherit
+                           :class (.-menuButton classes)
+                           :on-click handle-drawer-toggle}
+        [:> icons/Menu]]
+       [:> mui/Typography {:variant :h6
+                           :no-wrap true
+                           :class (.-title classes)} "Buy2Let"]
+       [:div
+        [:> mui/IconButton {:color :inherit}
+         [:> icons/AccountCircle]]]]])))
+
+(def nav
+  (make
+   (fn [{:keys [classes]}]
+     (let [drawer [:div
+                   [:div {:class (.-toolbar classes)}]
+                   [:> mui/Divider]
+                   [:> mui/List
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign "#/")}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Dashboard"}]]
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign (build-reconcile-url))}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Reconcile"}]]
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign (build-report-url))}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Report"}]]
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign "#/properties")}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Properties"}]]
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign "#/charges")}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Charges"}]]
+                    [:> mui/ListItem {:button true
+                                      :on-click #(js/window.location.assign "#/settings")}
+                     [:> mui/ListItemIcon
+                      [:> icons/MoveToInbox]]
+                     [:> mui/ListItemText {:primary "Settings"}]]]]]
+       [:nav {:class (.-drawer classes)}
+        [:> mui/Hidden {:smUp true
+                        :implementation :css}
+         [:> mui/Drawer {:container (.. js/window -document -body)
+                         :variant :temporary
+                         :anchor :left
+                         :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
+                         :on-close handle-drawer-toggle
+                         :classes (clj->js {:paper (.-drawerPaper classes)})
+                         :ModalProps #js {:keepMounted true}}
+          drawer]]
+        [:> mui/Hidden {:xsDown true
+                        :implementation :css}
+         [:> mui/Drawer {:classes (clj->js {:paper (.-drawerPaper classes)})
+                         :variant :permanent
+                         :open true}
+          drawer]]]))))
+
+(def main
+  (make
+   (fn [{:keys [classes]}]
+     [:main {:class (.-content classes)}
+      [:div {:class (.-toolbar classes)}]
+      [:> mui/Grid {:item true}
+       (when-let [active-page @(rf/subscribe [::subs/active-page])]
+         (condp = active-page
+           :dashboard [dashboard/dashboard]
+           :reconcile [reconcile/reconcile]
+           :report [report/report]
+           :properties [crud-impl/properties]
+           :charges [crud-impl/charges]
+           :delegates [crud-impl/delegates]
+           :settings [settings/settings]))]])))
+
+(def container
+  (make
+   (fn [{:keys [classes]}]
+     [:div {:class (.-root classes)}
+      [:> header]
+      [:> nav]
+      [:> main]])))
+
 (defn main-panel []
   [:div
-   [splash]
-   [dialog/dialog]
-   [nav-bar]
-   [progress-bar]
-   [:main
-    [:div
-     (when-let [active-page @(rf/subscribe [::subs/active-page])]
-       (condp = active-page
-         :dashboard [dashboard/dashboard]
-         :reconcile [reconcile/reconcile]
-         :report [report/report]
-         :properties [crud-impl/properties]
-         :charges [crud-impl/charges]
-         :delegates [crud-impl/delegates]
-         :settings [settings/settings]))]]
-   [fab]])
+   [:> mui/CssBaseline]
+  ;;  [splash]
+  ;;  [dialog/dialog]
+  ;;  [nav-bar]
+  ;;  [progress-bar]
+  ;; [fab]
+   [:> mui/MuiThemeProvider {:theme custom-theme}
+    [:> container]]])
 
 
 

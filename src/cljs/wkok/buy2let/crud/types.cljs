@@ -107,13 +107,13 @@
                  {:key :email :type :email
                   :disabled {:if-fields ["status"]}}
                  {:key :roles :type :select-multi
-                  :options {:viewer "View only" :editor "View & edit"}
+                  :options {"viewer" "View only" "editor" "View & edit"}
                   :disabled {:if-fields ["hidden"]}}
                  {:key :send-invite :type :checkbox
                   :label " Send invitation"
                   :disabled {:if-fields ["hidden"]}}]
    :defaults {:send-invite true
-              :roles [:viewer]}
+              :roles ["viewer"]}
    :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}

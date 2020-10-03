@@ -5,7 +5,8 @@
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.shared :as shared]
             [fork.re-frame :as fork]
-            [clojure.walk :as w]))
+            [clojure.walk :as w]
+            ["@material-ui/core" :as mui]))
 
 
 (defn row [item type]
@@ -43,13 +44,14 @@
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [:div
-     [:label [:input {:name      field-name
-                      :type      :checkbox
-                      :checked   (values "send-invite")
-                      :on-change handle-change
-                      :on-blur   handle-blur
-                      :disabled  (some #(values % false)
-                                      (get-in field [:disabled :if-fields]))}]
+     [:label
+      [:> mui/Checkbox {:name      field-name
+                        :checked   (values "send-invite" false)
+                        :color :primary
+                        :on-change handle-change
+                        :on-blur   handle-blur
+                        :disabled  (not (nil? (some #(values % false)
+                                                    (get-in field [:disabled :if-fields]))))}]
       (get field :label (s/capitalize field-name))]]))
 
 (defn build-input
@@ -57,16 +59,16 @@
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [:div
-     [:label (get field :label (-> field-name s/capitalize (str ": ")))]
-     [:input {:name       field-name
-              :type       (:type field)
-              :auto-focus (and (:default field)
-                               (nil? ((:type type) @(rf/subscribe [:form-old]))))
-              :value      (values field-name "")
-              :on-change  handle-change
-              :on-blur    handle-blur
-              :disabled   (some #(values % false)
-                                (get-in field [:disabled :if-fields]))}]
+     [:> mui/TextField {:name       field-name
+                        :label      (-> field-name s/capitalize (str ": "))
+                        :type       (:type field)
+                        :auto-focus (and (:default field)
+                                         (nil? ((:type type) @(rf/subscribe [:form-old]))))
+                        :value      (values field-name "")
+                        :on-change  handle-change
+                        :on-blur    handle-blur
+                        :disabled   (not (nil? (some #(values % false)
+                                          (get-in field [:disabled :if-fields]))))}]
      (when (touched field-name)
        [:div.validation-error (get errors field-name)])]))
 
@@ -88,32 +90,34 @@
   [field {:keys [values set-handle-change handle-blur]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
-    [:div
-     [:label (get field :label (-> field-name s/capitalize (str ": ")))]
-     [:select
+    [:> mui/FormControl
+     [:> mui/InputLabel (get field :label (-> field-name s/capitalize (str ": ")))]
+     [:> mui/Select
       {:name field-name
        :multiple true
-       :value (values field-name [:viewer])
+       :value (values field-name ["viewer"])
+       :render-value #(->> (map (fn [s] (get (:options field) s)) %) (s/join ", "))
        :on-change #(set-handle-change
-                    {:value (let [opts (array-seq (-> % .-target .-options))]
-                              (keep (fn [x]
-                                      (when (.-selected x)
-                                        (.-value x))) opts))
+                    {:value (keep identity (-> % .-target .-value))
                      :path [field-name]})
-       :on-blur handle-blur
-       :disabled (some #(values % false) 
-                       (get-in field [:disabled :if-fields]))}
+       :disabled (not (nil? (some #(values % false) 
+                                  (get-in field [:disabled :if-fields]))))}
       (for [option (:options field)]
         ^{:key (key option)}
-        [:option {:value (key option)} (-> option val)])]]))
+        [:> mui/MenuItem {:value (key option)}
+         [:> mui/Checkbox {:color :primary
+                           :checked (not (nil? (some #{(-> option key name)} 
+                                                     (values field-name ["viewer"]))))}]
+         [:> mui/ListItemText {:primary (-> option val)}]])]]))
 
 (defn build-hidden
   [type {:keys [values handle-change handle-blur]}]
-  [:label [:input {:name      "hidden"
-                   :type      :checkbox
-                   :checked   (values "hidden" false)
-                   :on-change handle-change
-                   :on-blur   handle-blur}]
+  [:label
+   [:> mui/Checkbox {:name      "hidden"
+                     :checked   (values "hidden" false)
+                     :color :primary
+                     :on-change handle-change
+                     :on-blur   handle-blur}]
    (->> (get type :hidden-label "Hidden")
         s/capitalize
         (str " "))])
@@ -145,6 +149,5 @@
          (extra-fn values state errors touched handle-change handle-blur))
        (build-hidden type options)]
       [:div.crud-edit-buttons-save-cancel.buttons-save-cancel
-       [:button {:type :submit :disabled submitting?} "Save"]
-       [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])]
-)
+       [:> mui/Button {:variant :contained :color :primary :type :submit :disabled submitting?} "Save"]
+       [:> mui/Button {:variant :outlined :type :button :on-click #(js/window.history.back)} "Cancel"]]])])

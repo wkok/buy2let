@@ -56,8 +56,8 @@
                            :payment-received-id {:id :payment-received-id :name "Payment received"}
                            :rates-taxes-id {:id :rates-taxes-id :name "Rates & taxes"}})
 
-      (on-success-delegates {:jack-id {:id :jack-id :name "Jack" :email "jack@email.com"}
-                             :jill-id {:id :jill-id :name "Jill" :email "jill@email.com"}})
+      (on-success-delegates {:jack-id {:id :jack-id :name "Jack" :email "jack@email.com" :status :ACTIVE}
+                             :jill-id {:id :jill-id :name "Jill" :email "jill@email.com" :status :ACTIVE}})
 
       (on-success-properties {:property-one-id {:id :property-one-id :name "Property One"
                                                 :charges property-charges}
