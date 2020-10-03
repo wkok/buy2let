@@ -1,7 +1,7 @@
 (ns wkok.buy2let.site.views
   (:require
-   [reagent.core :as r]
    [re-frame.core :as rf]
+   [clojure.string :as s]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -14,17 +14,32 @@
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
-   [clojure.string :as s]
-   ["@material-ui/core" :as mui]
-   ["@material-ui/core/styles" :refer [createMuiTheme withStyles]]
-   ["@material-ui/core/colors" :as mui-colors]
-   ["@material-ui/icons" :as icons]
-   [goog.object :as gobj]))
-
-(defn nav-menu-item [href page active-page]
-  [:li [:a {:href     href
-            :class    (when (= page active-page) "active")
-            :on-click #(rf/dispatch [::se/show-nav-menu false])} (-> page name s/capitalize)]])
+   [reagent-material-ui.icons.dashboard :refer [dashboard]]
+   [reagent-material-ui.icons.receipt :refer [receipt]]
+   [reagent-material-ui.icons.account-circle :refer [account-circle]]
+   [reagent-material-ui.icons.menu :refer [menu]]
+   [reagent-material-ui.icons.category :refer [category]]
+   [reagent-material-ui.icons.settings :refer [settings]]
+   [reagent-material-ui.icons.assessment :refer [assessment]]
+   [reagent-material-ui.icons.apartment :refer [apartment]]
+   [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
+   [reagent-material-ui.colors :as colors]
+   [reagent-material-ui.core.css-baseline :refer [css-baseline]]
+   [reagent-material-ui.core.grid :refer [grid]]
+   [reagent-material-ui.core.app-bar :refer [app-bar]]
+   [reagent-material-ui.core.divider :refer [divider]]
+   [reagent-material-ui.core.hidden :refer [hidden]]
+   [reagent-material-ui.core.drawer :refer [drawer]]
+   [reagent-material-ui.core.list :refer [list]]
+   [reagent-material-ui.core.list-item :refer [list-item]]
+   [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
+   [reagent-material-ui.core.list-item-text :refer [list-item-text]]
+   [reagent-material-ui.core.typography :refer [typography]]
+   [reagent-material-ui.core.icon-button :refer [icon-button]]
+   [reagent-material-ui.core.toolbar :refer [toolbar]]
+   [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
+   [reagent-material-ui.styles :as styles])
+(:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
   (let [options (re/calc-options {})]
@@ -39,32 +54,6 @@
          "/" (-> (:from-year options) name)
          "/" (-> (:to-month options) name)
          "/" (-> (:to-year options) name))))
-
-(defn nav-bar []
-  (let [active-page @(rf/subscribe [::subs/active-page])]
-    [:div.nav-bar
-     [:a.menu-toggle {:href     "#" :aria-label "Open main menu"
-                      :on-click #(do (.preventDefault %) 
-                                     (rf/dispatch [::se/show-nav-menu true]))}
-      [:span.sr-only "Open main menu"]
-      [:span.fa.fa-bars {:aria-hidden true}]]
-     [:nav.main-menu {:aria-label    "Main menu"
-                      :aria-expanded @(rf/subscribe [::subs/nav-menu-show])}
-      [:a.menu-close {:href     "#" :aria-label "Close main menu"
-                      :on-click #(do (.preventDefault %) (rf/dispatch [::se/show-nav-menu false]))}
-       [:span.sr-only "Close main menu"]
-       [:span.fa.fa-times {:aria-hidden true}]]
-      [:ul
-       [nav-menu-item "#/" :dashboard active-page]
-       [nav-menu-item (build-reconcile-url) :reconcile active-page]
-       [nav-menu-item (build-report-url) :report active-page]
-       [nav-menu-item "#/properties" :properties active-page]
-       [nav-menu-item "#/charges" :charges active-page]
-       [nav-menu-item "#/settings" :settings active-page]]]
-     [:a.backdrop {:href     "#" :tab-index "-1" :aria-hidden true :hidden true
-                   :on-click #(do (.preventDefault %) (rf/dispatch [::se/show-nav-menu false]))}]
-     [:label.active @(rf/subscribe [::subs/heading])]]))
-
 
 (defn fab []
   (when-let [actions @(rf/subscribe [::subs/fab-actions])]
@@ -111,141 +100,125 @@
                                 :closeable false}]))])
 
 (def custom-theme
-  (createMuiTheme
-   #js {:palette #js {:primary #js {:main (gobj/get (.-blue ^js/Mui.Colors mui-colors) 500)}}}))
+  {:palette {:primary   colors/blue}})
 
-(defn custom-styles [^js/Mui.Theme theme]
-  (let [drawerWidth 240
-        sm (.up (.-breakpoints theme) "sm")]
-    (clj->js
-     {:root {:display :flex}
-      :drawer {sm {:width drawerWidth, :flexShrink 0}}
-      :appBar {sm {:width (str "calc(100% - " drawerWidth "px)") :marginLeft drawerWidth}}
-      :title {:flexGrow 1}
-      :menuButton {sm {:display :none}
-                   :marginRight (.spacing theme 2)}
-      :toolbar (.. theme -mixins -toolbar) ; necessary for content to be below app bar
-      :drawerPaper {:width drawerWidth}
-      :content {:flexGrow 1, :padding (.spacing theme 3)}})))
+(defn custom-styles [{:keys [spacing breakpoints mixins] :as theme}]
+  (let [drawer-width 200
+        sm-up (:up breakpoints)]
+    {:root {:display :flex}
+     :drawer {(sm-up "sm") {:width drawer-width, :flexShrink 0}}
+     :app-bar {(sm-up "sm") {:width (str "calc(100% - " drawer-width "px)") :marginLeft drawer-width}}
+     :title {:flexGrow 1}
+     :menu-button {(sm-up "sm") {:display :none} :marginRight (spacing 2)}
+     :button {:margin (spacing 1)}
+     :drawerPaper {:width drawer-width}
+     :content {:flexGrow 1 :padding (spacing 3) :padding-top (spacing 7)}}))
 
-(def with-custom-styles (withStyles custom-styles))
-
-(defn make [component]
-  (-> component
-      r/reactify-component
-      with-custom-styles))
+(def with-custom-styles (styles/with-styles custom-styles))
 
 (defn handle-drawer-toggle []
   (let [mobile-open @(rf/subscribe [::subs/nav-menu-show])]
     (rf/dispatch [::se/show-nav-menu (not mobile-open)])))
 
-(def header
-  (make
-   (fn [{:keys [classes]}]
-     [:> mui/AppBar {:position :fixed
-                     :class (.-appBar classes)}
-      [:> mui/Toolbar {:variant :dense}
-       [:> mui/IconButton {:edge :start
-                           :color :inherit
-                           :class (.-menuButton classes)
-                           :on-click handle-drawer-toggle}
-        [:> icons/Menu]]
-       [:> mui/Typography {:variant :h6
-                           :no-wrap true
-                           :class (.-title classes)} "Buy2Let"]
-       [:div
-        [:> mui/IconButton {:color :inherit}
-         [:> icons/AccountCircle]]]]])))
+(defn header [{:keys [classes]}]
+  [app-bar {:position :fixed
+            :class (:app-bar classes)}
+   [toolbar {:variant :dense}
+    [icon-button {:edge :start
+                  :color :inherit
+                  :class (:menu-button classes)
+                  :on-click handle-drawer-toggle}
+     [menu]]
+    [typography {:variant :h6
+                 :no-wrap true
+                 :class (:title classes)} "Buy2Let"]
+    [:div
+     [icon-button {:color :inherit}
+      [account-circle]]]]])
 
-(def nav
-  (make
-   (fn [{:keys [classes]}]
-     (let [drawer [:div
-                   [:div {:class (.-toolbar classes)}]
-                   [:> mui/Divider]
-                   [:> mui/List
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign "#/")}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Dashboard"}]]
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign (build-reconcile-url))}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Reconcile"}]]
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign (build-report-url))}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Report"}]]
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign "#/properties")}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Properties"}]]
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign "#/charges")}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Charges"}]]
-                    [:> mui/ListItem {:button true
-                                      :on-click #(js/window.location.assign "#/settings")}
-                     [:> mui/ListItemIcon
-                      [:> icons/MoveToInbox]]
-                     [:> mui/ListItemText {:primary "Settings"}]]]]]
-       [:nav {:class (.-drawer classes)}
-        [:> mui/Hidden {:smUp true
-                        :implementation :css}
-         [:> mui/Drawer {:container (.. js/window -document -body)
-                         :variant :temporary
-                         :anchor :left
-                         :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
-                         :on-close handle-drawer-toggle
-                         :classes (clj->js {:paper (.-drawerPaper classes)})
-                         :ModalProps #js {:keepMounted true}}
-          drawer]]
-        [:> mui/Hidden {:xsDown true
-                        :implementation :css}
-         [:> mui/Drawer {:classes (clj->js {:paper (.-drawerPaper classes)})
-                         :variant :permanent
-                         :open true}
-          drawer]]]))))
+(defn nav [{:keys [classes]}]
+  (let [drawer_ [:div
+                 [divider]
+                 [list
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign "#/")}
+                   [list-item-icon [dashboard]]
+                   [list-item-text {:primary "Dashboard"}]]
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign (build-reconcile-url))}
+                   [list-item-icon [receipt]]
+                   [list-item-text {:primary "Reconcile"}]]
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign (build-report-url))}
+                   [list-item-icon [assessment]]
+                   [list-item-text {:primary "Report"}]]
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign "#/properties")}
+                   [list-item-icon [apartment]]
+                   [list-item-text {:primary "Properties"}]]
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign "#/charges")}
+                   [list-item-icon [category]]
+                   [list-item-text {:primary "Charges"}]]
+                  [list-item {:button true
+                              :on-click #(js/window.location.assign "#/settings")}
+                   [list-item-icon [settings]]
+                   [list-item-text {:primary "Settings"}]]]]]
+    [:nav {:class (:drawer classes)}
+     [hidden {:sm-up true
+                     :implementation :css}
+      [drawer {:container (.. js/window -document -body)
+                      :variant :temporary
+                      :anchor :left
+                      :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
+                      :on-close handle-drawer-toggle
+                      :classes {:paper (:drawer-paper classes)}
+                      :Modal-props {:keep-mounted true}}
+       drawer_]]
+     [hidden {:xs-down true
+              :implementation :css}
+      [drawer {:classes {:paper (:drawer-paper classes)}
+               :variant :permanent
+               :open true}
+       drawer_]]]))
 
-(def main
-  (make
-   (fn [{:keys [classes]}]
-     [:main {:class (.-content classes)}
-      [:div {:class (.-toolbar classes)}]
-      [:> mui/Grid {:item true}
-       (when-let [active-page @(rf/subscribe [::subs/active-page])]
-         (condp = active-page
-           :dashboard [dashboard/dashboard]
-           :reconcile [reconcile/reconcile]
-           :report [report/report]
-           :properties [crud-impl/properties]
-           :charges [crud-impl/charges]
-           :delegates [crud-impl/delegates]
-           :settings [settings/settings]))]])))
+(defn main [{:keys [classes] :as props}]
+  [:main {:class (:content classes)}
+   [grid {:item true}
+    (when-let [active-page @(rf/subscribe [::subs/active-page])]
+      (condp = active-page
+        :dashboard [dashboard/dashboard]
+        :reconcile [reconcile/reconcile]
+        :report [report/report]
+        :properties [crud-impl/properties]
+        :charges [crud-impl/charges]
+        :delegates [crud-impl/delegates props]
+        :settings [settings/settings]))]])
 
-(def container
-  (make
-   (fn [{:keys [classes]}]
-     [:div {:class (.-root classes)}
-      [:> header]
-      [:> nav]
-      [:> main]])))
+(defn container [{:keys [classes] :as props}]
+  [:div {:class (:root classes)}
+   [header props]
+   [nav props]
+   [main props]])
 
 (defn main-panel []
-  [:div
-   [:> mui/CssBaseline]
+  [:<>
+   [css-baseline]
   ;;  [splash]
   ;;  [dialog/dialog]
-  ;;  [nav-bar]
   ;;  [progress-bar]
   ;; [fab]
-   [:> mui/MuiThemeProvider {:theme custom-theme}
-    [:> container]]])
+   [mui-pickers-utils-provider {:utils  cljs-time-utils
+                                :locale DateTimeSymbols_en_US}
+    [styles/theme-provider (styles/create-mui-theme custom-theme)
+     [grid
+      {:container true
+       :direction :row
+       :justify   :flex-start}
+      [grid
+       {:item true
+        :xs   12}
+       [(with-custom-styles container)]]]]]])
 
 
 
