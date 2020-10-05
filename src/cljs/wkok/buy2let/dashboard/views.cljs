@@ -7,7 +7,8 @@
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.db.subs :as dbs]
             [tick.alpha.api :as t]
-            [cljc.java-time.month :as tm]))
+            [cljc.java-time.month :as tm]
+            [reagent-material-ui.core.typography :refer [typography]]))
 
 (defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
@@ -32,14 +33,11 @@
                                   (shared/format-money (:profit m)))]))
                   (concat [["Month" "Profit / loss" {:type :string :role :style} {:type :string :role :annotation}]]))]
     [:div
-     [:div.select-property
-      (shared/select-property properties
+     [typography {:variant :h6} "Monthly profit / loss"]
+     (shared/select-property properties
                              #(rf/dispatch [::se/set-active-property (.. % -target -value)])
                              @(rf/subscribe [::ss/active-property])
-                              "--Entire portfolio--")]
-     [:p]
-     [:hr]
-     [:h4 "Monthly profit / loss"]
+                             "All properties")
      [charts/draw-chart
       "LineChart"
       data

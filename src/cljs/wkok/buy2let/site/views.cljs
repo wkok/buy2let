@@ -110,9 +110,9 @@
      :app-bar {(sm-up "sm") {:width (str "calc(100% - " drawer-width "px)") :marginLeft drawer-width}}
      :title {:flexGrow 1}
      :menu-button {(sm-up "sm") {:display :none} :marginRight (spacing 2)}
-     :button {:margin (spacing 1)}
      :drawerPaper {:width drawer-width}
-     :content {:flexGrow 1 :padding (spacing 3) :padding-top (spacing 7)}}))
+     :content {:flexGrow 1 :padding (spacing 3) :padding-top (spacing 7)}
+     :buttons {:padding-top (spacing 1)}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 
@@ -132,9 +132,10 @@
     [typography {:variant :h6
                  :no-wrap true
                  :class (:title classes)} "Buy2Let"]
-    [:div
-     [icon-button {:color :inherit}
-      [account-circle]]]]])
+    ;; [:div
+    ;;  [icon-button {:color :inherit}
+    ;;   [account-circle]]]
+    ]])
 
 (defn nav [{:keys [classes]}]
   (let [drawer_ [:div
@@ -190,8 +191,8 @@
         :dashboard [dashboard/dashboard]
         :reconcile [reconcile/reconcile]
         :report [report/report]
-        :properties [crud-impl/properties]
-        :charges [crud-impl/charges]
+        :properties [crud-impl/properties props]
+        :charges [crud-impl/charges props]
         :delegates [crud-impl/delegates props]
         :settings [settings/settings]))]])
 
@@ -202,7 +203,7 @@
    [main props]])
 
 (defn main-panel []
-  [:<>
+  [:div
    [css-baseline]
   ;;  [splash]
   ;;  [dialog/dialog]

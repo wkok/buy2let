@@ -9,7 +9,10 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as bp]
             [wkok.buy2let.backend.impl :as impl]
-            [wkok.buy2let.spec :as spec]))
+            [wkok.buy2let.spec :as spec]
+            [reagent-material-ui.core.link :refer [link]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]))
 
 
 (def default-cal
@@ -58,16 +61,18 @@
       js/parseFloat))
 
 (defn select-property [properties on-change value select-text]
-  [:label [:strong "Property:"]
-   [:select {:field     :list
-             :on-change on-change
-             :value     value}
-    [:option {:value "--select--"} select-text]
-    (->> (filter #(not (:hidden %)) properties)
-         (map (fn [property]
-                ^{:key property}
-                [:option {:value (:id property)}
-                 (:name property)])))]])
+  [text-field {:select true
+               :label "Property"
+               :margin :normal
+               :field     :list
+               :on-change on-change
+               :value     value}
+   [menu-item {:value "--select--"} select-text]
+   (->> (filter #(not (:hidden %)) properties)
+        (map (fn [property]
+               ^{:key property}
+               [menu-item {:value (:id property)}
+                (:name property)])))])
 
 (defn select-year [on-change value]
   (let [second-last-year (-> t/today t/year js/parseInt dec dec str keyword)
@@ -211,9 +216,9 @@
 ; See: https://github.com/facebook/react/issues/16382
 (defn anchor
   ([on-click label]
-   [:a {:href "#" :on-click #(do (.preventDefault %)
-                                 (on-click))}
-    [:label label]])
+   [link {:href "#" :on-click #(do (.preventDefault %)
+                                   (on-click))}
+    label])
   ([on-click label class]
    [:a {:class class
         :href "#" :on-click #(do (.preventDefault %)

@@ -5,14 +5,14 @@
             [re-frame.core :as rf]))
 
 
-(defn properties []
+(defn properties [props]
   (case @(rf/subscribe [::subs/active-panel])
-    :properties-edit [crud/edit-panel type/property]
+    :properties-edit [crud/edit-panel type/property props]
     [crud/list-panel type/property]))
 
-(defn charges []
+(defn charges [props]
   (case @(rf/subscribe [::subs/active-panel])
-    :charges-edit [crud/edit-panel type/charge]
+    :charges-edit [crud/edit-panel type/charge props]
     [crud/list-panel type/charge]))
 
 (defn delegates [props]

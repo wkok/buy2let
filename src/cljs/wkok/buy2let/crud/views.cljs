@@ -6,6 +6,9 @@
             [wkok.buy2let.shared :as shared]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
+            [reagent-material-ui.core.list :refer [list]]
+            [reagent-material-ui.core.list-item :refer [list-item]]
+            [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.select :refer [select]]
             [reagent-material-ui.core.menu-item :refer [menu-item]]
@@ -17,10 +20,11 @@
 
 
 (defn row [item type]
-  [:tr {:on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}
+  [list-item {:button true
+              :on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}
    (for [field (filter #(:default %) (:fields type))]
      ^{:key field}
-     [:td ((:key field) item)])])
+     [list-item-text {:primary ((:key field) item)}])])
 
 (defn show? [item show-hidden]
   (if (get item :hidden false)
@@ -30,27 +34,29 @@
 (defn list-panel [type]
   (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
   (let [show-hidden @(rf/subscribe [::cs/show-hidden])]
-    [:div
-     [:br]
-     [:table
-      [:tbody
+    [grid {:container true
+           :direction :column}
+     [grid {:item true}
+      [list
        (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
                           @(rf/subscribe [(:subs type)]))]
          ^{:key item}
          [row item type])]]
-     [:div.crud-show-hidden
-      (if show-hidden
-        (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
-                       (str "Hide " (get type :hidden-label "hidden")))
-        (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
-                       (str "Show " (get type :hidden-label "hidden"))))]]))
+     [grid {:container true
+            :justify :flex-end}
+      [grid {:item true}
+       (if show-hidden
+         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
+                        (str "Hide " (get type :hidden-label "hidden")))
+         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
+                        (str "Show " (get type :hidden-label "hidden"))))]]]))
 
 
 (defn build-checkbox
   [field {:keys [values handle-change handle-blur]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
-    [:div
+    [grid {:item true}
      [:label
       [checkbox {:name      field-name
                  :checked   (values "send-invite" false)
@@ -63,9 +69,11 @@
 
 (defn build-input
   [type field {:keys [values errors touched handle-change handle-blur]}]
-  (let [field-name (name (:key field))]
+  (let [field-name (name (:key field))
+        error? (and (touched field-name)
+                    (not (s/blank? (get errors field-name))))]
     ^{:key field-name}
-    [:div
+    [grid {:item true}
      [text-field {:name       field-name
                   :label      (-> field-name s/capitalize)
                   :type       (:type field)
@@ -76,15 +84,15 @@
                   :on-change  handle-change
                   :on-blur    handle-blur
                   :disabled   (not (nil? (some #(values % false)
-                                               (get-in field [:disabled :if-fields]))))}]
-     (when (touched field-name)
-       [:div.validation-error (get errors field-name)])]))
+                                               (get-in field [:disabled :if-fields]))))
+                  :error      error?
+                  :helper-text (when error? (get errors field-name))}]]))
 
 (defn build-select
   [field {:keys [values handle-change handle-blur]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
-    [:div
+    [grid {:item true}
      [:label (get field :label (-> field-name s/capitalize))]
      [:select {:name      field-name
                :value     (values field-name)
@@ -98,25 +106,26 @@
   [field {:keys [values set-handle-change handle-blur]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
-    [form-control {:margin :normal}
-     [input-label (get field :label (-> field-name s/capitalize))]
-     [select
-      {:name field-name
-       :multiple true
-       :value (values field-name ["viewer"])
-       :render-value #(->> (map (fn [s] (get (:options field) s)) %) (s/join ", "))
-       :on-change #(set-handle-change
-                    {:value (keep identity (-> % .-target .-value))
-                     :path [field-name]})
-       :disabled (not (nil? (some #(values % false) 
-                                  (get-in field [:disabled :if-fields]))))}
-      (for [option (:options field)]
-        ^{:key (key option)}
-        [menu-item {:value (key option)}
-         [checkbox {:color :primary
-                           :checked (not (nil? (some #{(-> option key name)} 
-                                                     (values field-name ["viewer"]))))}]
-         [list-item-text {:primary (-> option val)}]])]]))
+    [grid {:item true}
+     [form-control {:margin :normal}
+      [input-label (get field :label (-> field-name s/capitalize))]
+      [select
+       {:name field-name
+        :multiple true
+        :value (values field-name ["viewer"])
+        :render-value #(->> (map (fn [s] (get (:options field) s)) %) (s/join ", "))
+        :on-change #(set-handle-change
+                     {:value (keep identity (-> % .-target .-value))
+                      :path [field-name]})
+        :disabled (not (nil? (some #(values % false)
+                                   (get-in field [:disabled :if-fields]))))}
+       (for [option (:options field)]
+         ^{:key (key option)}
+         [menu-item {:value (key option)}
+          [checkbox {:color :primary
+                     :checked (not (nil? (some #{(-> option key name)}
+                                               (values field-name ["viewer"]))))}]
+          [list-item-text {:primary (-> option val)}]])]]]))
 
 (defn build-hidden
   [type {:keys [values handle-change handle-blur]}]
@@ -145,7 +154,8 @@
                                     (w/stringify-keys (:defaults type)))}
    (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
-      [:div
+      [grid {:container true
+             :direction :column}
        (doall
         (for [field (:fields type)]
           (case (:type field)
@@ -155,14 +165,20 @@
             (build-input type field options))))
        (if-let [extra-fn (:extra type)]
          (extra-fn values state errors touched handle-change handle-blur))
-       (build-hidden type options)]
-      [:div
-       [button {:variant :contained 
-                :color :primary 
-                :type :submit 
-                :disabled submitting?
-                :class (get-in props [:classes :button])} "Save"]
-       [button {:variant :outlined 
-                :type :button 
-                :on-click #(js/window.history.back)
-                :class (get-in props [:classes :button])} "Cancel"]]])])
+       (build-hidden type options)
+       [grid {:container true
+              :direction :row
+              :justify :flex-start
+              :spacing 1
+              :class (get-in props [:classes :buttons])}
+        [grid {:item true}
+         [button {:variant :contained
+                  :color :primary
+                  :type :submit
+                  :disabled submitting?} 
+          "Save"]]
+        [grid {:item true}
+         [button {:variant :outlined
+                  :type :button
+                  :on-click #(js/window.history.back)}
+          "Cancel"]]]]])])
