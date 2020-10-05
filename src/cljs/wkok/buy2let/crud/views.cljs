@@ -1,5 +1,6 @@
 (ns wkok.buy2let.crud.views
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [clojure.string :as s]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
@@ -7,6 +8,7 @@
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-material-ui.core.list :refer [list]]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.list-item :refer [list-item]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.text-field :refer [text-field]]
@@ -31,11 +33,13 @@
     show-hidden
     true))
 
-(defn list-panel [type]
+(defn list-panel [type props]
   (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
   (let [show-hidden @(rf/subscribe [::cs/show-hidden])]
     [grid {:container true
-           :direction :column}
+           :direction :column
+          ;;  :class (get-in props [:classes :paper])
+           }
      [grid {:item true}
       [list
        (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
@@ -103,7 +107,7 @@
         [:option {:value (key option)} (-> option val)])]]))
 
 (defn build-multi-select
-  [field {:keys [values set-handle-change handle-blur]}]
+  [field {:keys [values set-handle-change]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [grid {:item true}
@@ -129,15 +133,16 @@
 
 (defn build-hidden
   [type {:keys [values handle-change handle-blur]}]
-  [:label
-   [checkbox {:name      "hidden"
-              :checked   (values "hidden" false)
-              :color :primary
-              :on-change handle-change
-              :on-blur   handle-blur}]
-   (->> (get type :hidden-label "Hidden")
-        s/capitalize
-        (str " "))])
+  [form-control-label
+   {:control (ra/as-element
+              [checkbox {:name      "hidden"
+                         :checked   (values "hidden" false)
+                         :color :primary
+                         :on-change handle-change
+                         :on-blur   handle-blur}])
+    :label (->> (get type :hidden-label "Hidden")
+                s/capitalize
+                (str " "))}])
 
 (defn edit-panel [type props]
   (rf/dispatch [:set-fab-actions nil])
@@ -152,7 +157,7 @@
               :initial-values     (if-let [old ((:type type) @(rf/subscribe [:form-old]))]
                                     (w/stringify-keys old)
                                     (w/stringify-keys (:defaults type)))}
-   (fn [{:keys [values state errors touched form-id handle-change handle-blur submitting? handle-submit] :as options}]
+   (fn [{:keys [form-id submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
       [grid {:container true
              :direction :column}
@@ -164,7 +169,7 @@
             :select-multi (build-multi-select field options)
             (build-input type field options))))
        (if-let [extra-fn (:extra type)]
-         (extra-fn values state errors touched handle-change handle-blur))
+         (extra-fn props options))
        (build-hidden type options)
        [grid {:container true
               :direction :row

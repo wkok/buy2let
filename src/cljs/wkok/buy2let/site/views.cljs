@@ -102,17 +102,19 @@
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
-(defn custom-styles [{:keys [spacing breakpoints mixins] :as theme}]
+(defn custom-styles [{:keys [spacing breakpoints palette] :as theme}]
   (let [drawer-width 200
         sm-up (:up breakpoints)]
     {:root {:display :flex}
-     :drawer {(sm-up "sm") {:width drawer-width, :flexShrink 0}}
-     :app-bar {(sm-up "sm") {:width (str "calc(100% - " drawer-width "px)") :marginLeft drawer-width}}
-     :title {:flexGrow 1}
-     :menu-button {(sm-up "sm") {:display :none} :marginRight (spacing 2)}
-     :drawerPaper {:width drawer-width}
-     :content {:flexGrow 1 :padding (spacing 3) :padding-top (spacing 7)}
-     :buttons {:padding-top (spacing 1)}}))
+     :drawer {(sm-up "sm") {:width drawer-width, :flex-shrink 0}}
+     :app-bar {(sm-up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
+     :title {:flex-grow 1}
+     :menu-button {(sm-up "sm") {:display :none} :margin-right (spacing 2)}
+     :drawer-paper {:width drawer-width}
+     :content {:flex-grow 1 :padding (spacing 3) :padding-top (spacing 7)}
+     :buttons {:padding-top (spacing 1)}
+     :who-pays-whom {:padding-left (spacing 4)}
+     :paper {:background-color (get-in palette [:background :paper])}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 
@@ -129,7 +131,7 @@
                   :class (:menu-button classes)
                   :on-click handle-drawer-toggle}
      [menu]]
-    [typography {:variant :h6
+    [typography {:variant :h5
                  :no-wrap true
                  :class (:title classes)} "Buy2Let"]
     ;; [:div
@@ -137,47 +139,49 @@
     ;;   [account-circle]]]
     ]])
 
+(defn navigate [hash]
+  (js/window.location.assign hash)
+  (rf/dispatch [::se/show-nav-menu false]))
+
 (defn nav [{:keys [classes]}]
   (let [drawer_ [:div
                  [divider]
                  [list
                   [list-item {:button true
-                              :on-click #(js/window.location.assign "#/")}
+                              :on-click #(navigate "#/")}
                    [list-item-icon [dashboard]]
                    [list-item-text {:primary "Dashboard"}]]
                   [list-item {:button true
-                              :on-click #(js/window.location.assign (build-reconcile-url))}
+                              :on-click #(navigate (build-reconcile-url))}
                    [list-item-icon [receipt]]
                    [list-item-text {:primary "Reconcile"}]]
                   [list-item {:button true
-                              :on-click #(js/window.location.assign (build-report-url))}
+                              :on-click #(navigate (build-report-url))}
                    [list-item-icon [assessment]]
                    [list-item-text {:primary "Report"}]]
                   [list-item {:button true
-                              :on-click #(js/window.location.assign "#/properties")}
+                              :on-click #(navigate "#/properties")}
                    [list-item-icon [apartment]]
                    [list-item-text {:primary "Properties"}]]
                   [list-item {:button true
-                              :on-click #(js/window.location.assign "#/charges")}
+                              :on-click #(navigate "#/charges")}
                    [list-item-icon [category]]
                    [list-item-text {:primary "Charges"}]]
                   [list-item {:button true
-                              :on-click #(js/window.location.assign "#/settings")}
+                              :on-click #(navigate "#/settings")}
                    [list-item-icon [settings]]
                    [list-item-text {:primary "Settings"}]]]]]
     [:nav {:class (:drawer classes)}
-     [hidden {:sm-up true
-                     :implementation :css}
+     [hidden {:sm-up true}
       [drawer {:container (.. js/window -document -body)
-                      :variant :temporary
-                      :anchor :left
-                      :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
-                      :on-close handle-drawer-toggle
-                      :classes {:paper (:drawer-paper classes)}
-                      :Modal-props {:keep-mounted true}}
+               :variant :temporary
+               :anchor :left
+               :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
+               :on-close handle-drawer-toggle
+               :classes {:paper (:drawer-paper classes)}
+               :Modal-props {:keep-mounted true}}
        drawer_]]
-     [hidden {:xs-down true
-              :implementation :css}
+     [hidden {:xs-down true}
       [drawer {:classes {:paper (:drawer-paper classes)}
                :variant :permanent
                :open true}

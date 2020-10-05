@@ -1,9 +1,21 @@
 (ns wkok.buy2let.crud.types
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.site.subs :as ss]
             [goog.crypt.base64 :as b64]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
+            [reagent-material-ui.core.checkbox :refer [checkbox]]
+            [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]
+            [reagent-material-ui.core.list-item :refer [list-item]]
+            [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
+            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
+            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
+            [reagent-material-ui.core.list-item-secondary-action :refer [list-item-secondary-action]]
+            [reagent-material-ui.core.list :refer [list]]))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -24,47 +36,55 @@
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon "fa-plus"}}}
-   :extra       (fn [values state errors touched _ handle-blur]
-                  [:div
-                   [:br]
-                   [:label "Charges to account for: "]
-                   [:table
-                    [:tbody
-                     (-> (for [charge (filter #(and (not (:reserved %)) (not (:hidden %)))
-                                              @(rf/subscribe [::cs/charges]))]
-                           (let [charge-id (name (:id charge))]
-                             ^{:key (:id charge)}
-                             [:tr
-                              [:td
-                               [:div
-                                [:label
-                                 [:input {:type      :checkbox
-                                          :name      charge-id
-                                          :checked   (contains? (get values "charges") charge-id)
-                                          :on-change #(if (-> % .-target .-checked)
-                                                        (swap! state assoc-in [:values "charges" charge-id] {})
-                                                        (swap! state update-in [:values "charges"] dissoc charge-id))
-                                          :on-blur   handle-blur}]
-                                 (str " " (:name charge))]]]
-                              (let [field-name (str charge-id "-wpw")]
-                                [:td
-                                 [:select {:name      field-name
-                                           :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) :none)
-                                           :on-change #(swap! state assoc-in [:values "charges" charge-id "who-pays-whom"]
-                                                              (-> % .-target .-value))}
-                                  [:option {:value :none} "-- choose applicable --"]
-                                  [:option {:value :ac} "Agent Commission"]
-                                  [:option {:value :apo} "Agent pays Owner"]
-                                  [:option {:value :aps} "Agent pays Supplier"]
-                                  [:option {:value :mi} "Mortgage Interest"]
-                                  [:option {:value :opa} "Owner pays Agent"]
-                                  [:option {:value :opb} "Owner pays Bank"]
-                                  [:option {:value :ops} "Owner pays Supplier"]
-                                  [:option {:value :tpa} "Tenant pays Agent"]
-                                  [:option {:value :tpo} "Tenant pays Owner"]]
-                                 (when (touched field-name)
-                                   [:div.validation-error (get errors field-name)])])]))
-                         doall)]]])})
+   :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]
+                  [grid {:item true}
+                   [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
+                    (-> (for [charge (filter #(and (not (:reserved %)) (not (:hidden %)))
+                                             @(rf/subscribe [::cs/charges]))]
+                          (let [charge-id (name (:id charge))
+                                charge-selected (contains? (get values "charges") charge-id)]
+                            ^{:key (:id charge)}
+                            [list-item
+                             [grid {:container true
+                                    :direction :row}
+                              [grid {:item true :xs 12 :sm 6}
+                               [form-control-label
+                                {:control (ra/as-element
+                                           [checkbox {:type      :checkbox
+                                                      :name      charge-id
+                                                      :color :primary
+                                                      :checked   charge-selected
+                                                      :on-change #(if (-> % .-target .-checked)
+                                                                    (swap! state assoc-in [:values "charges" charge-id] {})
+                                                                    (swap! state update-in [:values "charges"] dissoc charge-id))
+                                                      :on-blur   handle-blur}])
+                                 :label (:name charge)}]]
+                              (when charge-selected
+                                [grid {:item true :xs 12 :sm 6
+                                       :class (get-in props [:classes :who-pays-whom])}
+                                 (let [field-name (str charge-id "-wpw")
+                                       error? (and (touched field-name)
+                                                   (not (s/blank? (get errors field-name))))]
+                                   [text-field {:select true
+                                                :name      field-name
+                                                :label "Paid by"
+
+                                                :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) :none)
+                                                :on-change #(swap! state assoc-in [:values "charges" charge-id "who-pays-whom"]
+                                                                   (-> % .-target .-value))
+                                                :error error?
+                                                :helper-text (when error? (get errors field-name))}
+                                    [menu-item {:value :none} "-- choose applicable --"]
+                                    [menu-item {:value :ac} "Agent Commission"]
+                                    [menu-item {:value :apo} "Agent pays Owner"]
+                                    [menu-item {:value :aps} "Agent pays Supplier"]
+                                    [menu-item {:value :mi} "Mortgage Interest"]
+                                    [menu-item {:value :opa} "Owner pays Agent"]
+                                    [menu-item {:value :opb} "Owner pays Bank"]
+                                    [menu-item {:value :ops} "Owner pays Supplier"]
+                                    [menu-item {:value :tpa} "Tenant pays Agent"]
+                                    [menu-item {:value :tpo} "Tenant pays Owner"]])])]]))
+                        doall)]])})
 
 (def charge
   {:type        :charges
