@@ -145,7 +145,7 @@
     (shared/select-property properties
                             #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
                             @(rf/subscribe [::ss/active-property])
-                            "--select--")
+                            "--select--" "Property")
     [:label "Period:"
      [:div.year-month
       (shared/select-month #(rf/dispatch [::re/reconcile-set-month (.. % -target -value)])

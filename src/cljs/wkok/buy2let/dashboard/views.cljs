@@ -8,9 +8,14 @@
             [wkok.buy2let.db.subs :as dbs]
             [tick.alpha.api :as t]
             [cljc.java-time.month :as tm]
-            [reagent-material-ui.core.typography :refer [typography]]))
+            [reagent-material-ui.core.typography :refer [typography]]
+            [reagent-material-ui.core.paper :refer [paper]]
+            [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.card :refer [card]]
+            [reagent-material-ui.core.card-content :refer [card-content]]
+            ))
 
-(defn dashboard []
+(defn dashboard [props]
   (rf/dispatch [:set-fab-actions nil])
   (let [today (t/- (t/today) (t/new-period 1 :months))
         last (t/- today (t/new-period 11 :months))
@@ -32,17 +37,24 @@
                                          (= (:year m) this-year))
                                   (shared/format-money (:profit m)))]))
                   (concat [["Month" "Profit / loss" {:type :string :role :style} {:type :string :role :annotation}]]))]
-    [:div
-     [typography {:variant :h6} "Monthly profit / loss"]
-     (shared/select-property properties
-                             #(rf/dispatch [::se/set-active-property (.. % -target -value)])
-                             @(rf/subscribe [::ss/active-property])
-                             "All properties")
-     [charts/draw-chart
-      "LineChart"
-      data
-      {:legend {:position :none}
-       :chartArea {:width "80%"
-                   :left  "15%"}
-       :curveType :function}]]))
+    [card 
+     [card-content
+      [grid {:container true
+             :direction :row
+             :justify :space-between}
+       [grid {:item true}
+        [typography {:color :textSecondary} "Monthly profit / loss"]]
+       [grid {:item true}
+        (shared/select-property properties
+                                #(rf/dispatch [::se/set-active-property (.. % -target -value)])
+                                @(rf/subscribe [::ss/active-property])
+                                "All properties"
+                                "")]]
+      [charts/draw-chart
+       "LineChart"
+       data
+       {:legend {:position :none}
+        :chartArea {:width "80%"
+                    :left  "15%"}
+        :curveType :function}]]]))
 

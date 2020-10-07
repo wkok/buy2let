@@ -176,7 +176,7 @@
     (shared/select-property properties
                             #(rf/dispatch [::re/report-set-property (.. % -target -value)])
                             @(rf/subscribe [::ss/active-property])
-                            "--select--")
+                            "--select--" "Property")
     [:div.report-options
      [:label "From:"
       [:div.year-month

@@ -1,37 +1,58 @@
 (ns wkok.buy2let.settings.views
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [wkok.buy2let.backend.events :as be]
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.events :as se]
             [clojure.walk :as w]
-            [wkok.buy2let.shared :as shared]))
+            [reagent-material-ui.core.list :refer [list]]
+            [reagent-material-ui.core.list-item :refer [list-item]]
+            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
+            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
+            [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.paper :refer [paper]]))
 
 
-(defn settings []
+(defn settings [props]
   (rf/dispatch [:set-fab-actions nil])
-  [:div
-   [:br]
-   [:div [:a {:href "#/delegates"} "Invite users"]]
-   (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
-     [:div
-      [:hr]
-      [:div (if (some #(= (:providerId %) "google.com") auth)
-              (shared/anchor #(rf/dispatch [::be/unlink :google]) "Unlink Google")
-              (shared/anchor #(rf/dispatch [::be/link :google]) "Link Google"))]
-      [:div (if (some #(= (:providerId %) "facebook.com") auth)
-              (shared/anchor #(rf/dispatch [::be/unlink :facebook]) "Unlink Facebook")
-              (shared/anchor #(rf/dispatch [::be/link :facebook]) "Link Facebook"))]
-      [:hr]])
-   [:div
-    [:div [:a {:href "#" :on-click #(rf/dispatch [:sign-out])} "Sign out"]]
-    [:hr]
-    [:br]
-    [:div 
-     (shared/anchor #(rf/dispatch [::se/dialog {:heading "Are you sure?"
-                                                :message "This will delete all data associated with this account, for all users you've given access to, and is not recoverable!"
-                                                :buttons {:left  {:text     "DELETE"
-                                                                  :on-click (fn [] (rf/dispatch [::be/delete-account]))
-                                                                  :class    "dialog-btn-danger"}
-                                                          :right {:text "Cancel"}}}]) 
-                    "Delete account"
-                    "settings-link-danger")]]])
+  (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
+    [grid {:container true
+           :direction :column
+           :spacing 2}
+     [grid {:item true}
+      [paper {:class (get-in props [:classes :paper])}
+       [list {:subheader (ra/as-element [list-subheader "Profile settings"])}
+        (if (some #(= (:providerId %) "google.com") auth)
+          [list-item {:button true
+                      :on-click #(rf/dispatch [::be/unlink :google])}
+           [list-item-text {:primary "Unlink Google"}]]
+          [list-item {:button true
+                      :on-click #(rf/dispatch [::be/link :google])}
+           [list-item-text {:primary "Link Google"}]])
+        (if (some #(= (:providerId %) "facebook.com") auth)
+          [list-item {:button true
+                      :on-click #(rf/dispatch [::be/unlink :facebook])}
+           [list-item-text {:primary "Unlink Facebook"}]]
+          [list-item {:button true
+                      :on-click #(rf/dispatch [::be/link :facebook])}
+           [list-item-text {:primary "Link Facebook"}]])
+        [list-item {:button true
+                    :on-click #(rf/dispatch [:sign-out])}
+         [list-item-text {:primary "Sign out"}]]]]]
+     [grid {:item true}
+      [paper {:class (get-in props [:classes :paper])}
+       [list {:subheader (ra/as-element [list-subheader "Account settings"])}
+        [list-item {:button true
+                    :on-click #(js/window.location.assign "#/delegates")}
+         [list-item-text {:primary "Invite users"}]]
+        [list-item {:button true
+                    :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
+                                                          :message "This will delete all data associated with this account, for all users you've given access to, and is not recoverable!"
+                                                          :buttons {:left  {:text     "DELETE"
+                                                                            :on-click (fn [] (rf/dispatch [::be/delete-account]))
+                                                                            :color :secondary}
+                                                                    :right {:text "Cancel"}}}])}
+         [list-item-text {:primary "Delete account"
+                          :primary-typography-props {:color :error}}]]]]]]))
+
+

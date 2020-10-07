@@ -60,10 +60,9 @@
   (-> (format-money amount)
       js/parseFloat))
 
-(defn select-property [properties on-change value select-text]
+(defn select-property [properties on-change value select-text label]
   [text-field {:select true
-               :label "Property"
-               :margin :normal
+               :label label
                :field     :list
                :on-change on-change
                :value     value}
@@ -215,14 +214,9 @@
 
 ; See: https://github.com/facebook/react/issues/16382
 (defn anchor
-  ([on-click label]
-   [link {:href "#" :on-click #(do (.preventDefault %)
-                                   (on-click))}
-    label])
-  ([on-click label class]
-   [:a {:class class
-        :href "#" :on-click #(do (.preventDefault %)
-                                 (on-click))}
-    [:label label]]))
+  [on-click label]
+  [link {:href "#" :on-click #(do (.preventDefault %)
+                                  (on-click))}
+   label])
 
 

@@ -137,4 +137,5 @@
    :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}
-   :hidden-label "revoked"})
+   :hidden-label "revoked"
+   :label "Invitees"})

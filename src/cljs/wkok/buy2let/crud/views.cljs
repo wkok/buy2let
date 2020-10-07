@@ -8,6 +8,8 @@
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-material-ui.core.list :refer [list]]
+            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
+            [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.list-item :refer [list-item]]
             [reagent-material-ui.core.grid :refer [grid]]
@@ -35,13 +37,13 @@
 
 (defn list-panel [type props]
   (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
-  (let [show-hidden @(rf/subscribe [::cs/show-hidden])]
-    [grid {:container true
-           :direction :column
-          ;;  :class (get-in props [:classes :paper])
-           }
+  (let [show-hidden @(rf/subscribe [::cs/show-hidden])
+        heading (or (:label type) (-> (:subs type) name s/capitalize))]
+    [paper {:class (get-in props [:classes :paper])}
+     [grid {:container true
+           :direction :column}
      [grid {:item true}
-      [list
+      [list {:subheader (ra/as-element [list-subheader heading])}
        (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
                           @(rf/subscribe [(:subs type)]))]
          ^{:key item}
@@ -53,7 +55,7 @@
          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
                         (str "Hide " (get type :hidden-label "hidden")))
          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
-                        (str "Show " (get type :hidden-label "hidden"))))]]]))
+                        (str "Show " (get type :hidden-label "hidden"))))]]]]))
 
 
 (defn build-checkbox
@@ -61,15 +63,17 @@
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [grid {:item true}
-     [:label
-      [checkbox {:name      field-name
-                 :checked   (values "send-invite" false)
-                 :color :primary
-                 :on-change handle-change
-                 :on-blur   handle-blur
-                 :disabled  (not (nil? (some #(values % false)
-                                             (get-in field [:disabled :if-fields]))))}]
-      (get field :label (s/capitalize field-name))]]))
+     
+     [form-control-label
+      {:control (ra/as-element
+                 [checkbox {:name      field-name
+                            :checked   (values "send-invite" false)
+                            :color :primary
+                            :on-change handle-change
+                            :on-blur   handle-blur
+                            :disabled  (not (nil? (some #(values % false)
+                                                        (get-in field [:disabled :if-fields]))))}])
+       :label (get field :label (s/capitalize field-name))}]]))
 
 (defn build-input
   [type field {:keys [values errors touched handle-change handle-blur]}]
@@ -159,31 +163,32 @@
                                     (w/stringify-keys (:defaults type)))}
    (fn [{:keys [form-id submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
-      [grid {:container true
-             :direction :column}
-       (doall
-        (for [field (:fields type)]
-          (case (:type field)
-            :checkbox (build-checkbox field options)
-            :select (build-select field options)
-            :select-multi (build-multi-select field options)
-            (build-input type field options))))
-       (if-let [extra-fn (:extra type)]
-         (extra-fn props options))
-       (build-hidden type options)
+      [paper {:class (get-in props [:classes :paper])}
        [grid {:container true
-              :direction :row
-              :justify :flex-start
-              :spacing 1
-              :class (get-in props [:classes :buttons])}
-        [grid {:item true}
-         [button {:variant :contained
-                  :color :primary
-                  :type :submit
-                  :disabled submitting?} 
-          "Save"]]
-        [grid {:item true}
-         [button {:variant :outlined
-                  :type :button
-                  :on-click #(js/window.history.back)}
-          "Cancel"]]]]])])
+              :direction :column}
+        (doall
+         (for [field (:fields type)]
+           (case (:type field)
+             :checkbox (build-checkbox field options)
+             :select (build-select field options)
+             :select-multi (build-multi-select field options)
+             (build-input type field options))))
+        (if-let [extra-fn (:extra type)]
+          (extra-fn props options))
+        (build-hidden type options)
+        [grid {:container true
+               :direction :row
+               :justify :flex-start
+               :spacing 1
+               :class (get-in props [:classes :buttons])}
+         [grid {:item true}
+          [button {:variant :contained
+                   :color :primary
+                   :type :submit
+                   :disabled submitting?}
+           "Save"]]
+         [grid {:item true}
+          [button {:variant :outlined
+                   :type :button
+                   :on-click #(js/window.history.back)}
+           "Cancel"]]]]]])])

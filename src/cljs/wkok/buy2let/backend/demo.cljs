@@ -99,7 +99,10 @@
               :twitter "twitter.com"
               :github "github.com")]
       (rf/dispatch [::se/dialog {:heading "Not implemented"
-                                 :message (str "When implemented, this would redirect to " p " for authorization")}])))
+                                 :message (str "When implemented, this would redirect to " p " for authorization")
+                                 :buttons {:left  {:text     "Close"
+                                                   :on-click #(rf/dispatch [::se/dialog])
+                                                   :color :primary}}}])))
 
   (google-sign-in-fx [_]
     (do-sign-in))

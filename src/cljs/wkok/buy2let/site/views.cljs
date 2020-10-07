@@ -26,9 +26,12 @@
    [reagent-material-ui.colors :as colors]
    [reagent-material-ui.core.css-baseline :refer [css-baseline]]
    [reagent-material-ui.core.grid :refer [grid]]
+   [reagent-material-ui.core.button :refer [button]]
+   [reagent-material-ui.core.paper :refer [paper]]
    [reagent-material-ui.core.app-bar :refer [app-bar]]
    [reagent-material-ui.core.divider :refer [divider]]
    [reagent-material-ui.core.hidden :refer [hidden]]
+   [reagent-material-ui.core.text-field :refer [text-field]]
    [reagent-material-ui.core.drawer :refer [drawer]]
    [reagent-material-ui.core.list :refer [list]]
    [reagent-material-ui.core.list-item :refer [list-item]]
@@ -38,7 +41,12 @@
    [reagent-material-ui.core.icon-button :refer [icon-button]]
    [reagent-material-ui.core.toolbar :refer [toolbar]]
    [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
-   [reagent-material-ui.styles :as styles])
+   [reagent-material-ui.styles :as styles]
+   [reagent-material-ui.core.dialog :refer [dialog]]
+   [reagent-material-ui.core.dialog-title :refer [dialog-title]]
+   [reagent-material-ui.core.dialog-content :refer [dialog-content]]
+   [reagent-material-ui.core.dialog-content-text :refer [dialog-content-text]]
+   [reagent-material-ui.core.dialog-actions :refer [dialog-actions]])
 (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -75,30 +83,6 @@
       [:div.splash-footer
        [:h6 "PORTFOLIO MANAGEMENT"]]]]))
 
-(defn sign-in-panel []
-  [:div
-   [dialog/dialog]
-   (let [error @(rf/subscribe [::bs/error])
-         heading (if (not (nil? error))
-                   (if (s/includes? error "An account already exists with the same email address")
-                     "Account exists"
-                     "Oops!")
-                   "Sign in")
-         message (if (not (nil? error))
-                   (if (s/includes? error "An account already exists with the same email address")
-                     "Please choose the same network/email you used previously (Tip: you may link your account to more providers in Settings)"
-                     error)
-                   "with your email")]
-     (rf/dispatch [::se/dialog {:heading   heading :message message
-                                :panel     [:div.providers
-                                            [:input {:type :email :value "demo@email.com" :on-change #()}]
-                                            [:input {:type :password :value "***********" :on-change #()}]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]
-                                            [:label "- or -"]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :google])} "Google"]
-                                            [:button {:on-click #(rf/dispatch [::be/sign-in :facebook])} "Facebook"]]
-                                :closeable false}]))])
-
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
@@ -111,10 +95,10 @@
      :title {:flex-grow 1}
      :menu-button {(sm-up "sm") {:display :none} :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
-     :content {:flex-grow 1 :padding (spacing 3) :padding-top (spacing 7)}
+     :content {:flex-grow 1 :padding (spacing 2) :padding-top (spacing 8)}
      :buttons {:padding-top (spacing 1)}
      :who-pays-whom {:padding-left (spacing 4)}
-     :paper {:background-color (get-in palette [:background :paper])}}))
+     :paper {:padding (spacing 2)}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 
@@ -192,38 +176,58 @@
    [grid {:item true}
     (when-let [active-page @(rf/subscribe [::subs/active-page])]
       (condp = active-page
-        :dashboard [dashboard/dashboard]
+        :dashboard [dashboard/dashboard props]
         :reconcile [reconcile/reconcile]
         :report [report/report]
         :properties [crud-impl/properties props]
         :charges [crud-impl/charges props]
         :delegates [crud-impl/delegates props]
-        :settings [settings/settings]))]])
+        :settings [settings/settings props]))]])
 
-(defn container [{:keys [classes] :as props}]
-  [:div {:class (:root classes)}
-   [header props]
-   [nav props]
-   [main props]])
+(defn sign-in-panel []
+  [:div
+   [css-baseline]
+   [styles/theme-provider (styles/create-mui-theme custom-theme)
+    [(with-custom-styles
+       (fn [{:keys [classes] :as props}]
+         [:div {:class (:root classes)}
+          [dialog {:open true
+                   :disable-backdrop-click true
+                   :disable-escape-key-down true}
+           [dialog-title "Sign in"]
+           [dialog-content 
+            [grid {:container true
+                   :direction :column
+                   :align-items :center
+                   :spacing 2}
+             [grid {:item true}
+              [text-field {:label "Email" :type :email :value "demo@email.com" :on-change #()}]]
+             [grid {:item true}
+              [text-field {:label "Password" :type :password :value "***********" :on-change #()}]]
+             [grid {:item true}
+              [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
 
 (defn main-panel []
   [:div
    [css-baseline]
   ;;  [splash]
-  ;;  [dialog/dialog]
   ;;  [progress-bar]
   ;; [fab]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
                                 :locale DateTimeSymbols_en_US}
     [styles/theme-provider (styles/create-mui-theme custom-theme)
-     [grid
-      {:container true
-       :direction :row
-       :justify   :flex-start}
-      [grid
-       {:item true
-        :xs   12}
-       [(with-custom-styles container)]]]]]])
+     [grid {:container true
+            :direction :row
+            :justify   :flex-start}
+      [grid {:item true
+             :xs   12}
+       [(with-custom-styles
+          (fn [{:keys [classes] :as props}]
+            [:div {:class (:root classes)}
+             [header props]
+             [nav props]
+             [main props]
+             [dialog/create-dialog]]))]]]]]])
 
 
 
