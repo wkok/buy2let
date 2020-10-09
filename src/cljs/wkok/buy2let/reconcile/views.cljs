@@ -130,7 +130,7 @@
     [paper 
      [grid {:container true
             :direction :column}
-      [grid {:item true}
+      [grid {:item true  :xs 12}
        [table-container
         [table {:size :small}
          [table-head
@@ -144,13 +144,12 @@
           (for [charge property-charges]
             ^{:key (:id charge)}
             [view-overview-row charge options])]]]]
-      [grid {:item true}
-       [grid {:container true
-              :justify :flex-end}
-        [grid {:item true
-               :class (get-in props [:classes :paper])}
-         (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
-                        "Detailed view")]]]]]))
+      [grid {:container true
+             :item true
+             :class (get-in props [:classes :paper])
+             :justify :flex-end}
+       (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
+                      "Detailed view")]]]))
 
 (defn build-edit-url []
   (let [options (re/calc-options {})]
@@ -250,7 +249,7 @@
      [grid {:item true}
       [cards options]])
    (when (not-any? nil? [property year month])
-     [grid {:item true}
+     [grid {:item true :xs 12}
       (case @(rf/subscribe [::rs/reconcile-view-toggle])
         :accounting [view-accounting {:ledger ledger
                                       :property-charges property-charges

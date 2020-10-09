@@ -185,14 +185,14 @@
                                        :right {:text     "Cancel"}}}]))
 
 (defn view-report 
-  [{:keys [ledger property-charges report property props] :as options}]
+  [{:keys [property-charges report props] :as options}]
   (rf/dispatch [:set-fab-actions {:left-1 {:fn   #(zip-invoices-confirm property-charges)
                                            :icon "fa-download"}}])
   (let [months (-> (get-in report [:result :months]) reverse)]
     [paper
      [grid {:container true
             :direction :column}
-      [grid {:item true}
+      [grid {:item true :xs 12}
        [table-container
         [table {:size :small}
          [table-head
@@ -205,16 +205,15 @@
           [report-owed-row months options]
           [report-cash-row months options]
           [report-edit-row months options]]]]]
-      [grid {:item true}
-       [grid {:container true
-              :justify :flex-end}
-        [grid {:item true
-               :class (get-in props [:classes :paper])}
-         (if (= true (:show-invoices report))
-           (shared/anchor #(rf/dispatch [::re/report-set-show-invoices false])
-                          "Hide invoices / notes")
-           (shared/anchor #(rf/dispatch [::re/report-set-show-invoices true])
-                          "Show invoices / notes"))]]]]]))
+      [grid {:container true
+             :item true
+             :class (get-in props [:classes :paper])
+             :justify :flex-end}
+       (if (= true (:show-invoices report))
+         (shared/anchor #(rf/dispatch [::re/report-set-show-invoices false])
+                        "Hide invoices / notes")
+         (shared/anchor #(rf/dispatch [::re/report-set-show-invoices true])
+                        "Show invoices / notes"))]]]))
 
 (defn criteria
   [{:keys [properties props]}]
@@ -261,7 +260,7 @@
          :spacing 2}
    [grid {:item true}
     [criteria options]]
-   [grid {:item true}
+   [grid {:item true :xs 12}
     (if (not (nil? property))
       [view-report options]
       (rf/dispatch [:set-fab-actions nil]))]])
