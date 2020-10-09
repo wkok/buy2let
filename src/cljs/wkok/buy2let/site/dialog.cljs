@@ -7,8 +7,7 @@
             [reagent-material-ui.core.dialog-title :refer [dialog-title]]
             [reagent-material-ui.core.dialog-content :refer [dialog-content]]
             [reagent-material-ui.core.dialog-content-text :refer [dialog-content-text]]
-            [reagent-material-ui.core.dialog-actions :refer [dialog-actions]]
-            ))
+            [reagent-material-ui.core.dialog-actions :refer [dialog-actions]]))
 
 (defn make-button [btn]
   [button {:color (or (:color btn) :primary)

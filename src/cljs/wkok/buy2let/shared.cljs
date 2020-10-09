@@ -78,30 +78,34 @@
         last-year (-> t/today t/year js/parseInt dec str keyword)
         this-year (-> t/today t/year str keyword)
         next-year (-> t/today t/year js/parseInt inc str keyword)]
-    [:select {:field     :list
-              :on-change on-change
-              :value     value}
-     [:option {:value second-last-year} second-last-year]
-     [:option {:value last-year} last-year]
-     [:option {:value this-year} this-year]
-     [:option {:value next-year} next-year]]))
+    [text-field {:select true
+                 :label " "
+                 :field     :list
+                 :on-change on-change
+                 :value     value}
+     [menu-item {:value second-last-year} second-last-year]
+     [menu-item {:value last-year} last-year]
+     [menu-item {:value this-year} this-year]
+     [menu-item {:value next-year} next-year]]))
 
-(defn select-month [on-change value]
-  [:select {:field     :list
-            :on-change on-change
-            :value     value}
-   [:option {:value 1} "Jan"]
-   [:option {:value 2} "Feb"]
-   [:option {:value 3} "Mar"]
-   [:option {:value 4} "Apr"]
-   [:option {:value 5} "May"]
-   [:option {:value 6} "Jun"]
-   [:option {:value 7} "Jul"]
-   [:option {:value 8} "Aug"]
-   [:option {:value 9} "Sep"]
-   [:option {:value 10} "Oct"]
-   [:option {:value 11} "Nov"]
-   [:option {:value 12} "Dec"]])
+(defn select-month [on-change value label]
+  [text-field {:select true
+               :label label
+               :field     :list
+               :on-change on-change
+               :value     value}
+   [menu-item {:value 1} "Jan"]
+   [menu-item {:value 2} "Feb"]
+   [menu-item {:value 3} "Mar"]
+   [menu-item {:value 4} "Apr"]
+   [menu-item {:value 5} "May"]
+   [menu-item {:value 6} "Jun"]
+   [menu-item {:value 7} "Jul"]
+   [menu-item {:value 8} "Aug"]
+   [menu-item {:value 9} "Sep"]
+   [menu-item {:value 10} "Oct"]
+   [menu-item {:value 11} "Nov"]
+   [menu-item {:value 12} "Dec"]])
 
 
 (defn month-range [from to]

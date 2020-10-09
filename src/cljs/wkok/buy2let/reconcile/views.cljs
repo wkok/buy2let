@@ -1,5 +1,6 @@
 (ns wkok.buy2let.reconcile.views
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.reconcile.subs :as rs]
@@ -8,7 +9,19 @@
             [wkok.buy2let.shared :as shared]
             [tick.alpha.api :as t]
             [fork.re-frame :as fork]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [reagent-material-ui.core.card :refer [card]]
+            [reagent-material-ui.core.card-content :refer [card-content]]
+            [reagent-material-ui.core.paper :refer [paper]]
+            [reagent-material-ui.core.typography :refer [typography]]
+            [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.table :refer [table]]
+            [reagent-material-ui.core.table-container :refer [table-container]]
+            [reagent-material-ui.core.table-head :refer [table-head]]
+            [reagent-material-ui.core.table-body :refer [table-body]]
+            [reagent-material-ui.core.table-row :refer [table-row]]
+            [reagent-material-ui.core.table-cell :refer [table-cell]]
+))
 
 
 (defn format-amount [ledger path]
@@ -95,41 +108,49 @@
     (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
                    "Simple view")]])
 
-(defn view-overview-row [charge ledger property year month]
-  [:tr
-   [:td (:name charge)]
-   [:td.reconcile-view-amount-col
+(defn view-overview-row
+  [charge {:keys [ledger property year month]}]
+  [table-row
+   [table-cell (:name charge)]
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :breakdown (:id charge) :amount])]
-   [:td.reconcile-view-invoice-col (when (get-in ledger [:this-month :breakdown (:id charge) :invoiced])
-                                     [:i.fas.fa-paperclip {:on-click #(rf/dispatch [::shared/view-invoice
-                                                                                    (:id property)
-                                                                                    year
-                                                                                    month
-                                                                                    charge])}])]
-   [:td.reconcile-view-note-col (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
-                                  (when (not (s/blank? note))
-                                    [:i.far.fa-sticky-note {:on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}]))]])
+   [table-cell (when (get-in ledger [:this-month :breakdown (:id charge) :invoiced])
+                 [:i.fas.fa-paperclip {:on-click #(rf/dispatch [::shared/view-invoice
+                                                                (:id property)
+                                                                year
+                                                                month
+                                                                charge])}])]
+   [table-cell (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
+                 (when (not (s/blank? note))
+                   [:i.far.fa-sticky-note {:on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}]))]])
 
-
-
-(defn view-overview [ledger property-charges property year month]
-  [:div
-   [:div.scrollable-x
-    [:table.reconcile-view-container
-     [:thead
-      [:tr
-       [:th "Charge"]
-       [:th.reconcile-view-amount-col "Amount"]
-       [:th]
-       [:th]]]
-     [:tbody
-      (for [charge property-charges]
-        ^{:key (:id charge)}
-        [view-overview-row charge ledger property year month])]]]
-   [:div.reconcile-view-accounting
-    (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
-                   "Detailed view")]])
-
+(defn view-overview
+  [{:keys [property-charges props] :as options}]
+  (let [class-table-header (get-in props [:classes :table-header])]
+    [paper 
+     [grid {:container true
+            :direction :column}
+      [grid {:item true}
+       [table-container
+        [table {:size :small}
+         [table-head
+          [table-row
+           [table-cell {:class class-table-header} "Charge"]
+           [table-cell {:class class-table-header
+                        :align :right} "Amount"]
+           [table-cell]
+           [table-cell]]]
+         [table-body
+          (for [charge property-charges]
+            ^{:key (:id charge)}
+            [view-overview-row charge options])]]]]
+      [grid {:item true}
+       [grid {:container true
+              :justify :flex-end}
+        [grid {:item true
+               :class (get-in props [:classes :paper])}
+         (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
+                        "Detailed view")]]]]]))
 
 (defn build-edit-url []
   (let [options (re/calc-options {})]
@@ -138,64 +159,105 @@
          "/" (-> (:year options) name)
          "/edit")))
 
+(defn criteria
+  [{:keys [properties props]}]
+  [paper {:class (get-in props [:classes :paper])}
+   [grid {:container true
+          :direction :row
+          :justify :space-between}
+    [grid {:item true}
+     (shared/select-property properties
+                             #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
+                             @(rf/subscribe [::ss/active-property])
+                             "--select--" "Property")]
+    [grid {:item true}
+     [grid {:container true
+            :direction :row
+            :wrap :nowrap}
+      [grid {:item true}
+       (shared/select-month #(rf/dispatch [::re/reconcile-set-month (.. % -target -value)])
+                            @(rf/subscribe [::rs/reconcile-month])
+                            "Period")]
+      [grid {:item true}
+       (shared/select-year #(rf/dispatch [::re/reconcile-set-year (.. % -target -value)])
+                           @(rf/subscribe [::rs/reconcile-year]))]]]]])
 
-(defn view-panel [property year month ledger properties property-charges charges]
-  [:div
-   [:div.reconcile-options-container
-    (shared/select-property properties
-                            #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
-                            @(rf/subscribe [::ss/active-property])
-                            "--select--" "Property")
-    [:label "Period:"
-     [:div.year-month
-      (shared/select-month #(rf/dispatch [::re/reconcile-set-month (.. % -target -value)])
-                           @(rf/subscribe [::rs/reconcile-month]))
-      (shared/select-year #(rf/dispatch [::re/reconcile-set-year (.. % -target -value)])
-                          @(rf/subscribe [::rs/reconcile-year]))]]]
-   [:br]
-   (if (not-any? nil? [property year month])
-     (let [profit (-> (+ (get-in ledger [:this-month :totals :owner])
-                         (get-in ledger [:this-month :totals :agent-current]))
-                      shared/to-money)
-           owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
-           cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
-       (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon "fa-edit"}}])
-       [:div
-        [:div.reconcile-view-overview-container
-         (when (not (zero? profit))
-           [:div.reconcile-view-overview-profit
-            (if (neg? profit)
-              [:div.reconcile-view-amount-neg
-               [:h5 (shared/format-money profit)]
-               [:label "(net loss)"]]
-              [:div.reconcile-view-amount-pos
-               [:h5 (shared/format-money profit)]
-               [:label "(net profit)"]])])
-         (when (not (zero? owed))
-           [:div.reconcile-view-overview-owed
-            (if (pos? owed)
-              [:div.reconcile-view-amount-owe
-               [:h5 (shared/format-money owed)]
-               [:label "(owed to owner)"]]
-              (when (neg? owed)
-                [:div.reconcile-view-amount-neg
-                 [:h5 (shared/format-money owed)]
-                 [:label "(owed to agent)"]]))])
-         (when (not (= cash profit))
-           [:div.reconcile-view-overview-cash
-            (if (neg? cash)
-              [:div.reconcile-view-amount-neg
-               [:h5 (shared/format-money cash)]
-               [:label "(cash flow)"]]
-              [:div.reconcile-view-amount-pos
-               [:h5 (shared/format-money cash)]
-               [:label "(cash flow)"]])])]
-        [:br]
-        (case @(rf/subscribe [::rs/reconcile-view-toggle])
-          :accounting [view-accounting ledger property-charges charges]
-          [view-overview ledger property-charges property year month])])
+(defn cards
+  [{:keys [ledger]}]
+  (let [profit (-> (+ (get-in ledger [:this-month :totals :owner])
+                      (get-in ledger [:this-month :totals :agent-current]))
+                   shared/to-money)
+        owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
+        cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
+    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon "fa-edit"}}])
+    [grid {:container true
+           :direction :row}
+     (when (not (zero? profit))
+       [grid {:item true}
+        (if (neg? profit)
+          [card
+           [card-content
+            [typography {:variant :h5}
+             (shared/format-money profit)]
+            [typography {:color :textSecondary}
+             "(net loss)"]]]
+          [card
+           [card-content
+            [typography {:variant :h5}
+             (shared/format-money profit)]
+            [typography {:color :textSecondary}
+             "(net profit)"]]])])
+     (when (not (zero? owed))
+       [grid {:item true}
+        (if (pos? owed)
+          [card
+           [card-content
+            [typography {:variant :h5}
+             (shared/format-money owed)]
+            [typography {:color :textSecondary}
+             "(owed to owner)"]]]
+          (when (neg? owed)
+            [card
+             [card-content
+              [typography {:variant :h5}
+               (shared/format-money owed)]
+              [typography {:color :textSecondary}
+               "(owed to agent)"]]]))])
+     (when (not (= cash profit))
+       [grid {:item true}
+        (if (neg? cash)
+          [card
+           [card-content
+            [typography {:variant :h5}
+             (shared/format-money cash)]
+            [typography {:color :textSecondary}
+             "(cash flow)"]]]
+          [card
+           [card-content
+            [typography {:variant :h5}
+             (shared/format-money cash)]
+            [typography {:color :textSecondary}
+             "(cash flow)"]]])])]))
+
+(defn view-panel
+  [{:keys [property year month ledger property-charges charges] :as options}]
+  [grid {:container true
+         :direction :column
+         :spacing 2}
+   [grid {:item true}
+    [criteria options]]
+   (when (not-any? nil? [property year month])
+     [grid {:item true}
+      [cards options]])
+   (when (not-any? nil? [property year month])
+     [grid {:item true}
+      (case @(rf/subscribe [::rs/reconcile-view-toggle])
+        :accounting [view-accounting {:ledger ledger
+                                      :property-charges property-charges
+                                      :charges charges}]
+        [view-overview options])])
+   (when (not-any? nil? [property year month])
      (rf/dispatch [:set-fab-actions nil]))])
-
 
 (defn swap-amount [val charge-id state format-fn parse-fn abs-fn]
   (let [path [:values :this-month :breakdown charge-id :amount]]
@@ -246,16 +308,6 @@
                                                                                   :on-click (fn [] (swap-invoice-deleted state charge))}
                                                                           :right {:text "Cancel"}}}]))}
     [:i {:aria-hidden "true" :class "fa fa-trash"}]]])
-
-;(defn edit-invoice-field-view [charge property year month]
-;  [:div.upload-btn-wrapper
-;   [:button.upload-btn {:type     :button
-;                        :on-click #(rf/dispatch [::shared/view-invoice
-;                                                 (:id property)
-;                                                 year
-;                                                 month
-;                                                 charge])}
-;    [:i {:aria-hidden "true" :class "fa fa-eye"}]]])
 
 (defn edit-invoice-field [charge values state handle-blur property year month]
   [:div.reconcile-edit-component-invoice
@@ -312,7 +364,7 @@
         [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])]])
 
 
-(defn reconcile []
+(defn reconcile [props]
   (let [properties @(rf/subscribe [::cs/properties])
         charges @(rf/subscribe [::cs/charges])
         property (shared/by-id @(rf/subscribe [::ss/active-property]) properties)
@@ -325,4 +377,11 @@
 
     (case @(rf/subscribe [::ss/active-panel])
       :reconcile-edit [edit-panel property year month ledger property-charges]
-      [view-panel property year month ledger properties property-charges charges])))
+      [view-panel {:property property 
+                   :year year 
+                   :month month 
+                   :ledger ledger 
+                   :properties properties 
+                   :property-charges property-charges 
+                   :charges charges
+                   :props props}])))

@@ -41,21 +41,21 @@
         heading (or (:label type) (-> (:subs type) name s/capitalize))]
     [paper {:class (get-in props [:classes :paper])}
      [grid {:container true
-           :direction :column}
-     [grid {:item true}
-      [list {:subheader (ra/as-element [list-subheader heading])}
-       (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
-                          @(rf/subscribe [(:subs type)]))]
-         ^{:key item}
-         [row item type])]]
-     [grid {:container true
-            :justify :flex-end}
+            :direction :column}
       [grid {:item true}
-       (if show-hidden
-         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
-                        (str "Hide " (get type :hidden-label "hidden")))
-         (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
-                        (str "Show " (get type :hidden-label "hidden"))))]]]]))
+       [list {:subheader (ra/as-element [list-subheader heading])}
+        (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
+                           @(rf/subscribe [(:subs type)]))]
+          ^{:key item}
+          [row item type])]]
+      [grid {:container true
+             :justify :flex-end}
+       [grid {:item true}
+        (if show-hidden
+          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
+                         (str "Hide " (get type :hidden-label "hidden")))
+          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
+                         (str "Show " (get type :hidden-label "hidden"))))]]]]))
 
 
 (defn build-checkbox

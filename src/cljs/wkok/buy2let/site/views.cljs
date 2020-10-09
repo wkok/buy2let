@@ -1,6 +1,7 @@
 (ns wkok.buy2let.site.views
   (:require
    [re-frame.core :as rf]
+   [reagent.core :as ra]
    [clojure.string :as s]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
@@ -46,7 +47,13 @@
    [reagent-material-ui.core.dialog-title :refer [dialog-title]]
    [reagent-material-ui.core.dialog-content :refer [dialog-content]]
    [reagent-material-ui.core.dialog-content-text :refer [dialog-content-text]]
-   [reagent-material-ui.core.dialog-actions :refer [dialog-actions]])
+   [reagent-material-ui.core.dialog-actions :refer [dialog-actions]]
+   [reagent-material-ui.core.table :refer [table]]
+   [reagent-material-ui.core.table-container :refer [table-container]]
+   [reagent-material-ui.core.table-head :refer [table-head]]
+   [reagent-material-ui.core.table-body :refer [table-body]]
+   [reagent-material-ui.core.table-row :refer [table-row]]
+   [reagent-material-ui.core.table-cell :refer [table-cell]])
 (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -86,19 +93,24 @@
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
-(defn custom-styles [{:keys [spacing breakpoints palette] :as theme}]
-  (let [drawer-width 200
-        sm-up (:up breakpoints)]
+(defn custom-styles [{:keys [spacing breakpoints] :as theme}]
+  (let [up (:up breakpoints)
+        drawer-width 200]
     {:root {:display :flex}
-     :drawer {(sm-up "sm") {:width drawer-width, :flex-shrink 0}}
-     :app-bar {(sm-up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
+     :drawer {(up "sm") {:width drawer-width, :flex-shrink 0}}
+     :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
      :title {:flex-grow 1}
-     :menu-button {(sm-up "sm") {:display :none} :margin-right (spacing 2)}
+     :menu-button {(up "sm") {:display :none} 
+                   :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
-     :content {:flex-grow 1 :padding (spacing 2) :padding-top (spacing 8)}
+     :content {:flex-grow 1 
+               :padding (spacing 2) 
+               :padding-top (spacing 8)
+               :overflow-x :hidden}
      :buttons {:padding-top (spacing 1)}
      :who-pays-whom {:padding-left (spacing 4)}
-     :paper {:padding (spacing 2)}}))
+     :paper {:padding (spacing 2)}
+     :table-header {:font-weight 600}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 
@@ -173,23 +185,22 @@
 
 (defn main [{:keys [classes] :as props}]
   [:main {:class (:content classes)}
-   [grid {:item true}
-    (when-let [active-page @(rf/subscribe [::subs/active-page])]
-      (condp = active-page
-        :dashboard [dashboard/dashboard props]
-        :reconcile [reconcile/reconcile]
-        :report [report/report]
-        :properties [crud-impl/properties props]
-        :charges [crud-impl/charges props]
-        :delegates [crud-impl/delegates props]
-        :settings [settings/settings props]))]])
+   (when-let [active-page @(rf/subscribe [::subs/active-page])]
+     (condp = active-page
+       :dashboard [dashboard/dashboard props]
+       :reconcile [reconcile/reconcile props]
+       :report [report/report props]
+       :properties [crud-impl/properties props]
+       :charges [crud-impl/charges props]
+       :delegates [crud-impl/delegates props]
+       :settings [settings/settings props]))])
 
 (defn sign-in-panel []
   [:div
    [css-baseline]
    [styles/theme-provider (styles/create-mui-theme custom-theme)
     [(with-custom-styles
-       (fn [{:keys [classes] :as props}]
+       (fn [{:keys [classes]}]
          [:div {:class (:root classes)}
           [dialog {:open true
                    :disable-backdrop-click true
@@ -210,7 +221,10 @@
 (defn main-panel []
   [:div
    [css-baseline]
-  ;;  [splash]
+
+   
+
+   ;;  [splash]
   ;;  [progress-bar]
   ;; [fab]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
