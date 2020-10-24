@@ -311,7 +311,7 @@
            :justify :flex-end}
      [prev-month charge values state]]]])
 
-(defn edit-invoice-field-upload [charge state handle-blur text icon]
+(defn edit-invoice-field-upload [charge state handle-blur icon]
   [:div
    [:input {:id        (:id charge)
             :name      "invoice"
@@ -354,10 +354,10 @@
         [grid {:item true}
          [edit-invoice-field-delete charge state property year month]]
         [grid {:item true}
-         [edit-invoice-field-upload charge state handle-blur "" [cloud-done]]]]
+         [edit-invoice-field-upload charge state handle-blur [cloud-done]]]]
        (if attached
-         [edit-invoice-field-upload charge state handle-blur " Invoice" [cloud-done]]
-         [edit-invoice-field-upload charge state handle-blur " Invoice" [cloud-upload]])))])
+         [edit-invoice-field-upload charge state handle-blur [cloud-done]]
+         [edit-invoice-field-upload charge state handle-blur [cloud-upload]])))])
 
 (defn edit-note-field
   [charge {:keys [values state handle-blur]}]
