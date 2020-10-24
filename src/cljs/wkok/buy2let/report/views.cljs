@@ -12,6 +12,7 @@
             ;; [cljc.java-time.month :as tm]
             ;; [fork.core :as fork]
             [clojure.string :as s]
+            [reagent-material-ui.icons.cloud-download :refer [cloud-download]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.table :refer [table]]
@@ -107,7 +108,7 @@
          (shared/format-money cash)]))))
 
 (defn report-edit-col 
-  [m {:keys [property props]}]
+  [m {:keys [property]}]
   [table-cell {:align :right}
    [:button {:type :button :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                                       "/" (-> (:month m) name)
@@ -150,7 +151,7 @@
    [report-profit-row-total options]])
 
 (defn report-owed-row 
-  [months {:keys [ledger] :as options}]
+  [months options]
   [table-row
    [table-cell
     [:strong [:label.report-view-amount-owe "Owed"] " / " [:label.report-view-amount-neg "(Owing)"]]]
@@ -160,7 +161,7 @@
    [table-cell "-"]])
 
 (defn report-cash-row 
-  [months {:keys [ledger] :as options}]
+  [months options]
   [table-row
    [table-cell [:strong "Cash Flow"]]
    (for [m months]
@@ -169,7 +170,7 @@
    [table-cell "-"]])
 
 (defn report-edit-row 
-  [months {:keys [property] :as options}]
+  [months options]
   [table-row
    [table-cell]
    (for [m months]
@@ -178,7 +179,7 @@
    [table-cell]])
 
 (defn zip-invoices-confirm [property-charges]
-  (rf/dispatch [::se/dialog {:heading "Continue?"
+  (rf/dispatch [::se/dialog {:heading "Download?"
                              :message "This will download all invoices for the selected period & might take a while"
                              :buttons {:left  {:text     "Yes"
                                                :on-click #(rf/dispatch [::re/zip-invoices property-charges])}
@@ -187,7 +188,7 @@
 (defn view-report 
   [{:keys [property-charges report props] :as options}]
   (rf/dispatch [:set-fab-actions {:left-1 {:fn   #(zip-invoices-confirm property-charges)
-                                           :icon "fa-download"}}])
+                                           :icon [cloud-download]}}])
   (let [months (-> (get-in report [:result :months]) reverse)]
     [paper
      [grid {:container true

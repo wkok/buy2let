@@ -5,16 +5,14 @@
             [wkok.buy2let.site.subs :as ss]
             [goog.crypt.base64 :as b64]
             [clojure.string :as s]
+            [reagent-material-ui.icons.add :refer [add]]
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.checkbox :refer [checkbox]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.menu-item :refer [menu-item]]
             [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
             [reagent-material-ui.core.list-subheader :refer [list-subheader]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.list-item-secondary-action :refer [list-item-secondary-action]]
             [reagent-material-ui.core.list :refer [list]]))
 
 (defn validate-name [values]
@@ -35,7 +33,7 @@
    :subs        ::cs/properties
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon "fa-plus"}}}
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]}}}
    :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]
                   [grid {:item true}
                    [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
@@ -91,7 +89,7 @@
    :subs        ::cs/charges
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(validate-name %)
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon "fa-plus"}}}})
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]}}}})
 
 (defn calc-status [item]
   (assoc item :status
@@ -136,6 +134,6 @@
               :roles ["viewer"]}
    :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon "fa-plus"}}}
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]}}}
    :hidden-label "revoked"
    :label "Invitees"})

@@ -1,6 +1,5 @@
 (ns wkok.buy2let.reconcile.views
   (:require [re-frame.core :as rf]
-            [reagent.core :as ra]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.reconcile.subs :as rs]
@@ -10,58 +9,46 @@
             [tick.alpha.api :as t]
             [fork.re-frame :as fork]
             [clojure.string :as s]
+            [reagent-material-ui.icons.edit :refer [edit]]
+            [reagent-material-ui.icons.cloud-upload :refer [cloud-upload]]
+            [reagent-material-ui.icons.cloud-done :refer [cloud-done]]
+            [reagent-material-ui.icons.delete-forever :refer [delete-forever]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.card-content :refer [card-content]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.table :refer [table]]
+            [reagent-material-ui.core.button :refer [button]]
+            [reagent-material-ui.core.icon-button :refer [icon-button]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.table-container :refer [table-container]]
             [reagent-material-ui.core.table-head :refer [table-head]]
             [reagent-material-ui.core.table-body :refer [table-body]]
             [reagent-material-ui.core.table-row :refer [table-row]]
-            [reagent-material-ui.core.table-cell :refer [table-cell]]
-))
+            [reagent-material-ui.core.table-cell :refer [table-cell]]))
 
 
 (defn format-amount [ledger path]
   (->> (get-in ledger path) shared/format-money))
 
-(defn view-accounting-header []
-  [:thead
-   [:tr
-    [:th]
-    [:th]
-    [:th.reconcile-view-merged-col.reconcile-view-alternate-col {:col-span 2} "Agent"]
-    [:th]
-    [:th.reconcile-view-merged-col.reconcile-view-alternate-col {:col-span 2} "Bank"]
-    [:th]]
-   [:tr
-    [:th "Charge"]
-    [:th.reconcile-view-amount-col "Tenant"]
-    [:th.reconcile-view-amount-col.reconcile-view-alternate-col "Current"]
-    [:th.reconcile-view-amount-col.reconcile-view-alternate-col "Comm."]
-    [:th.reconcile-view-amount-col "Owner"]
-    [:th.reconcile-view-amount-col.reconcile-view-alternate-col "Current"]
-    [:th.reconcile-view-amount-col.reconcile-view-alternate-col "Interest"]
-    [:th.reconcile-view-amount-col "Supplier"]]])
 
 (defn view-accounting-row [charge ledger]
-  [:tr
-   [:td (:name charge)]
-   [:td.reconcile-view-amount-col
+  [table-row
+   [table-cell (:name charge)]
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :tenant (:id charge)])]
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :agent-current (:id charge)])]
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :agent-commission (:id charge)])]
-   [:td.reconcile-view-amount-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :owner (:id charge)])]
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :bank-current (:id charge)])]
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :bank-interest (:id charge)])]
-   [:td.reconcile-view-amount-col
+   [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :supplier (:id charge)])]])
 
 (defn view-accounting-detail [ledger property-charges]
@@ -69,44 +56,82 @@
     ^{:key (:id charge)}
     [view-accounting-row charge ledger]))
 
-(defn view-accounting-total [ledger]
-  [:tr
-   [:td [:strong "Total:"]]
-   [:td.reconcile-view-amount-col
-    [:strong (format-amount ledger [:this-month :totals :tenant])]]
-   (let [agent-balance (get-in ledger [:this-month :totals :agent-current])]
-     [:td {:class (if (neg? agent-balance)
-                    "reconcile-view-alternate-col reconcile-view-amount-col reconcile-view-amount-neg"
-                    (if (pos? agent-balance)
-                      "reconcile-view-alternate-col reconcile-view-amount-col reconcile-view-amount-owe"
-                      "reconcile-view-alternate-col reconcile-view-amount-col"))}
-      [:strong (->> agent-balance shared/format-money)]])
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
-    [:strong (format-amount ledger [:this-month :totals :agent-commission])]]
-   (let [owner-balance (get-in ledger [:this-month :totals :owner])]
-     [:td {:class (if (neg? owner-balance)
-                    "reconcile-view-amount-col reconcile-view-amount-neg"
-                    "reconcile-view-amount-col reconcile-view-amount-pos")}
-      [:strong (->> owner-balance shared/format-money)]])
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
-    [:strong (format-amount ledger [:this-month :totals :bank-current])]]
-   [:td.reconcile-view-amount-col.reconcile-view-alternate-col
-    [:strong (format-amount ledger [:this-month :totals :bank-interest])]]
-   [:td.reconcile-view-amount-col
-    [:strong (format-amount ledger [:this-month :totals :supplier])]]])
+(defn view-accounting-total
+  [{:keys [ledger props]}]
+  (let [class-table-header (get-in props [:classes :table-header])]
+    [table-row
+     [table-cell {:class class-table-header} "Total:"]
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :tenant])]
+     (let [agent-balance (get-in ledger [:this-month :totals :agent-current])]
+       [table-cell {:align :right
+                    :class class-table-header}
+        (->> agent-balance shared/format-money)])
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :agent-commission])]
+     (let [owner-balance (get-in ledger [:this-month :totals :owner])]
+       [table-cell {:align :right
+                    :class class-table-header}
+        (->> owner-balance shared/format-money)])
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :bank-current])]
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :bank-interest])]
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :supplier])]]))
 
-(defn view-accounting [ledger property-charges charges]
-  [:div
-   [:div.scrollable-x
-    [:table.reconcile-view-container
-     [view-accounting-header]
-     [:tbody
-      [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger]
-      (view-accounting-detail ledger property-charges)
-      [view-accounting-total ledger]]]]
-   [:div.reconcile-view-accounting
-    (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
-                   "Simple view")]])
+(defn view-accounting
+  [{:keys [ledger property-charges charges props] :as options}]
+  (let [class-table-header (get-in props [:classes :table-header])]
+    [paper
+     [grid {:container true
+            :direction :column}
+      [grid {:item true  :xs 12}
+       [table-container
+        [table {:size :small}
+         [table-head
+          [table-row
+           [table-cell]
+           [table-cell]
+           [table-cell {:align :center
+                        :col-span 2
+                        :class class-table-header} "Agent"]
+           [table-cell]
+           [table-cell {:align :center
+                        :col-span 2
+                        :class class-table-header} "Bank"]
+           [table-cell]]
+          [table-row
+           [table-cell {:class class-table-header} "Charge"]
+           [table-cell {:align :right
+                        :class class-table-header} "Tenant"]
+           [table-cell {:align :right
+                        :class class-table-header} "Current"]
+           [table-cell {:align :right
+                        :class class-table-header} "Comm."]
+           [table-cell {:align :right
+                        :class class-table-header} "Owner"]
+           [table-cell {:align :right
+                        :class class-table-header} "Current"]
+           [table-cell {:align :right
+                        :class class-table-header} "Interest"]
+           [table-cell {:align :right
+                        :class class-table-header} "Supplier"]]]
+         [table-body
+          [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger]
+          (view-accounting-detail ledger property-charges)
+          [view-accounting-total options]]]]]
+      [grid {:container true
+             :item true
+             :class (get-in props [:classes :paper])
+             :justify :flex-end}
+       (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
+                      "Simple view")]]]))
 
 (defn view-overview-row
   [charge {:keys [ledger property year month]}]
@@ -127,7 +152,7 @@
 (defn view-overview
   [{:keys [property-charges props] :as options}]
   (let [class-table-header (get-in props [:classes :table-header])]
-    [paper 
+    [paper
      [grid {:container true
             :direction :column}
       [grid {:item true  :xs 12}
@@ -188,58 +213,60 @@
                    shared/to-money)
         owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
         cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
-    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon "fa-edit"}}])
+    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]}}])
     [grid {:container true
-           :direction :row}
+           :direction :row
+           :justify :space-between
+           :spacing 2}
      (when (not (zero? profit))
-       [grid {:item true}
+       [grid {:item true :xs 4}
         (if (neg? profit)
           [card
            [card-content
-            [typography {:variant :h5}
+            [typography {:variant :h6}
              (shared/format-money profit)]
-            [typography {:color :textSecondary}
+            [typography {:variant :caption}
              "(net loss)"]]]
           [card
            [card-content
-            [typography {:variant :h5}
+            [typography {:variant :h6}
              (shared/format-money profit)]
-            [typography {:color :textSecondary}
+            [typography {:variant :caption}
              "(net profit)"]]])])
      (when (not (zero? owed))
-       [grid {:item true}
+       [grid {:item true :xs 4}
         (if (pos? owed)
           [card
            [card-content
-            [typography {:variant :h5}
+            [typography {:variant :h6}
              (shared/format-money owed)]
-            [typography {:color :textSecondary}
+            [typography {:variant :caption}
              "(owed to owner)"]]]
           (when (neg? owed)
             [card
              [card-content
-              [typography {:variant :h5}
+              [typography {:variant :h6}
                (shared/format-money owed)]
-              [typography {:color :textSecondary}
+              [typography {:variant :caption}
                "(owed to agent)"]]]))])
      (when (not (= cash profit))
-       [grid {:item true}
+       [grid {:item true :xs 4}
         (if (neg? cash)
           [card
            [card-content
-            [typography {:variant :h5}
+            [typography {:variant :h6}
              (shared/format-money cash)]
-            [typography {:color :textSecondary}
+            [typography {:variant :caption}
              "(cash flow)"]]]
           [card
            [card-content
-            [typography {:variant :h5}
+            [typography {:variant :h6}
              (shared/format-money cash)]
-            [typography {:color :textSecondary}
+            [typography {:variant :caption}
              "(cash flow)"]]])])]))
 
 (defn view-panel
-  [{:keys [property year month ledger property-charges charges] :as options}]
+  [{:keys [property year month] :as options}]
   [grid {:container true
          :direction :column
          :spacing 2}
@@ -251,9 +278,7 @@
    (when (not-any? nil? [property year month])
      [grid {:item true :xs 12}
       (case @(rf/subscribe [::rs/reconcile-view-toggle])
-        :accounting [view-accounting {:ledger ledger
-                                      :property-charges property-charges
-                                      :charges charges}]
+        :accounting [view-accounting options]
         [view-overview options])])
    (when (not-any? nil? [property year month])
      (rf/dispatch [:set-fab-actions nil]))])
@@ -266,31 +291,41 @@
 
 (defn prev-month [charge values state]
   (when-let [amount (get-in values [:prev-month :breakdown (:id charge) :amount])]
-    [:div.reconcile-edit-component-amount-prev
-     (shared/anchor #(swap-amount amount (:id charge) state shared/format-money js/parseFloat Math/abs)
-                    (str "(use previous: " (shared/format-money amount) ")"))]))
+    (shared/anchor #(swap-amount amount (:id charge) state shared/format-money js/parseFloat Math/abs)
+                   (str "(use previous: " (shared/format-money amount) ")"))))
 
-(defn edit-amount-field [charge values state]
-  [:div.reconcile-edit-component-amount
-   [:strong (str (:name charge) ":")]
-   [:input {:name        "amount"
-            :type        :number
-            :value       (get-in values [:this-month :breakdown (:id charge) :amount])
-            :on-change   #(swap-amount (-> % .-target .-value) (:id charge) state identity identity identity)
-            :on-blur     #(swap-amount (-> % .-target .-value) (:id charge) state shared/format-money js/parseFloat Math/abs)
-            :min         0 :step "0.01"
-            :placeholder "0.00"}]
-   [prev-month charge values state]])
+(defn edit-amount-field
+  [charge {:keys [values state]}]
+  [grid {:item true}
+   [grid {:container true
+          :direction :column}
+    [text-field {:name        "amount"
+                 :type        :number
+                 :label       (:name charge)
+                 :value       (get-in values [:this-month :breakdown (:id charge) :amount])
+                 :on-change   #(swap-amount (-> % .-target .-value) (:id charge) state identity identity identity)
+                 :on-blur     #(swap-amount (-> % .-target .-value) (:id charge) state shared/format-money js/parseFloat Math/abs)
+                 :min         0 :step "0.01"
+                 :placeholder "0.00"}]
+    [grid {:container true
+           :justify :flex-end}
+     [prev-month charge values state]]]])
 
 (defn edit-invoice-field-upload [charge state handle-blur text icon]
-  [:div.upload-btn-wrapper
-   [:button.upload-btn {:type :button}
-    [:i {:aria-hidden "true" :class (str "fa " icon)}] text]
-   [:input {:name      "invoice"
+  [:div
+   [:input {:id        (:id charge)
+            :name      "invoice"
             :type      :file
+            :accept    "image/*,.pdf"
+            :style     {:display :none}
             :on-change #(do (swap! state assoc-in [:values :this-month :breakdown (:id charge) :invoice] (-> % .-target .-files (aget 0)))
                             (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice-deleted))
-            :on-blur   handle-blur}]])
+            :on-blur   handle-blur}]
+   [:label {:html-for (:id charge)}
+    [icon-button {:variant :contained
+                  :component :span
+                  :color :primary}
+     icon]]])
 
 (defn swap-invoice-deleted [state charge]
   (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice)
@@ -298,69 +333,118 @@
   (swap! state assoc-in [:values :this-month :breakdown (:id charge) :invoice-deleted] true))
 
 (defn edit-invoice-field-delete [charge state]
-  [:div.upload-btn-wrapper
-   [:button.upload-btn {:type     :button
-                        :on-click #(when (= true (get-in @state [:values :this-month :breakdown (:id charge) :invoiced]))
-                                     (rf/dispatch [::se/dialog {:heading "Are you sure?"
-                                                                :message "Invoice will be deleted after this form is saved"
-                                                                :buttons {:left  {:text     "Yes"
-                                                                                  :on-click (fn [] (swap-invoice-deleted state charge))}
-                                                                          :right {:text "Cancel"}}}]))}
-    [:i {:aria-hidden "true" :class "fa fa-trash"}]]])
+  [icon-button {:color :secondary
+                :on-click   #(when (= true (get-in @state [:values :this-month :breakdown (:id charge) :invoiced]))
+                               (rf/dispatch [::se/dialog {:heading "Delete invoice?"
+                                                          :message "Invoice will be deleted after this form is saved"
+                                                          :buttons {:left  {:text     "Delete"
+                                                                            :color :secondary
+                                                                            :on-click (fn [] (swap-invoice-deleted state charge))}
+                                                                    :right {:text "Cancel"}}}]))}
+   [delete-forever]])
 
-(defn edit-invoice-field [charge values state handle-blur property year month]
-  [:div.reconcile-edit-component-invoice
+(defn edit-invoice-field
+  [charge {:keys [property year month]} {:keys [values state handle-blur]}]
+  [grid {:item true}
    (let [attached (get-in values [:this-month :breakdown (:id charge) :invoice])
          uploaded (get-in values [:this-month :breakdown (:id charge) :invoiced])]
      (if uploaded
-       [:div
-        [edit-invoice-field-upload charge state handle-blur "" "fa-upload"]
-        [edit-invoice-field-delete charge state property year month]]
+       [grid {:container true
+              :direction :row}
+        [grid {:item true}
+         [edit-invoice-field-delete charge state property year month]]
+        [grid {:item true}
+         [edit-invoice-field-upload charge state handle-blur "" [cloud-done]]]]
        (if attached
-         [edit-invoice-field-upload charge state handle-blur " Invoice" "fa-check"]
-         [edit-invoice-field-upload charge state handle-blur " Invoice" "fa-upload"])))])
+         [edit-invoice-field-upload charge state handle-blur " Invoice" [cloud-done]]
+         [edit-invoice-field-upload charge state handle-blur " Invoice" [cloud-upload]])))])
 
-(defn edit-note-field [charge values state handle-blur]
-  [:div.reconcile-edit-component-note
-   [:label "Note:"]
-   [:textarea {:name        "note"
+(defn edit-note-field
+  [charge {:keys [values state handle-blur]}]
+  [text-field {:name        "note"
                :type        :textarea
+               :multiline   true
+               :rows        1
+               :rows-max    4
+               :label       "Note"
                :value       (get-in values [:this-month :breakdown (:id charge) :note])
                :on-change   #(swap! state assoc-in [:values :this-month :breakdown (:id charge) :note]
                                     (-> % .-target .-value))
                :on-blur     handle-blur
-               :placeholder "Any additional information"}]])
+               :helper-text "Any additional information"}])
 
-(defn edit-panel [property year month ledger property-charges]
+(defn edit-panel
+  [{:keys [property year month ledger property-charges props] :as options}]
   (rf/dispatch [:set-fab-actions nil])
-  [:div
-   [:div.reconcile-options-container
-    [:h4 (:name property)]
-    [:label (s/capitalize (str (t/month (t/new-date 2010 (-> month name js/parseInt) 1)) " / " (name year)))]]
-   [fork/form {:form-id            "id"
-               :path               :form
-               :prevent-default?   true
-               :clean-on-unmount?  true
+  [grid {:container true
+         :direction :column
+         :spacing 2}
+   [grid {:item true}
+    [paper {:class (get-in props [:classes :paper])}
+     [grid {:container true
+            :item true
+            :direction :row
+            :justify :space-between
+            :spacing 1}
+      [typography {:variant :h5} (:name property)]
+      [typography {:variant :subtitle1} (s/capitalize (str (t/month (t/new-date 2010 (-> month name js/parseInt) 1)) " / " (name year)))]]]]
+   [grid {:item true}
+    [fork/form {:form-id            "id"
+                :path               :form
+                :prevent-default?   true
+                :clean-on-unmount?  true
                ;:validation         #(validate %)
-               :on-submit-response {400 "client error"
-                                    500 "server error"}
-               :on-submit          #(rf/dispatch [::re/save-reconcile (:values %)])
-               :initial-values     ledger}
-    (fn [{:keys [values state form-id handle-blur submitting? handle-submit]}]
-      [:form {:id form-id :on-submit handle-submit}
-       [:hr]
-       (doall
-         (for [charge property-charges]
-           ^{:key (:id charge)}
-           [:div
-            [:div.reconcile-edit-component-container
-             [edit-amount-field charge values state]
-             [edit-invoice-field charge values state handle-blur property year month]
-             [edit-note-field charge values state handle-blur]]
-            [:hr]]))
-       [:div.buttons-save-cancel
-        [:button {:type :submit :disabled submitting?} "Save"]
-        [:button {:type :button :on-click #(js/window.history.back)} "Cancel"]]])]])
+                :on-submit-response {400 "client error"
+                                     500 "server error"}
+                :on-submit          #(rf/dispatch [::re/save-reconcile (:values %)])
+                :initial-values     ledger}
+     (fn [{:keys [form-id submitting? handle-submit] :as form}]
+       [:form {:id form-id :on-submit handle-submit}
+        [grid {:container true
+               :direction :column
+               :spacing 2}
+         [grid {:container true
+                :item true
+                :direction :row
+                :spacing 2
+                :justify :space-between}
+          (doall
+           (for [charge property-charges]
+             ^{:key (:id charge)}
+             [grid {:item true
+                    :xs 12 :md 6 :lg 4}
+              [paper {:class (get-in props [:classes :paper])}
+               [grid {:container true
+                      :item true
+                      :direction :column}
+                [grid {:container true
+                       :item true
+                       :direction :row
+                       :spacing 1
+                       :justify :space-between}
+                 [edit-amount-field charge form]
+                 [edit-invoice-field charge options form]]
+                [grid {:container true
+                       :item true
+                       :direction :column}
+                 [edit-note-field charge form]]]]]))]
+         [grid {:container true
+                :item true
+                :direction :row
+                :justify :flex-start
+                :spacing 1
+                :class (get-in props [:classes :buttons])}
+          [grid {:item true}
+           [button {:variant :contained
+                    :color :primary
+                    :type :submit
+                    :disabled submitting?}
+            "Save"]]
+          [grid {:item true}
+           [button {:variant :outlined
+                    :type :button
+                    :on-click #(js/window.history.back)}
+            "Cancel"]]]]])]]])
 
 
 (defn reconcile [props]
@@ -375,12 +459,17 @@
         ledger @(rf/subscribe [:ledger-months (:id property) year month])]
 
     (case @(rf/subscribe [::ss/active-panel])
-      :reconcile-edit [edit-panel property year month ledger property-charges]
-      [view-panel {:property property 
-                   :year year 
-                   :month month 
-                   :ledger ledger 
-                   :properties properties 
-                   :property-charges property-charges 
+      :reconcile-edit [edit-panel {:property property
+                                   :year year
+                                   :month month
+                                   :ledger ledger
+                                   :property-charges property-charges
+                                   :props props}]
+      [view-panel {:property property
+                   :year year
+                   :month month
+                   :ledger ledger
+                   :properties properties
+                   :property-charges property-charges
                    :charges charges
                    :props props}])))

@@ -1,8 +1,6 @@
 (ns wkok.buy2let.site.views
   (:require
    [re-frame.core :as rf]
-   [reagent.core :as ra]
-   [clojure.string :as s]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -14,10 +12,8 @@
    [wkok.buy2let.settings.views :as settings]
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
-   [wkok.buy2let.backend.subs :as bs]
    [reagent-material-ui.icons.dashboard :refer [dashboard]]
    [reagent-material-ui.icons.receipt :refer [receipt]]
-   [reagent-material-ui.icons.account-circle :refer [account-circle]]
    [reagent-material-ui.icons.menu :refer [menu]]
    [reagent-material-ui.icons.category :refer [category]]
    [reagent-material-ui.icons.settings :refer [settings]]
@@ -27,8 +23,8 @@
    [reagent-material-ui.colors :as colors]
    [reagent-material-ui.core.css-baseline :refer [css-baseline]]
    [reagent-material-ui.core.grid :refer [grid]]
+   [reagent-material-ui.core.fab :refer [fab]]
    [reagent-material-ui.core.button :refer [button]]
-   [reagent-material-ui.core.paper :refer [paper]]
    [reagent-material-ui.core.app-bar :refer [app-bar]]
    [reagent-material-ui.core.divider :refer [divider]]
    [reagent-material-ui.core.hidden :refer [hidden]]
@@ -45,15 +41,7 @@
    [reagent-material-ui.styles :as styles]
    [reagent-material-ui.core.dialog :refer [dialog]]
    [reagent-material-ui.core.dialog-title :refer [dialog-title]]
-   [reagent-material-ui.core.dialog-content :refer [dialog-content]]
-   [reagent-material-ui.core.dialog-content-text :refer [dialog-content-text]]
-   [reagent-material-ui.core.dialog-actions :refer [dialog-actions]]
-   [reagent-material-ui.core.table :refer [table]]
-   [reagent-material-ui.core.table-container :refer [table-container]]
-   [reagent-material-ui.core.table-head :refer [table-head]]
-   [reagent-material-ui.core.table-body :refer [table-body]]
-   [reagent-material-ui.core.table-row :refer [table-row]]
-   [reagent-material-ui.core.table-cell :refer [table-cell]])
+   [reagent-material-ui.core.dialog-content :refer [dialog-content]])
 (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -70,10 +58,12 @@
          "/" (-> (:to-month options) name)
          "/" (-> (:to-year options) name))))
 
-(defn fab []
+(defn fab-button [props]
   (when-let [actions @(rf/subscribe [::subs/fab-actions])]
-    [:div.fab {:on-click (-> actions :left-1 :fn)}
-     [:i {:class (str "fa " (-> actions :left-1 :icon))}]]))
+    [fab {:color :primary
+          :class (get-in props [:classes :fab])
+          :on-click (-> actions :left-1 :fn)}
+     (-> actions :left-1 :icon)]))
 
 (defn progress-bar []
   [:div.progress
@@ -93,7 +83,7 @@
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
-(defn custom-styles [{:keys [spacing breakpoints] :as theme}]
+(defn custom-styles [{:keys [spacing breakpoints]}]
   (let [up (:up breakpoints)
         drawer-width 200]
     {:root {:display :flex}
@@ -106,8 +96,12 @@
      :content {:flex-grow 1 
                :padding (spacing 2) 
                :padding-top (spacing 8)
+               :padding-bottom (spacing 8)
                :overflow-x :hidden}
      :buttons {:padding-top (spacing 1)}
+     :fab {:position :fixed
+           :bottom (spacing 2)
+           :right (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}
      :table-header {:font-weight 600}}))
@@ -226,7 +220,6 @@
 
    ;;  [splash]
   ;;  [progress-bar]
-  ;; [fab]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
                                 :locale DateTimeSymbols_en_US}
     [styles/theme-provider (styles/create-mui-theme custom-theme)
@@ -238,6 +231,7 @@
        [(with-custom-styles
           (fn [{:keys [classes] :as props}]
             [:div {:class (:root classes)}
+             [fab-button props]
              [header props]
              [nav props]
              [main props]

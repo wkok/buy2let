@@ -94,18 +94,18 @@
                :field     :list
                :on-change on-change
                :value     value}
-   [menu-item {:value 1} "Jan"]
-   [menu-item {:value 2} "Feb"]
-   [menu-item {:value 3} "Mar"]
-   [menu-item {:value 4} "Apr"]
-   [menu-item {:value 5} "May"]
-   [menu-item {:value 6} "Jun"]
-   [menu-item {:value 7} "Jul"]
-   [menu-item {:value 8} "Aug"]
-   [menu-item {:value 9} "Sep"]
-   [menu-item {:value 10} "Oct"]
-   [menu-item {:value 11} "Nov"]
-   [menu-item {:value 12} "Dec"]])
+   [menu-item {:value :1} "Jan"]
+   [menu-item {:value :2} "Feb"]
+   [menu-item {:value :3} "Mar"]
+   [menu-item {:value :4} "Apr"]
+   [menu-item {:value :5} "May"]
+   [menu-item {:value :6} "Jun"]
+   [menu-item {:value :7} "Jul"]
+   [menu-item {:value :8} "Aug"]
+   [menu-item {:value :9} "Sep"]
+   [menu-item {:value :10} "Oct"]
+   [menu-item {:value :11} "Nov"]
+   [menu-item {:value :12} "Dec"]])
 
 
 (defn month-range [from to]
