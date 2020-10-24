@@ -15,7 +15,6 @@ View the [Online Demo](https://wkok.github.io/re-frame-buy2let/demo)
 
 ### Notes
 
-- Authentication with your social network will not actually be attempted. Clicking any of the social sign in buttons will merely navigate to the dashboard while in demo mode.
 - The demo stores all data locally in your browser. New data entered will be lost when reloading the page
 - Invoices / attachments will not be uploaded / stored on the demo server & therefore won't download when clicking the paperclip
 
@@ -40,15 +39,7 @@ Wait a bit, then browse to [http://localhost:8280](http://localhost:8280)
 
 ## Styling
 
-No explicit CSS framework is used as I didn't want the code locked in to an opinionated CSS framework too early. In future, this might change in order to support more feature rich UI elements. 
-
-As I am not a styling expert by any stretch of the imagination, I instead opted for using semantic html components (generated with [Hiccup](https://github.com/weavejester/hiccup)), stylable using any of the growing list of [Classless CSS themes](https://css-tricks.com/no-class-css-frameworks/)
-
-In this repository & the demo, I used [Marx](https://mblode.github.io/marx/), purely because I liked the general look & feel (& it's blue ;)
-
-In theory, you should just be able to reference any other classless theme in index.html & it should (for the most part) just work, although I only tested it with [Marx](https://mblode.github.io/marx/).
-
-Of course, there are some CSS customizations in the `resources/public/css` folder
+[Material-UI](https://material-ui.com/) React components wrapped with [reagent-material-ui](https://github.com/arttuka/reagent-material-ui) (for ease of use within ClojureScript)
 
 ## Backend
 
