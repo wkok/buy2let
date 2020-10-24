@@ -31,7 +31,7 @@
        (testing "that the heading is Report"
          (is (= "Report" @heading)))
        (testing "that report result have been populated after view rendered"
-         (rv/report)
+         (rv/report {})
          (is (contains? @report :result)))))))
 
 
