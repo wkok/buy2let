@@ -33,7 +33,8 @@
    :subs        ::cs/properties
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]}}}
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
+                                 :title "Add"}}}
    :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]
                   [grid {:item true}
                    [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
@@ -89,7 +90,8 @@
    :subs        ::cs/charges
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(validate-name %)
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]}}}})
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]
+                                 :title "Add"}}}})
 
 (defn calc-status [item]
   (assoc item :status
@@ -134,6 +136,7 @@
               :roles ["viewer"]}
    :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]}}}
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
+                                 :title "Add"}}}
    :hidden-label "revoked"
    :label "Invitees"})

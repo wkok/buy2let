@@ -24,6 +24,7 @@
    [reagent-material-ui.core.css-baseline :refer [css-baseline]]
    [reagent-material-ui.core.grid :refer [grid]]
    [reagent-material-ui.core.fab :refer [fab]]
+   [reagent-material-ui.core.tooltip :refer [tooltip]]
    [reagent-material-ui.core.button :refer [button]]
    [reagent-material-ui.core.app-bar :refer [app-bar]]
    [reagent-material-ui.core.divider :refer [divider]]
@@ -63,10 +64,11 @@
 
 (defn fab-button [props]
   (when-let [actions @(rf/subscribe [::subs/fab-actions])]
-    [fab {:color :primary
-          :class (get-in props [:classes :fab])
-          :on-click (-> actions :left-1 :fn)}
-     (-> actions :left-1 :icon)]))
+    [tooltip {:title (-> actions :left-1 :title)}
+     [fab {:color :primary
+           :class (get-in props [:classes :fab])
+           :on-click (-> actions :left-1 :fn)}
+      (-> actions :left-1 :icon)]]))
 
 (defn splash [props]
   [backdrop {:open @(rf/subscribe [::subs/splash])

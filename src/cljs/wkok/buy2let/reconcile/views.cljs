@@ -213,7 +213,8 @@
                    shared/to-money)
         owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
         cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
-    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]}}])
+    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
+                                             :title "Edit"}}])
     [grid {:container true
            :direction :row
            :justify :space-between

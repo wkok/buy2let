@@ -5,16 +5,15 @@
             [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.site.events :as se]
-            ;; [wkok.buy2let.backend.subs :as fs]
-            ;; [wkok.buy2let.backend.core :as fc]
             [wkok.buy2let.shared :as shared]
             [tick.alpha.api :as t]
-            ;; [cljc.java-time.month :as tm]
-            ;; [fork.core :as fork]
             [clojure.string :as s]
             [reagent-material-ui.icons.cloud-download :refer [cloud-download]]
+            [reagent-material-ui.icons.edit :refer [edit]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.icon-button :refer [icon-button]]
+            [reagent-material-ui.core.tooltip :refer [tooltip]]
             [reagent-material-ui.core.table :refer [table]]
             [reagent-material-ui.core.table-container :refer [table-container]]
             [reagent-material-ui.core.table-head :refer [table-head]]
@@ -110,11 +109,12 @@
 (defn report-edit-col 
   [m {:keys [property]}]
   [table-cell {:align :right}
-   [:button {:type :button :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
+   [tooltip {:title "Edit"}
+    [icon-button {:on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                                       "/" (-> (:month m) name)
                                                                       "/" (-> (:year m) name)
                                                                       "/edit"))}
-    [:i.fas.fa-edit]]])
+    [edit {:color :primary}]]]])
 
 (defn report-charge-row 
   [charge months {:keys [report props] :as options}]
@@ -158,7 +158,7 @@
    (for [m months]
      ^{:key m}
      [report-owed-col m options])
-   [table-cell "-"]])
+   [table-cell {:align :right} "-"]])
 
 (defn report-cash-row 
   [months options]
@@ -167,7 +167,7 @@
    (for [m months]
      ^{:key m}
      [report-cash-col m options])
-   [table-cell "-"]])
+   [table-cell {:align :right} "-"]])
 
 (defn report-edit-row 
   [months options]
@@ -188,7 +188,8 @@
 (defn view-report 
   [{:keys [property-charges report props] :as options}]
   (rf/dispatch [:set-fab-actions {:left-1 {:fn   #(zip-invoices-confirm property-charges)
-                                           :icon [cloud-download]}}])
+                                           :icon [cloud-download]
+                                           :title "Download"}}])
   (let [months (-> (get-in report [:result :months]) reverse)]
     [paper
      [grid {:container true
