@@ -182,7 +182,7 @@
   [:main {:class (:content classes)}
    (when-let [active-page @(rf/subscribe [::subs/active-page])]
      (condp = active-page
-       :dashboard [dashboard/dashboard props]
+       :dashboard [dashboard/dashboard]
        :reconcile [reconcile/reconcile props]
        :report [report/report props]
        :properties [crud-impl/properties props]

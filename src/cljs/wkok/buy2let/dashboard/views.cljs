@@ -9,13 +9,12 @@
             [tick.alpha.api :as t]
             [cljc.java-time.month :as tm]
             [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.card-content :refer [card-content]]
             ))
 
-(defn dashboard [props]
+(defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
   (let [today (t/- (t/today) (t/new-period 1 :months))
         last (t/- today (t/new-period 11 :months))
