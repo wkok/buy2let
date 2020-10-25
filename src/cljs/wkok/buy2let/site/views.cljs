@@ -30,7 +30,10 @@
    [reagent-material-ui.core.hidden :refer [hidden]]
    [reagent-material-ui.core.text-field :refer [text-field]]
    [reagent-material-ui.core.drawer :refer [drawer]]
+   [reagent-material-ui.core.backdrop :refer [backdrop]]
    [reagent-material-ui.core.list :refer [list]]
+   [reagent-material-ui.core.linear-progress :refer [linear-progress]]
+   [reagent-material-ui.core.circular-progress :refer [circular-progress]]
    [reagent-material-ui.core.list-item :refer [list-item]]
    [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
    [reagent-material-ui.core.list-item-text :refer [list-item-text]]
@@ -65,25 +68,15 @@
           :on-click (-> actions :left-1 :fn)}
      (-> actions :left-1 :icon)]))
 
-(defn progress-bar []
-  [:div.progress
-   [:div {:class (if @(rf/subscribe [::subs/show-progress]) "indeterminate" "")}]])
-
-(defn splash []
-  (let [splash @(rf/subscribe [::subs/splash])]
-    [:div {:class (str "splash" (if splash " splash-show" " splash-hide"))}
-     [:div.splash-content
-      [:div.splash-header
-       [:h3 "Buy2Let"]
-       [:img {:src "images/icon/icon-64.png"}]]
-      [:div.splash-loader]
-      [:div.splash-footer
-       [:h6 "PORTFOLIO MANAGEMENT"]]]]))
+(defn splash [props]
+  [backdrop {:open @(rf/subscribe [::subs/splash])
+             :class (get-in props [:classes :splash])}
+   [circular-progress]])
 
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
-(defn custom-styles [{:keys [spacing breakpoints]}]
+(defn custom-styles [{:keys [spacing breakpoints z-index]}]
   (let [up (:up breakpoints)
         drawer-width 200]
     {:root {:display :flex}
@@ -102,6 +95,7 @@
      :fab {:position :fixed
            :bottom (spacing 2)
            :right (spacing 2)}
+     :splash {:z-index (+ (:drawer z-index) 1)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}
      :table-header {:font-weight 600}}))
@@ -112,9 +106,14 @@
   (let [mobile-open @(rf/subscribe [::subs/nav-menu-show])]
     (rf/dispatch [::se/show-nav-menu (not mobile-open)])))
 
+(defn progress-bar []
+  (when @(rf/subscribe [::subs/show-progress])
+    [linear-progress]))
+
 (defn header [{:keys [classes]}]
   [app-bar {:position :fixed
             :class (:app-bar classes)}
+   [progress-bar]
    [toolbar {:variant :dense}
     [icon-button {:edge :start
                   :color :inherit
@@ -215,11 +214,6 @@
 (defn main-panel []
   [:div
    [css-baseline]
-
-   
-
-   ;;  [splash]
-  ;;  [progress-bar]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
                                 :locale DateTimeSymbols_en_US}
     [styles/theme-provider (styles/create-mui-theme custom-theme)
@@ -231,6 +225,7 @@
        [(with-custom-styles
           (fn [{:keys [classes] :as props}]
             [:div {:class (:root classes)}
+             [splash props]
              [fab-button props]
              [header props]
              [nav props]
