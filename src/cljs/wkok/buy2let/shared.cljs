@@ -4,6 +4,7 @@
             [clojure.string :as s]
             [goog.string :as gstring]
             goog.string.format   ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
+            [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
             [cljc.java-time.month :as tm]
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
@@ -12,7 +13,8 @@
             [wkok.buy2let.spec :as spec]
             [reagent-material-ui.core.link :refer [link]]
             [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]))
+            [reagent-material-ui.core.menu-item :refer [menu-item]])
+  (:import (goog.i18n DateTimeSymbols_en_US)))
 
 
 (def default-cal
@@ -38,6 +40,7 @@
                                        :name     "Opening balance"
                                        :reserved true}}})
 
+(def date-utils (cljs-time-utils #js {:locale DateTimeSymbols_en_US}))
 
 (defn gen-id []
   (-> (nid/nano-id) keyword))
@@ -72,41 +75,6 @@
                ^{:key property}
                [menu-item {:value (:id property)}
                 (:name property)])))])
-
-(defn select-year [on-change value]
-  (let [second-last-year (-> t/today t/year js/parseInt dec dec str keyword)
-        last-year (-> t/today t/year js/parseInt dec str keyword)
-        this-year (-> t/today t/year str keyword)
-        next-year (-> t/today t/year js/parseInt inc str keyword)]
-    [text-field {:select true
-                 :label " "
-                 :field     :list
-                 :on-change on-change
-                 :value     value}
-     [menu-item {:value second-last-year} second-last-year]
-     [menu-item {:value last-year} last-year]
-     [menu-item {:value this-year} this-year]
-     [menu-item {:value next-year} next-year]]))
-
-(defn select-month [on-change value label]
-  [text-field {:select true
-               :label label
-               :field     :list
-               :on-change on-change
-               :value     value}
-   [menu-item {:value :1} "Jan"]
-   [menu-item {:value :2} "Feb"]
-   [menu-item {:value :3} "Mar"]
-   [menu-item {:value :4} "Apr"]
-   [menu-item {:value :5} "May"]
-   [menu-item {:value :6} "Jun"]
-   [menu-item {:value :7} "Jul"]
-   [menu-item {:value :8} "Aug"]
-   [menu-item {:value :9} "Sep"]
-   [menu-item {:value :10} "Oct"]
-   [menu-item {:value :11} "Nov"]
-   [menu-item {:value :12} "Dec"]])
-
 
 (defn month-range [from to]
   (let [from (t/new-date (-> (:year from) name js/parseInt)

@@ -26,7 +26,8 @@
             [reagent-material-ui.core.table-head :refer [table-head]]
             [reagent-material-ui.core.table-body :refer [table-body]]
             [reagent-material-ui.core.table-row :refer [table-row]]
-            [reagent-material-ui.core.table-cell :refer [table-cell]]))
+            [reagent-material-ui.core.table-cell :refer [table-cell]]
+            [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
 
 
 (defn format-amount [ledger path]
@@ -188,23 +189,23 @@
   [paper {:class (get-in props [:classes :paper])}
    [grid {:container true
           :direction :row
-          :justify :space-between}
+          :justify :space-between
+          :spacing 1}
     [grid {:item true}
      (shared/select-property properties
                              #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
                              @(rf/subscribe [::ss/active-property])
                              "--select--" "Property")]
     [grid {:item true}
-     [grid {:container true
-            :direction :row
-            :wrap :nowrap}
-      [grid {:item true}
-       (shared/select-month #(rf/dispatch [::re/reconcile-set-month (.. % -target -value)])
-                            @(rf/subscribe [::rs/reconcile-month])
-                            "Period")]
-      [grid {:item true}
-       (shared/select-year #(rf/dispatch [::re/reconcile-set-year (.. % -target -value)])
-                           @(rf/subscribe [::rs/reconcile-year]))]]]]])
+     [date-picker {:variant :inline
+                   :open-to :year
+                   :views [:year :month]
+                   :label "Period"
+                   :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
+                                                         (name @(rf/subscribe [::rs/reconcile-month]))) "yyyy/MM")
+                   :on-change #(do (rf/dispatch [::re/reconcile-set-month (->> % (.getMonth shared/date-utils) inc str keyword)])
+                                   (rf/dispatch [::re/reconcile-set-year (->> % (.getYear shared/date-utils) str keyword)]))
+                   :auto-ok true}]]]])
 
 (defn cards
   [{:keys [ledger]}]
