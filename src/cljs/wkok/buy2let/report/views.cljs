@@ -236,7 +236,7 @@
       [grid {:item true
              :xs 6}
        [date-picker {:variant :inline
-                     :open-to :year
+                     :open-to :month
                      :views [:year :month]
                      :label "From"
                      :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :from])) "/"
@@ -247,7 +247,7 @@
       [grid {:item true
              :xs 6}
        [date-picker {:variant :inline
-                     :open-to :year
+                     :open-to :month
                      :views [:year :month]
                      :label "To"
                      :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :to])) "/"

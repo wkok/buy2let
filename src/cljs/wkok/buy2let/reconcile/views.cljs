@@ -1,5 +1,6 @@
 (ns wkok.buy2let.reconcile.views
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.reconcile.subs :as rs]
@@ -9,10 +10,14 @@
             [tick.alpha.api :as t]
             [fork.re-frame :as fork]
             [clojure.string :as s]
+            [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
+            [reagent-material-ui.icons.attach-file :refer [attach-file]]
             [reagent-material-ui.icons.edit :refer [edit]]
-            [reagent-material-ui.icons.cloud-upload :refer [cloud-upload]]
+            [reagent-material-ui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
             [reagent-material-ui.icons.cloud-done :refer [cloud-done]]
-            [reagent-material-ui.icons.delete-forever :refer [delete-forever]]
+            [reagent-material-ui.icons.cloud-done-outlined :refer [cloud-done-outlined]]
+            [reagent-material-ui.icons.delete-outlined :refer [delete-outlined]]
+            [reagent-material-ui.core.tooltip :refer [tooltip]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.card-content :refer [card-content]]
             [reagent-material-ui.core.paper :refer [paper]]
@@ -27,6 +32,8 @@
             [reagent-material-ui.core.table-body :refer [table-body]]
             [reagent-material-ui.core.table-row :refer [table-row]]
             [reagent-material-ui.core.table-cell :refer [table-cell]]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
+            [reagent-material-ui.core.switch-component :refer [switch]]
             [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
 
 
@@ -131,8 +138,14 @@
              :item true
              :class (get-in props [:classes :paper])
              :justify :flex-end}
-       (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
-                      "Simple view")]]]))
+       [grid {:item true}
+        [form-control-label
+         {:control (ra/as-element
+                    [switch {:color :primary
+                             :on-change #(rf/dispatch [::re/reconcile-view-toggle])
+                             :checked (= :accounting @(rf/subscribe [::rs/reconcile-view-toggle]))}])
+          :label "Detailed"
+          :label-placement :start}]]]]]))
 
 (defn view-overview-row
   [charge {:keys [ledger property year month]}]
@@ -140,15 +153,21 @@
    [table-cell (:name charge)]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :breakdown (:id charge) :amount])]
-   [table-cell (when (get-in ledger [:this-month :breakdown (:id charge) :invoiced])
-                 [:i.fas.fa-paperclip {:on-click #(rf/dispatch [::shared/view-invoice
-                                                                (:id property)
-                                                                year
-                                                                month
-                                                                charge])}])]
-   [table-cell (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
+   [table-cell {:align :center}
+    (when (get-in ledger [:this-month :breakdown (:id charge) :invoiced])
+                 [icon-button {:size :small
+                               :on-click #(rf/dispatch [::shared/view-invoice
+                                                        (:id property)
+                                                        year
+                                                        month
+                                                        charge])}
+                  [attach-file {:font-size :small}]])]
+   [table-cell {:align :center}
+    (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
                  (when (not (s/blank? note))
-                   [:i.far.fa-sticky-note {:on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}]))]])
+                   [icon-button {:size :small
+                                 :on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}
+                    [note-outlined {:font-size :small}]]))]])
 
 (defn view-overview
   [{:keys [property-charges props] :as options}]
@@ -174,8 +193,14 @@
              :item true
              :class (get-in props [:classes :paper])
              :justify :flex-end}
-       (shared/anchor #(rf/dispatch [::re/reconcile-view-toggle])
-                      "Detailed view")]]]))
+       [grid {:item true}
+        [form-control-label
+         {:control (ra/as-element
+                    [switch {:color :primary
+                             :on-change #(rf/dispatch [::re/reconcile-view-toggle])
+                             :checked (= :accounting @(rf/subscribe [::rs/reconcile-view-toggle]))}])
+          :label "Detailed"
+          :label-placement :start}]]]]]))
 
 (defn build-edit-url []
   (let [options (re/calc-options {})]
@@ -198,7 +223,7 @@
                              "--select--" "Property")]
     [grid {:item true}
      [date-picker {:variant :inline
-                   :open-to :year
+                   :open-to :month
                    :views [:year :month]
                    :label "Period"
                    :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
@@ -282,7 +307,7 @@
       (case @(rf/subscribe [::rs/reconcile-view-toggle])
         :accounting [view-accounting options]
         [view-overview options])])
-   (when (not-any? nil? [property year month])
+   (when (some nil? [property year month])
      (rf/dispatch [:set-fab-actions nil]))])
 
 (defn swap-amount [val charge-id state format-fn parse-fn abs-fn]
@@ -308,7 +333,8 @@
                  :on-change   #(swap-amount (-> % .-target .-value) (:id charge) state identity identity identity)
                  :on-blur     #(swap-amount (-> % .-target .-value) (:id charge) state shared/format-money js/parseFloat Math/abs)
                  :min         0 :step "0.01"
-                 :placeholder "0.00"}]
+                 :placeholder "0.00"
+                 :InputLabelProps {:shrink true}}]
     [grid {:container true
            :justify :flex-end}
      [prev-month charge values state]]]])
@@ -324,10 +350,11 @@
                             (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice-deleted))
             :on-blur   handle-blur}]
    [:label {:html-for (:id charge)}
-    [icon-button {:variant :contained
-                  :component :span
-                  :color :primary}
-     icon]]])
+    [tooltip {:title "Upload invoice"}
+     [icon-button {:variant :contained
+                   :component :span
+                   :color :primary}
+      icon]]]])
 
 (defn swap-invoice-deleted [state charge]
   (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice)
@@ -335,15 +362,16 @@
   (swap! state assoc-in [:values :this-month :breakdown (:id charge) :invoice-deleted] true))
 
 (defn edit-invoice-field-delete [charge state]
-  [icon-button {:color :secondary
-                :on-click   #(when (= true (get-in @state [:values :this-month :breakdown (:id charge) :invoiced]))
-                               (rf/dispatch [::se/dialog {:heading "Delete invoice?"
-                                                          :message "Invoice will be deleted after this form is saved"
-                                                          :buttons {:left  {:text     "Delete"
-                                                                            :color :secondary
-                                                                            :on-click (fn [] (swap-invoice-deleted state charge))}
-                                                                    :right {:text "Cancel"}}}]))}
-   [delete-forever]])
+  [tooltip {:title "Delete invoice"}
+   [icon-button {:color :secondary
+                 :on-click   #(when (= true (get-in @state [:values :this-month :breakdown (:id charge) :invoiced]))
+                                (rf/dispatch [::se/dialog {:heading "Delete invoice?"
+                                                           :message "Invoice will be deleted after this form is saved"
+                                                           :buttons {:left  {:text     "Delete"
+                                                                             :color :secondary
+                                                                             :on-click (fn [] (swap-invoice-deleted state charge))}
+                                                                     :right {:text "Cancel"}}}]))}
+    [delete-outlined]]])
 
 (defn edit-invoice-field
   [charge {:keys [property year month]} {:keys [values state handle-blur]}]
@@ -358,8 +386,8 @@
         [grid {:item true}
          [edit-invoice-field-upload charge state handle-blur [cloud-done]]]]
        (if attached
-         [edit-invoice-field-upload charge state handle-blur [cloud-done]]
-         [edit-invoice-field-upload charge state handle-blur [cloud-upload]])))])
+         [edit-invoice-field-upload charge state handle-blur [cloud-done-outlined]]
+         [edit-invoice-field-upload charge state handle-blur [cloud-upload-outlined]])))])
 
 (defn edit-note-field
   [charge {:keys [values state handle-blur]}]

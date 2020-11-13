@@ -91,12 +91,13 @@
      :content {:flex-grow 1 
                :padding (spacing 2) 
                :padding-top (spacing 8)
-               :padding-bottom (spacing 8)
+               :padding-bottom (spacing 10)
                :overflow-x :hidden}
      :buttons {:padding-top (spacing 1)}
      :fab {:position :fixed
            :bottom (spacing 2)
-           :right (spacing 2)}
+           :right (spacing 2)
+           :z-index (+ (:drawer z-index) 1)}
      :splash {:z-index (+ (:drawer z-index) 1)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}

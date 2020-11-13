@@ -4,7 +4,6 @@
             [clojure.string :as s]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.shared :as shared]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-material-ui.core.list :refer [list]]
@@ -13,6 +12,7 @@
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.list-item :refer [list-item]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.switch-component :refer [switch]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.select :refer [select]]
             [reagent-material-ui.core.menu-item :refer [menu-item]]
@@ -51,11 +51,13 @@
       [grid {:container true
              :justify :flex-end}
        [grid {:item true}
-        (if show-hidden
-          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden false])
-                         (str "Hide " (get type :hidden-label "hidden")))
-          (shared/anchor #(rf/dispatch [::ce/crud-set-show-hidden true])
-                         (str "Show " (get type :hidden-label "hidden"))))]]]]))
+        [form-control-label
+         {:control (ra/as-element
+                    [switch {:color :primary
+                             :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
+                             :checked show-hidden}])
+          :label (str "Show " (get type :hidden-label "hidden"))
+          :label-placement :start}]]]]]))
 
 
 (defn build-checkbox
@@ -146,7 +148,8 @@
                          :on-blur   handle-blur}])
     :label (->> (get type :hidden-label "Hidden")
                 s/capitalize
-                (str " "))}])
+                (str " "))}]
+  )
 
 (defn edit-panel [type props]
   (rf/dispatch [:set-fab-actions nil])
