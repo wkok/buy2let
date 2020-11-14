@@ -256,6 +256,7 @@
        [date-picker {:variant :inline
                      :open-to :month
                      :views [:year :month]
+                     :format "MMM YYYY"
                      :label "From"
                      :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :from])) "/"
                                                            (name @(rf/subscribe [::rs/report-month :from]))) "yyyy/MM")
@@ -267,6 +268,7 @@
        [date-picker {:variant :inline
                      :open-to :month
                      :views [:year :month]
+                     :format "MMM YYYY"
                      :label "To"
                      :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :to])) "/"
                                                            (name @(rf/subscribe [::rs/report-month :to]))) "yyyy/MM")

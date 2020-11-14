@@ -43,6 +43,8 @@
    [reagent-material-ui.core.toolbar :refer [toolbar]]
    [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
    [reagent-material-ui.styles :as styles]
+   ["@material-ui/core/styles" :as mui-styles]
+   [reagent-material-ui.util :as util]
    [reagent-material-ui.core.dialog :refer [dialog]]
    [reagent-material-ui.core.dialog-title :refer [dialog-title]]
    [reagent-material-ui.core.dialog-content :refer [dialog-content]])
@@ -88,6 +90,7 @@
      :menu-button {(up "sm") {:display :none} 
                    :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
+     :reconcile-card {:height :7em}
      :content {:flex-grow 1 
                :padding (spacing 2) 
                :padding-top (spacing 8)
@@ -222,7 +225,10 @@
    [css-baseline]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
                                 :locale DateTimeSymbols_en_US}
-    [styles/theme-provider (styles/create-mui-theme custom-theme)
+    [styles/theme-provider (util/js->clj' 
+                            (mui-styles/responsiveFontSizes 
+                             (mui-styles/createMuiTheme 
+                              (util/clj->js' custom-theme))))
      [grid {:container true
             :direction :row
             :justify   :flex-start}

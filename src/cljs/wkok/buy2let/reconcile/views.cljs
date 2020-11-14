@@ -230,6 +230,7 @@
      [date-picker {:variant :inline
                    :open-to :month
                    :views [:year :month]
+                   :format "MMM YYYY"
                    :label "Period"
                    :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
                                                          (name @(rf/subscribe [::rs/reconcile-month]))) "yyyy/MM")
@@ -238,12 +239,13 @@
                    :auto-ok true}]]]])
 
 (defn cards
-  [{:keys [ledger]}]
+  [{:keys [ledger props]}]
   (let [profit (-> (+ (get-in ledger [:this-month :totals :owner])
                       (get-in ledger [:this-month :totals :agent-current]))
                    shared/to-money)
         owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
-        cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)]
+        cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)
+        card-class (get-in props [:classes :reconcile-card])]
     (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
                                              :title "Edit"}}])
     [grid {:container true
@@ -253,13 +255,13 @@
      (when (not (zero? profit))
        [grid {:item true :xs 4}
         (if (neg? profit)
-          [card
+          [card {:class card-class}
            [card-content
             [typography {:variant :h6}
              (shared/format-money profit)]
             [typography {:variant :caption}
              "(net loss)"]]]
-          [card
+          [card {:class card-class}
            [card-content
             [typography {:variant :h6}
              (shared/format-money profit)]
@@ -268,14 +270,14 @@
      (when (not (zero? owed))
        [grid {:item true :xs 4}
         (if (pos? owed)
-          [card
+          [card {:class card-class}
            [card-content
             [typography {:variant :h6}
              (shared/format-money owed)]
             [typography {:variant :caption}
              "(owed to owner)"]]]
           (when (neg? owed)
-            [card
+            [card {:class card-class}
              [card-content
               [typography {:variant :h6}
                (shared/format-money owed)]
@@ -284,13 +286,13 @@
      (when (not (= cash profit))
        [grid {:item true :xs 4}
         (if (neg? cash)
-          [card
+          [card {:class card-class}
            [card-content
             [typography {:variant :h6}
              (shared/format-money cash)]
             [typography {:variant :caption}
              "(cash flow)"]]]
-          [card
+          [card {:class card-class}
            [card-content
             [typography {:variant :h6}
              (shared/format-money cash)]
