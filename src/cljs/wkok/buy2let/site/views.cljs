@@ -78,7 +78,7 @@
 (def custom-theme
   {:palette {:primary   colors/blue}})
 
-(defn custom-styles [{:keys [spacing breakpoints z-index]}]
+(defn custom-styles [{:keys [spacing breakpoints z-index palette]}]
   (let [up (:up breakpoints)
         drawer-width 200]
     {:root {:display :flex}
@@ -101,7 +101,10 @@
      :splash {:z-index (+ (:drawer z-index) 1)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}
-     :table-header {:font-weight 600}}))
+     :table-header {:font-weight 600}
+     :table-header-alternate {:font-weight 600
+                              :background-color (get-in palette [:action :hover])}
+     :table-alternate {:background-color (get-in palette [:action :hover])}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 

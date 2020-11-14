@@ -20,3 +20,8 @@
   :ledger-property
   (fn [db [_ property]]
     (get-in db [:ledger property])))
+
+(rf/reg-sub
+ ::report-show-invoices
+ (fn [db _]
+   (get-in db [:report :show-invoices])))

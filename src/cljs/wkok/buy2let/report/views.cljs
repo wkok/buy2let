@@ -1,5 +1,6 @@
 (ns wkok.buy2let.report.views
   (:require [re-frame.core :as rf]
+            [reagent.core :as ra]
             [wkok.buy2let.report.events :as re]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.report.subs :as rs]
@@ -10,6 +11,8 @@
             [clojure.string :as s]
             [reagent-material-ui.icons.cloud-download :refer [cloud-download]]
             [reagent-material-ui.icons.edit :refer [edit]]
+            [reagent-material-ui.icons.attach-file :refer [attach-file]]
+            [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.icon-button :refer [icon-button]]
@@ -20,8 +23,14 @@
             [reagent-material-ui.core.table-body :refer [table-body]]
             [reagent-material-ui.core.table-row :refer [table-row]]
             [reagent-material-ui.core.table-cell :refer [table-cell]]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
+            [reagent-material-ui.core.switch-component :refer [switch]]
             [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
 
+(defn calc-class-table-header [m props]
+  (if (odd? (-> m :month name js/parseInt))
+    (get-in props [:classes :table-header-alternate])
+    (get-in props [:classes :table-header])))
 
 (defn format-amount [ledger path]
   (->> (get-in ledger path) shared/format-money))
@@ -32,37 +41,43 @@
      [table-cell {:class class-table-header} "Charge"]
      (for [m months]
        ^{:key m}
-       [table-cell {:class class-table-header
+       [table-cell {:class (calc-class-table-header m props)
                     :align :right} (str (shared/format-month (:date m)) " " (t/year (:date m)))])
      [table-cell {:class class-table-header
                   :align :right} "Total"]]))
 
-(defn report-charge-col 
-  [m charge {:keys [ledger report property]}]
-  [table-cell {:align :right}
-   [:div.report-charge-col
-    [:div
-     (format-amount ledger [(:year m) (:month m) :breakdown (:id charge) :amount])]
+(defn report-charge-col
+  [m charge {:keys [ledger report property props]}]
+  [table-cell {:align :right
+               :class (when (odd? (-> m :month name js/parseInt))
+                        (get-in props [:classes :table-alternate]))}
+   [grid {:container true
+          :direction :row
+          :justify :flex-end}
     (when (= true (:show-invoices report))
-      [:div.report-charge-col-icons
-       [:div.report-charge-col-icon
-        (let [note (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :note])]
-          (if (not (s/blank? note))
-            [:i.far.fa-sticky-note {:on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}]
-            [:label]))]
-       [:div.report-charge-col-icon
-        (if (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :invoiced])
-          [:i.fas.fa-paperclip {:on-click #(rf/dispatch [::shared/view-invoice
-                                                         (:id property)
-                                                         (:year m)
-                                                         (:month m)
-                                                         charge])}]
-          [:label])]])]])
+      (let [note (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :note])]
+        (when (not (s/blank? note))
+          [grid {:item true}
+           [icon-button {:size :small
+                         :on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}
+            [note-outlined {:font-size :small}]]])))
+    (when (= true (:show-invoices report))
+      (when (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :invoiced])
+        [grid {:item true}
+         [icon-button {:size :small
+                       :on-click #(rf/dispatch [::shared/view-invoice
+                                                (:id property)
+                                                (:year m)
+                                                (:month m)
+                                                charge])}
+          [attach-file {:font-size :small}]]]))
+    [grid {:item true}
+     (format-amount ledger [(:year m) (:month m) :breakdown (:id charge) :amount])]]])
 
 (defn report-profit-col
   [m {:keys [ledger props]}]
   (let [profit (shared/calc-profit-property ledger m)
-        class-table-header (get-in props [:classes :table-header])]
+        class-table-header (calc-class-table-header m props)]
     (if (neg? profit)
       [table-cell {:align :right
                    :class class-table-header} (shared/format-money profit)]
@@ -77,7 +92,7 @@
 (defn report-owed-col 
   [m {:keys [ledger props]}]
   (let [owed (-> (get-in ledger [(:year m) (:month m) :totals :agent-current]) shared/to-money)
-        class-table-header (get-in props [:classes :table-header])]
+        class-table-header (calc-class-table-header m props)]
     (if (neg? owed)
       [table-cell {:align :right
                    :class class-table-header}
@@ -94,7 +109,7 @@
 (defn report-cash-col 
   [m {:keys [ledger props]}]
   (let [cash (-> (get-in ledger [(:year m) (:month m) :totals :owner]) shared/to-money)
-        class-table-header (get-in props [:classes :table-header])]
+        class-table-header (calc-class-table-header m props)]
     (if (neg? cash)
       [table-cell {:align :right
                    :class class-table-header}
@@ -108,8 +123,9 @@
          (shared/format-money cash)]))))
 
 (defn report-edit-col 
-  [m {:keys [property]}]
-  [table-cell {:align :right}
+  [m {:keys [property props]}]
+  [table-cell {:align :right
+               :class (calc-class-table-header m props)}
    [tooltip {:title "Edit"}
     [icon-button {:on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                                       "/" (-> (:month m) name)
@@ -212,11 +228,13 @@
              :item true
              :class (get-in props [:classes :paper])
              :justify :flex-end}
-       (if (= true (:show-invoices report))
-         (shared/anchor #(rf/dispatch [::re/report-set-show-invoices false])
-                        "Hide invoices / notes")
-         (shared/anchor #(rf/dispatch [::re/report-set-show-invoices true])
-                        "Show invoices / notes"))]]]))
+       [form-control-label
+        {:control (ra/as-element
+                   [switch {:color :primary
+                            :on-change #(rf/dispatch [::re/report-show-invoices-toggle])
+                            :checked @(rf/subscribe [::rs/report-show-invoices])}])
+         :label "Invoices & notes"
+         :label-placement :start}]]]]))
 
 (defn criteria
   [{:keys [properties props]}]

@@ -104,10 +104,10 @@
                remote-db-fx)))))
 
 (rf/reg-event-db
-  ::report-set-show-invoices
-  (fn [db [_ checked]]
-    (assoc-in db [:report :show-invoices] checked)))
-
+  ::report-show-invoices-toggle
+  (fn [db [_ _]]
+    (assoc-in db [:report :show-invoices] 
+              (not (get-in db [:report :show-invoices])))))
 
 (defn calc-invoice-path [db property-charges month-year]
   (let [year (-> (:year month-year) name)
@@ -130,6 +130,7 @@
         from (str (-> (get-in db [:report :from :year]) name) "-" (-> (get-in db [:report :from :month]) name))
         to (str (-> (get-in db [:report :to :year]) name) "-" (-> (get-in db [:report :to :month]) name))]
     (str "Invoices-" property-name "-From-" from "-To-" to)))
+
 
 
 (rf/reg-event-fx

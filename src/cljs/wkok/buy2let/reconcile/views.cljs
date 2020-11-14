@@ -41,32 +41,37 @@
   (->> (get-in ledger path) shared/format-money))
 
 
-(defn view-accounting-row [charge ledger]
+(defn view-accounting-row [charge ledger props]
   [table-row
    [table-cell (:name charge)]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :tenant (:id charge)])]
-   [table-cell {:align :right}
+   [table-cell {:align :right
+                :class (get-in props [:classes :table-alternate])}
     (format-amount ledger [:this-month :accounting :agent-current (:id charge)])]
-   [table-cell {:align :right}
+   [table-cell {:align :right
+                :class (get-in props [:classes :table-alternate])}
     (format-amount ledger [:this-month :accounting :agent-commission (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :owner (:id charge)])]
-   [table-cell {:align :right}
+   [table-cell {:align :right
+                :class (get-in props [:classes :table-alternate])}
     (format-amount ledger [:this-month :accounting :bank-current (:id charge)])]
-   [table-cell {:align :right}
+   [table-cell {:align :right
+                :class (get-in props [:classes :table-alternate])}
     (format-amount ledger [:this-month :accounting :bank-interest (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :supplier (:id charge)])]])
 
-(defn view-accounting-detail [ledger property-charges]
+(defn view-accounting-detail [ledger property-charges props]
   (for [charge property-charges]
     ^{:key (:id charge)}
-    [view-accounting-row charge ledger]))
+    [view-accounting-row charge ledger props]))
 
 (defn view-accounting-total
   [{:keys [ledger props]}]
-  (let [class-table-header (get-in props [:classes :table-header])]
+  (let [class-table-header (get-in props [:classes :table-header])
+        class-table-header-alternate (get-in props [:classes :table-header-alternate])]
     [table-row
      [table-cell {:class class-table-header} "Total:"]
      [table-cell {:align :right
@@ -74,20 +79,20 @@
       (format-amount ledger [:this-month :totals :tenant])]
      (let [agent-balance (get-in ledger [:this-month :totals :agent-current])]
        [table-cell {:align :right
-                    :class class-table-header}
+                    :class class-table-header-alternate}
         (->> agent-balance shared/format-money)])
      [table-cell {:align :right
-                  :class class-table-header}
+                  :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :agent-commission])]
      (let [owner-balance (get-in ledger [:this-month :totals :owner])]
        [table-cell {:align :right
                     :class class-table-header}
         (->> owner-balance shared/format-money)])
      [table-cell {:align :right
-                  :class class-table-header}
+                  :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :bank-current])]
      [table-cell {:align :right
-                  :class class-table-header}
+                  :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :bank-interest])]
      [table-cell {:align :right
                   :class class-table-header}
@@ -108,31 +113,31 @@
            [table-cell]
            [table-cell {:align :center
                         :col-span 2
-                        :class class-table-header} "Agent"]
+                        :class (get-in props [:classes :table-header-alternate])} "Agent"]
            [table-cell]
            [table-cell {:align :center
                         :col-span 2
-                        :class class-table-header} "Bank"]
+                        :class (get-in props [:classes :table-header-alternate])} "Bank"]
            [table-cell]]
           [table-row
            [table-cell {:class class-table-header} "Charge"]
            [table-cell {:align :right
                         :class class-table-header} "Tenant"]
            [table-cell {:align :right
-                        :class class-table-header} "Current"]
+                        :class (get-in props [:classes :table-header-alternate])} "Current"]
            [table-cell {:align :right
-                        :class class-table-header} "Comm."]
+                        :class (get-in props [:classes :table-header-alternate])} "Comm."]
            [table-cell {:align :right
                         :class class-table-header} "Owner"]
            [table-cell {:align :right
-                        :class class-table-header} "Current"]
+                        :class (get-in props [:classes :table-header-alternate])} "Current"]
            [table-cell {:align :right
-                        :class class-table-header} "Interest"]
+                        :class (get-in props [:classes :table-header-alternate])} "Interest"]
            [table-cell {:align :right
                         :class class-table-header} "Supplier"]]]
          [table-body
-          [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger]
-          (view-accounting-detail ledger property-charges)
+          [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger props]
+          (view-accounting-detail ledger property-charges props)
           [view-accounting-total options]]]]]
       [grid {:container true
              :item true
