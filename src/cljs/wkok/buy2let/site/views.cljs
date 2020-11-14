@@ -43,11 +43,11 @@
    [reagent-material-ui.core.toolbar :refer [toolbar]]
    [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
    [reagent-material-ui.styles :as styles]
-   ["@material-ui/core/styles" :as mui-styles]
-   [reagent-material-ui.util :as util]
    [reagent-material-ui.core.dialog :refer [dialog]]
    [reagent-material-ui.core.dialog-title :refer [dialog-title]]
-   [reagent-material-ui.core.dialog-content :refer [dialog-content]])
+   [reagent-material-ui.core.dialog-content :refer [dialog-content]]
+   ["@material-ui/core/styles" :as mui-styles]
+[reagent-material-ui.util :as util])
 (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -220,15 +220,22 @@
              [grid {:item true}
               [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
 
+(defn responsive-font-sizes
+  "Takes a theme object and enhances it with responsive font options
+   Options may optionally be passed in to override the defaults provided by Material-UI
+   See: https://material-ui.com/customization/theming/#responsivefontsizes-theme-options-theme"
+  ([theme]
+   (responsive-font-sizes theme {}))
+  ([theme options]
+   (util/js->clj' (mui-styles/responsiveFontSizes (util/clj->js' theme) (util/clj->js' options)))))
+
 (defn main-panel []
   [:div
    [css-baseline]
    [mui-pickers-utils-provider {:utils  cljs-time-utils
                                 :locale DateTimeSymbols_en_US}
-    [styles/theme-provider (util/js->clj' 
-                            (mui-styles/responsiveFontSizes 
-                             (mui-styles/createMuiTheme 
-                              (util/clj->js' custom-theme))))
+    [styles/theme-provider (-> (styles/create-mui-theme custom-theme)
+                               (responsive-font-sizes))
      [grid {:container true
             :direction :row
             :justify   :flex-start}
