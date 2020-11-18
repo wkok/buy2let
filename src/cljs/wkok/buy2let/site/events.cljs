@@ -40,4 +40,9 @@
   (fn [db [_ show]]
     (assoc-in db [:site :nav :show-menu] show)))
 
+(rf/reg-event-db
+  ::toggle-profile-menu
+  (fn [db [_ target]]
+    (assoc-in db [:site :profile :show-menu] target)))
+
 

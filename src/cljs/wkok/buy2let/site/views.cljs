@@ -12,9 +12,10 @@
    [wkok.buy2let.settings.views :as settings]
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
+   [reagent-material-ui.icons.account-circle :refer [account-circle]]
    [reagent-material-ui.icons.dashboard :refer [dashboard]]
    [reagent-material-ui.icons.receipt :refer [receipt]]
-   [reagent-material-ui.icons.menu :refer [menu]]
+   [reagent-material-ui.icons.menu :as icons-menu]
    [reagent-material-ui.icons.category :refer [category]]
    [reagent-material-ui.icons.settings :refer [settings]]
    [reagent-material-ui.icons.assessment :refer [assessment]]
@@ -22,6 +23,8 @@
    [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
    [reagent-material-ui.colors :as colors]
    [reagent-material-ui.core.css-baseline :refer [css-baseline]]
+   [reagent-material-ui.core.menu :refer [menu]]
+   [reagent-material-ui.core.menu-item :refer [menu-item]]
    [reagent-material-ui.core.grid :refer [grid]]
    [reagent-material-ui.core.fab :refer [fab]]
    [reagent-material-ui.core.tooltip :refer [tooltip]]
@@ -119,6 +122,19 @@
   (when @(rf/subscribe [::subs/show-progress])
     [linear-progress]))
 
+(defn profile []
+  (let [target @(rf/subscribe [::subs/profile-menu-show])
+        handle-close #(rf/dispatch [::se/toggle-profile-menu nil])]
+    [:div
+     [icon-button {:color :inherit
+                   :on-click #(rf/dispatch [::se/toggle-profile-menu (.-currentTarget %)])}
+      [account-circle]]
+     [menu {:open (if target true false)
+            :on-close handle-close
+            :anchor-el target}
+      [menu-item {:on-click handle-close} "Profile"]
+      [menu-item {:on-click handle-close} "My account"]]]))
+
 (defn header [{:keys [classes]}]
   [app-bar {:position :fixed
             :class (:app-bar classes)}
@@ -128,14 +144,11 @@
                   :color :inherit
                   :class (:menu-button classes)
                   :on-click handle-drawer-toggle}
-     [menu]]
+     [icons-menu/menu]]
     [typography {:variant :h5
                  :no-wrap true
                  :class (:title classes)} "Buy2Let"]
-    ;; [:div
-    ;;  [icon-button {:color :inherit}
-    ;;   [account-circle]]]
-    ]])
+    [profile]]])
 
 (defn navigate [hash]
   (js/window.location.assign hash)
