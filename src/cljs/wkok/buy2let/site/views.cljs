@@ -89,6 +89,7 @@
     {:root {:display :flex}
      :drawer {(up "sm") {:width drawer-width, :flex-shrink 0}}
      :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
+     :toolbar {:margin-top "-4px"}
      :title {:flex-grow 1}
      :menu-button {(up "sm") {:display :none} 
                    :margin-right (spacing 2)}
@@ -119,8 +120,10 @@
     (rf/dispatch [::se/show-nav-menu (not mobile-open)])))
 
 (defn progress-bar []
-  (when @(rf/subscribe [::subs/show-progress])
-    [linear-progress]))
+  (if @(rf/subscribe [::subs/show-progress])
+    [linear-progress {:variant :indeterminate}]
+    [linear-progress {:variant :determinate
+                      :value 100}]))
 
 (defn profile []
   (let [target @(rf/subscribe [::subs/profile-menu-show])
@@ -139,7 +142,8 @@
   [app-bar {:position :fixed
             :class (:app-bar classes)}
    [progress-bar]
-   [toolbar {:variant :dense}
+   [toolbar {:variant :dense
+             :class (:toolbar classes)}
     [icon-button {:edge :start
                   :color :inherit
                   :class (:menu-button classes)
