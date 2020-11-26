@@ -56,7 +56,7 @@ jobs:
         cp -R resources/public/* site/demo/
 
     - name: Deploy Pages
-      uses: JamesIves/github-pages-deploy-action@3.5.8
+      uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages 
