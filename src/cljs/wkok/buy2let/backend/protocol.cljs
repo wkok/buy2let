@@ -90,6 +90,19 @@
 
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Profile
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (save-profile-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) responsible for persisting the 
+                 currently signed in user profile to the database")
+
+  (upload-avatar-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) responsible for persisting the 
+                 user's avatar to the database")
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; CRUD (Create Read Update Delete)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

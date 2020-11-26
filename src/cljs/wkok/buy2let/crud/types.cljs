@@ -3,6 +3,7 @@
             [reagent.core :as ra]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.site.subs :as ss]
+            [wkok.buy2let.backend.subs :as bs]
             [goog.crypt.base64 :as b64]
             [clojure.string :as s]
             [reagent-material-ui.icons.add :refer [add]]
@@ -104,13 +105,14 @@
 (defn create-invite [item]
   (if (:send-invite item) 
     (assoc item :invitation
-         (let [security @(rf/subscribe [::ss/security])
-               account-id (:account security)]
+         (let [accounts @(rf/subscribe [::bs/accounts])
+               account-id @(rf/subscribe [::bs/account])
+               local-user @(rf/subscribe [::bs/local-user])]
            {:to (:email item)
             :template {:name "invitation"
                        :data {:delegate-name (:name item)
-                              :user-name (get-in security [:user :name])
-                              :account-name (-> (filter #(= account-id (key %)) (:accounts security))
+                              :user-name (:name local-user)
+                              :account-name (-> (filter #(= account-id (key %)) accounts)
                                                 first
                                                 val
                                                 :name)

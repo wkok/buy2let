@@ -10,14 +10,17 @@
    [wkok.buy2let.report.events :as repe]
    [wkok.buy2let.dashboard.views :as dashboard]
    [wkok.buy2let.settings.views :as settings]
+   [wkok.buy2let.profile.views :as profile]
+   [wkok.buy2let.account.views :as account]
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
+   [wkok.buy2let.backend.subs :as bs]
    [reagent-material-ui.icons.account-circle :refer [account-circle]]
    [reagent-material-ui.icons.dashboard :refer [dashboard]]
    [reagent-material-ui.icons.receipt :refer [receipt]]
    [reagent-material-ui.icons.menu :as icons-menu]
    [reagent-material-ui.icons.category :refer [category]]
-   [reagent-material-ui.icons.settings :refer [settings]]
+  ;;  [reagent-material-ui.icons.settings :refer [settings]]
    [reagent-material-ui.icons.assessment :refer [assessment]]
    [reagent-material-ui.icons.apartment :refer [apartment]]
    [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
@@ -27,6 +30,7 @@
    [reagent-material-ui.core.menu-item :refer [menu-item]]
    [reagent-material-ui.core.grid :refer [grid]]
    [reagent-material-ui.core.fab :refer [fab]]
+   [reagent-material-ui.core.avatar :refer [avatar]]
    [reagent-material-ui.core.tooltip :refer [tooltip]]
    [reagent-material-ui.core.button :refer [button]]
    [reagent-material-ui.core.app-bar :refer [app-bar]]
@@ -91,12 +95,19 @@
      :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
      :toolbar {:margin-top "-4px"}
      :title {:flex-grow 1}
-     :menu-button {(up "sm") {:display :none} 
+     :avatar-small {:width (spacing 3)
+                    :height (spacing 3)}
+     :avatar-large {:width (spacing 10)
+                    :height (spacing 10)}
+    ;;  :avatar-upload-icon {:position :absolute
+    ;;                       :top "35%"
+    ;;                       :left "35%"}
+     :menu-button {(up "sm") {:display :none}
                    :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
      :reconcile-card {:height :7em}
-     :content {:flex-grow 1 
-               :padding (spacing 2) 
+     :content {:flex-grow 1
+               :padding (spacing 2)
                :padding-top (spacing 8)
                :padding-bottom (spacing 10)
                :overflow-x :hidden}
@@ -125,18 +136,27 @@
     [linear-progress {:variant :determinate
                       :value 100}]))
 
-(defn profile []
+(defn profile [classes]
   (let [target @(rf/subscribe [::subs/profile-menu-show])
-        handle-close #(rf/dispatch [::se/toggle-profile-menu nil])]
+        handle-close #(rf/dispatch [::se/toggle-profile-menu nil])
+        profile-menu-fn #(rf/dispatch [::se/toggle-profile-menu (.-currentTarget %)])]
     [:div
-     [icon-button {:color :inherit
-                   :on-click #(rf/dispatch [::se/toggle-profile-menu (.-currentTarget %)])}
-      [account-circle]]
+     (if-let [avatar-url (:avatar-url @(rf/subscribe [::bs/local-user]))]
+       [icon-button {:on-click profile-menu-fn}
+        [avatar {:src avatar-url
+                 :class (:avatar-small classes)}]]
+       [icon-button {:color :inherit
+                     :on-click profile-menu-fn}
+        [account-circle]])
      [menu {:open (if target true false)
             :on-close handle-close
             :anchor-el target}
-      [menu-item {:on-click handle-close} "Profile"]
-      [menu-item {:on-click handle-close} "My account"]]]))
+      [menu-item {:on-click #(do (js/window.location.assign "#/profile")
+                                 (handle-close))} "My profile"]
+      [menu-item {:on-click #(do (js/window.location.assign "#/account")
+                                 (handle-close))} "My account"]
+      [divider]
+      [menu-item {:on-click #(rf/dispatch [:sign-out])} "Sign out"]]]))
 
 (defn header [{:keys [classes]}]
   [app-bar {:position :fixed
@@ -152,7 +172,7 @@
     [typography {:variant :h5
                  :no-wrap true
                  :class (:title classes)} "Buy2Let"]
-    [profile]]])
+    [profile classes]]])
 
 (defn navigate [hash]
   (js/window.location.assign hash)
@@ -182,10 +202,11 @@
                               :on-click #(navigate "#/charges")}
                    [list-item-icon [category]]
                    [list-item-text {:primary "Charges"}]]
-                  [list-item {:button true
-                              :on-click #(navigate "#/settings")}
-                   [list-item-icon [settings]]
-                   [list-item-text {:primary "Settings"}]]]]]
+                  ;; [list-item {:button true
+                  ;;             :on-click #(navigate "#/settings")}
+                  ;;  [list-item-icon [settings]]
+                  ;;  [list-item-text {:primary "Settings"}]]
+                  ]]]
     [:nav {:class (:drawer classes)}
      [hidden {:sm-up true}
       [drawer {:container (.. js/window -document -body)
@@ -212,7 +233,9 @@
        :properties [crud-impl/properties props]
        :charges [crud-impl/charges props]
        :delegates [crud-impl/delegates props]
-       :settings [settings/settings props]))])
+       :settings [settings/settings props]
+       :profile [profile/profile props]
+       :account [account/account props]))])
 
 (defn sign-in-panel []
   [:div

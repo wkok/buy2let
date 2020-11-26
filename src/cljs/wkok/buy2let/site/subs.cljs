@@ -59,9 +59,10 @@
     (get-in db [:site :profile :show-menu])))
 
 (rf/reg-sub
-  ::security
+  ::avatar-url-temp
   (fn [db _]
-    (get db :security)))
+    (get-in db [:site :avatar-url-temp])))
+
 
 
 

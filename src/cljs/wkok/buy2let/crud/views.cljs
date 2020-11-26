@@ -148,8 +148,7 @@
                          :on-blur   handle-blur}])
     :label (->> (get type :hidden-label "Hidden")
                 s/capitalize
-                (str " "))}]
-  )
+                (str " "))}])
 
 (defn edit-panel [type props]
   (rf/dispatch [:set-fab-actions nil])

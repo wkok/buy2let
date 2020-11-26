@@ -373,6 +373,12 @@
   (save-crud-fx [_ _]
     {})
 
+  (save-profile-fx [_ _]
+    {})
+
+  (upload-avatar-fx [_ _]
+    {})
+
   (save-reconcile-fx [_ _]
     {})
 

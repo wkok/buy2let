@@ -11,6 +11,8 @@
 (s/def ::email (s/and string? #(re-matches #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$" %)))
 (s/def ::uid string?)
 (s/def ::display-name string?)
+(s/def ::avatar-url any?)
+(s/def ::photo-url any?)
 (s/def ::who-pays-whom #{:opa :ac :apo :aps :mi :opb :ops :tpa :tpo})
 (s/def ::invoiced boolean?)
 (s/def ::amount float?)
@@ -24,9 +26,11 @@
 
 (s/def ::claims (s/keys :req-un [::roles]))
 (s/def ::account (s/keys :req-un [::id ::name]))
-(s/def ::user (s/keys :req-un [::id ::name ::email]))
+(s/def ::user (s/keys :req-un [::id ::name ::email]
+                      :opt-un [::avatar-url]))
 (s/def ::delegate (s/keys :req-un [::id ::name ::email]))
-(s/def ::auth (s/keys :req-un [::uid ::display-name ::email]))
+(s/def ::auth (s/keys :req-un [::uid ::display-name ::email]
+                      :opt-un [::photo-url]))
 (s/def ::charge (s/keys :req-un [::id ::name]))
 (s/def ::property (s/keys :req-un [::id ::name ::charges]))
 (s/def ::property-charge (s/keys :req-un [::who-pays-whom]))

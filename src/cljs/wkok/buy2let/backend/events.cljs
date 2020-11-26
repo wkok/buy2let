@@ -29,7 +29,9 @@
                                                            :provider-data
                                                            js->clj
                                                            (remove #(= (get % "providerId") provider))))
-        (assoc-in [:site :dialog] {:heading "Success" :message (str "Successfully unlinked " provider)}))))
+        (assoc-in [:site :dialog] {:heading "Unlinked" 
+                                   :message (str "Successfully unlinked " provider)
+                                   :buttons {:middle {:text     "Close"}}}))))
 
 (rf/reg-event-fx
   ::link
@@ -159,9 +161,10 @@
  (fn [cofx [_ input]]
    (let [auth (spec/conform ::spec/auth input)
          user (spec/conform ::spec/user
-                            {:id       (keyword (:uid auth))
-                             :name     (:display-name auth)
-                             :email    (:email auth)})
+                            {:id         (keyword (:uid auth))
+                             :name       (:display-name auth)
+                             :email      (:email auth)
+                             :avatar-url (:photo-url auth)})
          account {:id   (keyword (:id cofx))
                   :name (:display-name auth)}]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
