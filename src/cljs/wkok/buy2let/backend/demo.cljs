@@ -377,6 +377,7 @@
     {})
 
   (upload-avatar-fx [_ _]
+    (rf/dispatch [::se/splash false])
     {})
 
   (save-reconcile-fx [_ _]
