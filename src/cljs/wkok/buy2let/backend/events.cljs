@@ -135,8 +135,29 @@
 (rf/reg-event-db
  :load-claims
  (fn [db [_ input]]
-   (rf/dispatch [:load-user (spec/conform ::spec/user (:user input))])
-   (assoc-in db [:security :claims] (spec/conform ::spec/claims (:claims input)))))
+   (let [user (spec/conform ::spec/user (:user input))
+         claims (spec/conform ::spec/claims (:claims input))]
+     (if (:email_verified claims)
+       (do
+         (rf/dispatch [:load-user user])
+         (assoc-in db [:security :claims] claims))
+       (assoc-in db [:site :dialog] {:heading "Verify email"
+                                     :message "Please check your email & click the verification link. If you haven't
+                                               received it, you can try resending it"
+                                     :closeable false
+                                     :buttons {:left  {:text     "Resend"
+                                                       :on-click #(rf/dispatch [:send-email-verification user])
+                                                       :color :primary}}})))))
+
+(rf/reg-event-fx
+ :send-email-verification
+ (fn [_ [_ user]]
+   (rf/dispatch [::se/dialog])
+   (bp/send-email-verification-fx impl/backend
+                                  {:on-success #(rf/dispatch [::se/dialog {:heading "Check your email"
+                                                                           :message (str "Email verification link sent to: " (:email user))
+                                                                           :closeable false}])
+                                   :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))
 
 (rf/reg-event-fx
  :refresh-token

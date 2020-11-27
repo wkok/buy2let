@@ -41,6 +41,9 @@
   (refresh-token-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to refresh the auth token from the server")
 
+  (send-email-verification-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) to send a user verification email")
+
   (accept-invitation-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to accept a delegate invitation")
   
