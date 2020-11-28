@@ -94,9 +94,6 @@
                 :direction :column}
           [avatar-upload avatar-url-temp (:avatar-url user) props options]
           [build-input {:name :name} options]
-          ;; (build-input {:name :email
-          ;;               :type :email
-          ;;               :disabled true} options)
           [grid {:container true
                  :direction :row
                  :justify :flex-start
@@ -111,7 +108,8 @@
            [grid {:item true}
             [button {:variant :outlined
                      :type :button
-                     :on-click #(js/window.history.back)}
+                     :on-click #(do (rf/dispatch [::pe/clear-temp-avatar])
+                                    (js/window.history.back))}
              "Cancel"]]]]]])]))
 
 (defn view-profile [{:keys [classes]}]

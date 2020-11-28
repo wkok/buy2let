@@ -32,7 +32,8 @@
                 (assoc profile :avatar-url avatar-url-temp)
                 profile)]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
-     (merge {:db            (assoc-in db [:security :user] user)}
+     (merge {:db            (-> (assoc-in db [:security :user] user)
+                                (assoc-in [:site :avatar-url-temp] nil))}
             (bp/save-profile-fx impl/backend
                                 {:user user
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
@@ -42,6 +43,11 @@
  (fn [db [_ url]]
    (-> (assoc-in db [:site :avatar-url-temp] url)
        (assoc-in [:site :splash] false))))
+
+(rf/reg-event-db
+ ::clear-temp-avatar
+ (fn [db [_ _]]
+   (assoc-in db [:site :avatar-url-temp] nil)))
 
 (rf/reg-event-fx
  ::get-avatar-url
