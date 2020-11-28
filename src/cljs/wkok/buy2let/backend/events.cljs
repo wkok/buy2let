@@ -11,6 +11,7 @@
             [goog.crypt.base64 :as b64]
             [reagent.core :as ra]
             [cemerick.url :as url]
+            [nano-id.core :as nid]
             [cljs.reader]))
 
 (rf/reg-event-fx
@@ -51,6 +52,14 @@
         b64/decodeString
         cljs.reader/read-string)))
 
+(defn delete-confirmation? []
+  (when-let [confirmation (-> js/window .-location .-href
+                              url/url
+                              (get-in [:query "delete-confirmation"]))]
+    (-> confirmation
+        b64/decodeString
+        cljs.reader/read-string)))
+
 (defn registered? [user]
   (not (nil? user)))
 
@@ -64,7 +73,9 @@
                                      (if-let [invitation (accepting-invitation?)]
                                        (rf/dispatch [::accept-invitation {:invitation invitation
                                                                           :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
-                                       (rf/dispatch [:refresh-token %]))
+                                       (if-let [confirmation (delete-confirmation?)]
+                                         (rf/dispatch [::delete-account-confirm confirmation %])
+                                         (rf/dispatch [:refresh-token %])))
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
@@ -157,7 +168,8 @@
                                   {:on-success #(rf/dispatch [::se/dialog {:heading "Check your email"
                                                                            :message (str "Email verification link sent to: " (:email user))
                                                                            :closeable false}])
-                                   :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))
+                                   :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %
+                                                                         :closeable false}])})))
 
 (rf/reg-event-fx
  :refresh-token
@@ -202,26 +214,64 @@
    (merge {:db            shared/default-db}
           (bp/sign-out-fx impl/backend))))
 
+(defn create-delete-confirmation [user account delete-token]
+  {:to (:email user)
+   :template {:name "delete-account"
+              :data {:user-name (:name user)
+                     :account-name (:name account)
+                     :delete-url (str (.. js/window -location -protocol) "//"
+                                      (.. js/window -location -host)
+                                      "?delete-confirmation="
+                                      (b64/encodeString {:user-id (:id user)
+                                                         :account-id (:id account)
+                                                         :delete-token delete-token}))}}})
+
 (rf/reg-event-fx
  ::delete-account
  (fn [cofx _]
    (let [db (:db cofx)
+         accounts (get-in db [:security :accounts])
          account-id (get-in db [:security :account])
-         user-id (get-in db [:security :user :id])]
-     (merge {:db                (assoc-in db [:site :show-progress] true)}
-            (bp/delete-account-fx impl/backend
-                                  {:user-id user-id
-                                   :account-id account-id
-                                   :on-success #(do
-                                                  (rf/dispatch [::se/show-progress false])
-                                                  (rf/dispatch [::se/dialog {:heading   "Account deleted"
-                                                                             :message   "Successfully deleted your account. Hope to have you back soon!"
-                                                                             :buttons   {:middle {:text     "Goodbye"
-                                                                                                  :on-click (fn [] (rf/dispatch [:sign-out]))}}
-                                                                             :closeable false}]))
-                                   :on-error #(do
-                                                (rf/dispatch [::se/show-progress false])
-                                                (rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                                           :message (str %)}]))})))))
+         account (account-id accounts)
+         user (get-in db [:security :user])
+         delete-token (nid/nano-id)]
+     (merge {:db (assoc-in db [:site :splash] true)}
+            (bp/delete-account-fx
+             impl/backend
+             {:user-id (:id user)
+              :account-id account-id
+              :delete-token delete-token
+              :confirmation (create-delete-confirmation user account delete-token)
+              :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
+                                                      :message   "Please check your email for an account deletion link.
+                                                                                Your account will remain active until you confirm deletion 
+                                                                                by clicking the link in the email."
+                                                      :buttons   {:middle {:text     "Understood"
+                                                                           :on-click (fn [] (rf/dispatch [::se/splash false]))}}
+                                                      :closeable false}])
+              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                    :message (str %)}])})))))
 
-
+(rf/reg-event-fx
+ ::delete-account-confirm
+ (fn [cofx [_ {:keys [account-id user-id delete-token]} user]]
+   (merge {:db                (assoc-in (:db cofx) [:site :splash] true)}
+          (bp/delete-account-confirm-fx
+           impl/backend
+           {:user-id user-id
+            :account-id account-id
+            :delete-token delete-token
+            :on-success #(do
+                           (rf/dispatch [::se/splash false])
+                           (rf/dispatch [::se/show-progress false])
+                           (rf/dispatch [::se/dialog {:heading   "Account deleted"
+                                                      :message   "Successfully deleted your account. Hope to have you back soon!"
+                                                      :buttons   {:middle {:text     "Goodbye"
+                                                                           :on-click (fn [] (rf/dispatch [:sign-out]))}}
+                                                      :closeable false}]))
+            :on-error #(do
+                         (rf/dispatch [:refresh-token user])
+                         (rf/dispatch [::se/splash false])
+                         (rf/dispatch [::se/show-progress false])
+                         (rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                    :message (str %)}]))}))))

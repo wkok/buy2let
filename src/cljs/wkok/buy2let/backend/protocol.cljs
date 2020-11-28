@@ -72,6 +72,9 @@
     "Implement this function by returning a Map of re-frame effect(s) responsible for initiating a Twitter sign in process")
 
   (delete-account-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) responsible for initiating a user's request to delete account")
+
+  (delete-account-confirm-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for deleting a user's account")
 
 
