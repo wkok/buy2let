@@ -26,6 +26,8 @@
    [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
    [reagent-material-ui.colors :as colors]
    [reagent-material-ui.core.css-baseline :refer [css-baseline]]
+   [reagent-material-ui.core.snackbar :refer [snackbar]]
+   [reagent-material-ui.lab.alert :refer [alert]]
    [reagent-material-ui.core.menu :refer [menu]]
    [reagent-material-ui.core.menu-item :refer [menu-item]]
    [reagent-material-ui.core.grid :refer [grid]]
@@ -99,9 +101,6 @@
                     :height (spacing 3)}
      :avatar-large {:width (spacing 10)
                     :height (spacing 10)}
-    ;;  :avatar-upload-icon {:position :absolute
-    ;;                       :top "35%"
-    ;;                       :left "35%"}
      :menu-button {(up "sm") {:display :none}
                    :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
@@ -260,6 +259,17 @@
              [grid {:item true}
               [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
 
+(defn error-snack []
+  (let [account-id @(rf/subscribe [::bs/account])
+        accounts @(rf/subscribe [::bs/accounts])
+        account (when account-id (account-id accounts))
+        error (when (:deleteToken account)
+                "Account deletion initiated. You may cancel this in My Account")]
+    [snackbar {:open (if error true false)
+               :anchor-origin {:vertical :bottom
+                               :horizontal :center}}
+     [alert {:severity :error} error]]))
+
 (defn responsive-font-sizes
   "Takes a theme object and enhances it with responsive font options
    Options may optionally be passed in to override the defaults provided by Material-UI
@@ -284,6 +294,7 @@
        [(with-custom-styles
           (fn [{:keys [classes] :as props}]
             [:div {:class (:root classes)}
+             [error-snack]
              [splash props]
              [fab-button props]
              [header props]

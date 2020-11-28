@@ -12,6 +12,7 @@
             [reagent.core :as ra]
             [cemerick.url :as url]
             [nano-id.core :as nid]
+            [clojure.string :as str]
             [cljs.reader]))
 
 (rf/reg-event-fx
@@ -143,6 +144,17 @@
    (let [account (spec/conform ::spec/account input)]
      (update-in db [:security :accounts] #(assoc % (:id account) account)))))
 
+(rf/reg-event-fx
+ ::save-account
+ (fn [cofx [_ input]]
+   (let [db (:db cofx)
+         account (spec/conform ::spec/account input)]
+     (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
+     (merge {:db            (assoc-in db [:security :accounts (:id account)] account)}
+            (bp/save-account-fx impl/backend
+                                {:account account
+                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
+
 (rf/reg-event-db
  :load-claims
  (fn [db [_ input]]
@@ -163,13 +175,16 @@
 (rf/reg-event-fx
  :send-email-verification
  (fn [_ [_ user]]
-   (rf/dispatch [::se/dialog])
-   (bp/send-email-verification-fx impl/backend
-                                  {:on-success #(rf/dispatch [::se/dialog {:heading "Check your email"
-                                                                           :message (str "Email verification link sent to: " (:email user))
-                                                                           :closeable false}])
-                                   :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %
-                                                                         :closeable false}])})))
+   (let [check-your-mail #(rf/dispatch [::se/dialog {:heading "Check your email"
+                                                     :message (str "Email verification link sent to: " (:email user))
+                                                     :closeable false}])]
+     (rf/dispatch [::se/dialog])
+     (bp/send-email-verification-fx impl/backend
+                                    {:on-success check-your-mail
+                                     :on-error #(if (str/includes? % "Try again later")
+                                                  (check-your-mail)
+                                                  (rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %
+                                                                             :closeable false}]))}))))
 
 (rf/reg-event-fx
  :refresh-token
@@ -226,6 +241,12 @@
                                                          :account-id (:id account)
                                                          :delete-token delete-token}))}}})
 
+(rf/reg-event-db
+ ::delete-account-understood
+ (fn [db [_ delete-token account-id]]
+   (rf/dispatch [::se/splash false])
+   (assoc-in db [:security :accounts account-id :deleteToken] delete-token)))
+
 (rf/reg-event-fx
  ::delete-account
  (fn [cofx _]
@@ -247,7 +268,7 @@
                                                                                 Your account will remain active until you confirm deletion 
                                                                                 by clicking the link in the email."
                                                       :buttons   {:middle {:text     "Understood"
-                                                                           :on-click (fn [] (rf/dispatch [::se/splash false]))}}
+                                                                           :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
                                                       :closeable false}])
               :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                     :message (str %)}])})))))

@@ -71,6 +71,9 @@
   (github-sign-in-fx [_]
     "Implement this function by returning a Map of re-frame effect(s) responsible for initiating a Twitter sign in process")
 
+  (save-account-fx [_ options]
+    "Implement this function by returning a Map of re-frame effect(s) responsible for saving an account")
+
   (delete-account-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for initiating a user's request to delete account")
 
