@@ -116,9 +116,15 @@
   (github-sign-in-fx [_]
     (do-sign-in))
 
+  (save-account-fx [_ _]
+    {})
+
   (delete-account-fx
     [_ {:keys [on-success]}]
     (on-success))
+
+  (delete-account-confirm-fx [_ _]
+    {})
 
   (get-ledger-year-fx
     [_ {:keys [properties account-id this-year last-year on-success]}]
