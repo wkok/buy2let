@@ -1,12 +1,10 @@
 (ns wkok.buy2let.profile.events
   (:require
    [re-frame.core :as rf]
-   [clojure.string :as s]
    [wkok.buy2let.shared :as shared]
    [wkok.buy2let.backend.protocol :as bp]
    [wkok.buy2let.backend.impl :as impl]
-   [wkok.buy2let.site.events :as se]
-   [wkok.buy2let.backend.subs :as fs]))
+   [wkok.buy2let.site.events :as se]))
 
 
 (rf/reg-event-db

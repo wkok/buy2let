@@ -3,6 +3,7 @@
             [goog.events :as events]
             [re-frame.core :as rf]
             [wkok.buy2let.profile.events :as pe]
+            [wkok.buy2let.backend.events :as be]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.report.events :as repe]
             [wkok.buy2let.crud.types :as type]
@@ -37,7 +38,8 @@
   (defroute "/settings" [] (rf/dispatch [:set-active-page :settings "Settings"]))
   (defroute "/profile" [] (rf/dispatch [::pe/view-profile]))
   (defroute "/profile/edit" [] (rf/dispatch [::pe/edit-profile]))
-  (defroute "/account" [] (rf/dispatch [:set-active-page :account "Account"])))
+  (defroute "/account" [] (rf/dispatch [::be/view-account]))
+  (defroute "/account/edit" [] (rf/dispatch [::be/edit-account])))
 
 
 (doto (History.)

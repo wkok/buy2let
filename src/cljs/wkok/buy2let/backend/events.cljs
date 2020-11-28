@@ -144,6 +144,24 @@
    (let [account (spec/conform ::spec/account input)]
      (update-in db [:security :accounts] #(assoc % (:id account) account)))))
 
+(rf/reg-event-db
+ ::view-account
+ (fn [db [_ _]]
+   (-> (assoc-in db [:site :active-page] :account)
+       (assoc-in [:site :active-panel] :account-view)
+       (assoc-in [:site :heading] "Account"))))
+
+(rf/reg-event-db
+ ::edit-account
+ (fn [db [_ _]]
+   (let [accounts (get-in db [:security :accounts])
+         account-id (get-in db [:security :account])
+         account (account-id accounts)]
+     (-> (assoc-in db [:form :old :account] account)
+         (assoc-in [:site :active-page] :account)
+         (assoc-in [:site :active-panel] :account-edit)
+         (assoc-in [:site :heading] "Edit account")))))
+
 (rf/reg-event-fx
  ::save-account
  (fn [cofx [_ input]]
