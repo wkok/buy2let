@@ -191,4 +191,9 @@
                                   (on-click))}
    label])
 
-
+(defn reset-query-params []
+  (when (.-pushState js/history)
+    (let [url (str
+               (.. js/window -location -origin)
+               (.. js/window -location -pathname))]
+      (.pushState (.-history js/window) #js {:path url} "" url))))

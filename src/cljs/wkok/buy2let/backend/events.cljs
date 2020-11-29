@@ -323,6 +323,7 @@
 (rf/reg-event-fx
  ::delete-account-confirm
  (fn [cofx [_ {:keys [account-id user-id delete-token]} user]]
+   (shared/reset-query-params)
    (merge {:db                (assoc-in (:db cofx) [:site :splash] true)}
           (bp/delete-account-confirm-fx
            impl/backend
