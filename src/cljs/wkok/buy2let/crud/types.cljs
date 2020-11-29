@@ -97,10 +97,10 @@
 (defn calc-status [item]
   (assoc item :status
          (if (:hidden item)
-           :REVOKED
+           "REVOKED"
            (if (:send-invite item)
-             :INVITED
-             :ACTIVE))))
+             "INVITED"
+             "ACTIVE"))))
 
 (defn create-invite [item]
   (if (:send-invite item) 
@@ -141,4 +141,4 @@
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
                                  :title "Add"}}}
    :hidden-label "revoked"
-   :label "Invitees"})
+   :label "Users"})

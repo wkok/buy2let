@@ -294,6 +294,10 @@
    (rf/dispatch [::se/splash false])
    (assoc-in db [:security :accounts account-id :deleteToken] delete-token)))
 
+(defn active-delegates? [db]
+  (not (empty? (->> (:delegates db)
+                    (filter #(not= "REVOKED" (-> % val :status)))))))
+
 (rf/reg-event-fx
  ::delete-account
  (fn [cofx _]
@@ -303,22 +307,29 @@
          account (account-id accounts)
          user (get-in db [:security :user])
          delete-token (nid/nano-id)]
-     (merge {:db (assoc-in db [:site :splash] true)}
-            (bp/delete-account-fx
-             impl/backend
-             {:user-id (:id user)
-              :account-id account-id
-              :delete-token delete-token
-              :confirmation (create-delete-confirmation user account delete-token)
-              :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
-                                                      :message   "Please check your email for an account deletion link.
+     
+     (if (active-delegates? db)
+       (rf/dispatch [::se/dialog {:heading "Delegated access"
+                                  :message "You have users linked / invited to your account. Please revoke
+                                               their access first, before continuing with account deletion"
+                                  :buttons   {:middle {:text     "Take me there"
+                                                       :on-click (fn [] (js/window.location.assign "#/delegates"))}}}])
+       (merge {:db (assoc-in db [:site :splash] true)}
+              (bp/delete-account-fx
+               impl/backend
+               {:user-id (:id user)
+                :account-id account-id
+                :delete-token delete-token
+                :confirmation (create-delete-confirmation user account delete-token)
+                :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
+                                                        :message   "Please check your email for an account deletion link.
                                                                                 Your account will remain active until you confirm deletion 
                                                                                 by clicking the link in the email."
-                                                      :buttons   {:middle {:text     "Understood"
-                                                                           :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
-                                                      :closeable false}])
-              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                    :message (str %)}])})))))
+                                                        :buttons   {:middle {:text     "Understood"
+                                                                             :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
+                                                        :closeable false}])
+                :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                      :message (str %)}])}))))))
 
 (rf/reg-event-fx
  ::delete-account-confirm

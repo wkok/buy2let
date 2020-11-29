@@ -120,7 +120,7 @@
                               :primary-typography-props {:color :error}}]]
             [list-item {:button true
                         :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
-                                                              :message "This will delete all data associated with this account, for all users you've given access to, and is not recoverable!"
+                                                              :message "This will delete all data associated with this account, and is not recoverable!"
                                                               :buttons {:left  {:text     "DELETE"
                                                                                 :on-click (fn [] (rf/dispatch [::be/delete-account]))
                                                                                 :color :secondary}
