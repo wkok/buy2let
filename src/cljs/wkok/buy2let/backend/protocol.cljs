@@ -80,6 +80,8 @@
   (delete-account-confirm-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for deleting a user's account")
 
+  (apply-action-code-fx [_ options]
+     "Implement this function by returning a Map of re-frame effect(s) responsible for applting action codes on a user's account")
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Ledger

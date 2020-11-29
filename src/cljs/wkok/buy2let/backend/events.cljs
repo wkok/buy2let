@@ -53,6 +53,11 @@
         b64/decodeString
         cljs.reader/read-string)))
 
+(defn verifying-email? []
+  (-> js/window .-location .-href
+      url/url
+      (get-in [:query "oobCode"])))
+
 (defn delete-confirmation? []
   (when-let [confirmation (-> js/window .-location .-href
                               url/url
@@ -63,6 +68,17 @@
 
 (defn registered? [user]
   (not (nil? user)))
+
+(rf/reg-event-fx
+ ::verify-email
+ (fn [_ [_ {:keys [action-code on-success]}]]
+   (bp/apply-action-code-fx impl/backend
+                            {:action-code action-code
+                             :on-success on-success
+                             :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" 
+                                                                   :message %
+                                                                   :buttons {:right {:text     "Continue"
+                                                                                     :on-click on-success}}}])})))
 
 (rf/reg-event-fx
  :get-user
@@ -76,7 +92,10 @@
                                                                           :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
                                        (if-let [confirmation (delete-confirmation?)]
                                          (rf/dispatch [::delete-account-confirm confirmation %])
-                                         (rf/dispatch [:refresh-token %])))
+                                         (if-let [action-code (verifying-email?)]
+                                           (rf/dispatch [::verify-email {:action-code action-code
+                                                                         :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
+                                           (rf/dispatch [:refresh-token %]))))
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
@@ -173,6 +192,18 @@
                                 {:account account
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
+(defn verify-email-dialog [user]
+  {:heading "Verify email"
+   :message "Please check your email & click the verification link. If you haven't
+                                               received it, you can try resending it"
+   :closeable false
+   :buttons {:left  {:text     "Resend"
+                     :on-click #(rf/dispatch [:send-email-verification user])
+                     :color :secondary}
+             :right  {:text     "Sign out"
+                      :on-click #(rf/dispatch [:sign-out])
+                      :color :primary}}})
+
 (rf/reg-event-db
  :load-claims
  (fn [db [_ input]]
@@ -182,13 +213,7 @@
        (do
          (rf/dispatch [:load-user user])
          (assoc-in db [:security :claims] claims))
-       (assoc-in db [:site :dialog] {:heading "Verify email"
-                                     :message "Please check your email & click the verification link. If you haven't
-                                               received it, you can try resending it"
-                                     :closeable false
-                                     :buttons {:left  {:text     "Resend"
-                                                       :on-click #(rf/dispatch [:send-email-verification user])
-                                                       :color :primary}}})))))
+       (assoc-in db [:site :dialog] (verify-email-dialog user))))))
 
 (rf/reg-event-fx
  :send-email-verification
