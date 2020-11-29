@@ -13,7 +13,9 @@
             [cemerick.url :as url]
             [nano-id.core :as nid]
             [clojure.string :as str]
-            [cljs.reader]))
+            [cljs.reader]
+            [reagent-material-ui.core.text-field :refer [text-field]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]))
 
 (rf/reg-event-fx
  ::sign-in
@@ -109,13 +111,15 @@
 (def selected-account-id (ra/atom :none))
 (defn select-account []
   (let [accounts @(rf/subscribe [::bs/accounts])]
-    [:div
-     [:select {:value     @selected-account-id
-               :on-change #(reset! selected-account-id (-> % .-target .-value))}
-      (for [account accounts]
-        ^{:key (key account)}
-        [:option {:value (key account)} (-> account val :name)])]
-     [:br]]))
+    [text-field {:select true
+                 :label "Account"
+                 :field     :list
+                 :on-change #(reset! selected-account-id (-> % .-target .-value))
+                 :value     @selected-account-id}
+     (for [account accounts]
+       ^{:key (key account)}
+       [menu-item {:value (key account)} 
+        (-> account val :name)])]))
 
 (defn account-dialog []
   {:heading   "Which account?"
