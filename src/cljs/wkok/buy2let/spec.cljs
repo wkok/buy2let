@@ -17,7 +17,7 @@
 (s/def ::invoiced boolean?)
 (s/def ::amount float?)
 (s/def ::bank-interest float?)
-(s/def ::role #{:viewer :editor})
+(s/def ::role #{:viewer :editor :owner})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

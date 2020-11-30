@@ -246,8 +246,10 @@
         owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
         cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)
         card-class (get-in props [:classes :reconcile-card])]
-    (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
+    (if (shared/has-role :editor)
+      (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
                                              :title "Edit"}}])
+      (rf/dispatch [:set-fab-actions nil]))
     [grid {:container true
            :direction :row
            :justify :space-between

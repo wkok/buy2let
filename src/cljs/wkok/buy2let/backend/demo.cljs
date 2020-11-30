@@ -56,8 +56,9 @@
                            :payment-received-id {:id :payment-received-id :name "Payment received"}
                            :rates-taxes-id {:id :rates-taxes-id :name "Rates & taxes"}})
 
-      (on-success-delegates {:jack-id {:id :jack-id :name "Jack" :email "jack@email.com" :status :ACTIVE}
-                             :jill-id {:id :jill-id :name "Jill" :email "jill@email.com" :status :ACTIVE}})
+      (on-success-delegates {:jack-id {:id :jack-id :name "Jack Hill" :email "jack@email.com" :status "ACTIVE" :roles ["viewer" "editor"]}
+                             :jill-id {:id :jill-id :name "Jill Johnson" :email "jill@email.com" :status "INVITED" :send-invite true :roles ["viewer"]}
+                             :john-id {:id :john-id :name "John Doe" :email "john@email.com" :status "REVOKED" :hidden true :roles ["viewer"]}})
 
       (on-success-properties {:property-one-id {:id :property-one-id :name "Property One"
                                                 :charges property-charges}
@@ -71,9 +72,16 @@
     {})
 
   (get-user-fx
-    [_ {:keys [auth _]}]
-    (rf/dispatch [:load-user {:id :1234 :name "Demo User" :email "demo@email.com" :accounts [:1234]}])
-    {})
+   [_ {:keys [auth _]}]
+   (let [user {:id :1234 :name "Demo User" :email "demo@email.com" :accounts [:1234]}]
+     (rf/dispatch [:load-user user])
+     (rf/dispatch [:load-claims {:claims {:roles {:viewer [:1234]
+                                                  :editor [:1234]
+                                                  :owner [:1234]}
+                                          :email_verified true}
+                                 :user user}]))
+
+   {})
 
   (get-account-fx [_ _]
     (rf/dispatch [:load-account {:id :1234 :name "Demo Account"}])

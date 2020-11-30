@@ -122,6 +122,29 @@
                                                                                  :account-id account-id}))}}}))
     item))
 
+(defn select-lower-weighted [roles]
+  (let [weighted {1 "viewer"
+                  2 "editor"
+                  3 "owner"}]
+    
+    (->> (map (fn [role]
+                (let [role-idx (->> (filter #(= role (val %)) weighted)
+                                    first
+                                    key)]
+                  (->> (filter #(<= (key %) role-idx) weighted)
+                       vals)))
+              roles)
+         flatten
+         distinct
+         (keep identity))))
+
+(defn on-change-delegate-role
+  [field-name selected-roles set-handle-change]
+  (let [roles (-> selected-roles seq select-lower-weighted)]
+    (set-handle-change
+     {:value roles
+      :path [field-name]})))
+
 (def delegate
   {:type        :delegates
    :subs        ::cs/delegates
@@ -129,7 +152,10 @@
                  {:key :email :type :email
                   :disabled {:if-fields ["status"]}}
                  {:key :roles :type :select-multi
-                  :options {"viewer" "View only" "editor" "View & edit"}
+                  :options {"viewer" "View only" 
+                            "editor" "View & edit"
+                            "owner" "Account owner"}
+                  :on-change on-change-delegate-role
                   :disabled {:if-fields ["hidden"]}}
                  {:key :send-invite :type :checkbox
                   :label " Send invitation"

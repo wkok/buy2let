@@ -2,6 +2,7 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.string :as s]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
             [fork.re-frame :as fork]
@@ -36,7 +37,9 @@
     true))
 
 (defn list-panel [type props]
-  (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
+  (if (shared/has-role :editor)
+    (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
+    (rf/dispatch [:set-fab-actions nil]))
   (let [show-hidden @(rf/subscribe [::cs/show-hidden])
         heading (or (:label type) (-> (:subs type) name s/capitalize))]
     [paper {:class (get-in props [:classes :paper])}
@@ -122,11 +125,13 @@
       [select
        {:name field-name
         :multiple true
-        :value (values field-name ["viewer"])
+        :value (values field-name [])
         :render-value #(->> (map (fn [s] (get (:options field) s)) %) (s/join ", "))
-        :on-change #(set-handle-change
-                     {:value (keep identity (-> % .-target .-value))
-                      :path [field-name]})
+        :on-change (if-let [on-change (:on-change field)]
+                     #(on-change field-name (-> % .-target .-value) set-handle-change)
+                     #(set-handle-change
+                       {:value (keep identity (-> % .-target .-value))
+                        :path [field-name]}))
         :disabled (not (nil? (some #(values % false)
                                    (get-in field [:disabled :if-fields]))))}
        (for [option (:options field)]
@@ -134,7 +139,7 @@
          [menu-item {:value (key option)}
           [checkbox {:color :primary
                      :checked (not (nil? (some #{(-> option key name)}
-                                               (values field-name ["viewer"]))))}]
+                                               (values field-name []))))}]
           [list-item-text {:primary (-> option val)}]])]]]))
 
 (defn build-hidden

@@ -9,6 +9,7 @@
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.spec :as spec]
             [reagent-material-ui.core.link :refer [link]]
@@ -197,3 +198,8 @@
                (.. js/window -location -origin)
                (.. js/window -location -pathname))]
       (.pushState (.-history js/window) #js {:path url} "" url))))
+
+(defn has-role [role]
+  (let [claims @(rf/subscribe [::bs/claims])
+        account-id @(rf/subscribe [::bs/account])]
+    (some #{account-id} (get-in claims [:roles role]))))

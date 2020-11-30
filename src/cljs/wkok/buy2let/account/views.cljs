@@ -5,6 +5,7 @@
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [wkok.buy2let.backend.events :as be]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.site.subs :as ss]
@@ -100,33 +101,35 @@
            [typography {:variant :h5}
             (:name account)]]]]]
        [card-actions
-        [button {:color :primary
-                 :on-click #(js/window.location.assign "#/account/edit")} "Edit"]]]]
-     [grid {:item true
-            :xs 12 :md 6}
-      [grid {:container true
-             :direction :column
-             :spacing 2}
-       [grid {:item true}
-        [paper {:class (get-in props [:classes :paper])}
-         [list {:subheader (ra/as-element [list-subheader "Account settings"])}
-          [list-item {:button true
-                      :on-click #(js/window.location.assign "#/delegates")}
-           [list-item-text {:primary "Invite users"}]]
-          (if (:deleteToken account)
+        (when (shared/has-role :owner)
+          [button {:color :primary
+                   :on-click #(js/window.location.assign "#/account/edit")} "Edit"])]]]
+     (when (shared/has-role :owner)
+       [grid {:item true
+              :xs 12 :md 6}
+        [grid {:container true
+               :direction :column
+               :spacing 2}
+         [grid {:item true}
+          [paper {:class (get-in props [:classes :paper])}
+           [list {:subheader (ra/as-element [list-subheader "Account settings"])}
             [list-item {:button true
-                        :on-click #(rf/dispatch [::be/save-account (dissoc account :deleteToken)])}
-             [list-item-text {:primary "Cancel account deletion"
-                              :primary-typography-props {:color :error}}]]
-            [list-item {:button true
-                        :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
-                                                              :message "This will delete all data associated with this account, and is not recoverable!"
-                                                              :buttons {:left  {:text     "DELETE"
-                                                                                :on-click (fn [] (rf/dispatch [::be/delete-account]))
-                                                                                :color :secondary}
-                                                                        :right {:text "Cancel"}}}])}
-             [list-item-text {:primary "Delete account"
-                              :primary-typography-props {:color :error}}]])]]]]]]))
+                        :on-click #(js/window.location.assign "#/delegates")}
+             [list-item-text {:primary "Invite users"}]]
+            (if (:deleteToken account)
+              [list-item {:button true
+                          :on-click #(rf/dispatch [::be/save-account (dissoc account :deleteToken)])}
+               [list-item-text {:primary "Cancel account deletion"
+                                :primary-typography-props {:color :error}}]]
+              [list-item {:button true
+                          :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
+                                                                :message "This will delete all data associated with this account, and is not recoverable!"
+                                                                :buttons {:left  {:text     "DELETE"
+                                                                                  :on-click (fn [] (rf/dispatch [::be/delete-account]))
+                                                                                  :color :secondary}
+                                                                          :right {:text "Cancel"}}}])}
+               [list-item-text {:primary "Delete account"
+                                :primary-typography-props {:color :error}}]])]]]]])]))
 
 
 (defn account [props]

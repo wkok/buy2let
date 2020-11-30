@@ -22,6 +22,12 @@
     (get-in db [:security :accounts])))
 
 (rf/reg-sub
+ ::claims
+ (fn [db _]
+   (get-in db [:security :claims])))
+
+(rf/reg-sub
  ::error
  (fn [db _]
    (get-in db [:backend :error])))
+

@@ -223,7 +223,8 @@
           [report-profit-row months options]
           [report-owed-row months options]
           [report-cash-row months options]
-          [report-edit-row months options]]]]]
+          (when (shared/has-role :editor)
+            [report-edit-row months options])]]]]
       [grid {:container true
              :item true
              :class (get-in props [:classes :paper])
