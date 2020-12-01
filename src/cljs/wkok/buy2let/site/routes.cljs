@@ -4,6 +4,7 @@
             [re-frame.core :as rf]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.profile.events :as pe]
+            [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.events :as be]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.report.events :as repe]
@@ -12,15 +13,11 @@
   (:import [goog History]
            [goog.history EventType]))
 
-(rf/reg-event-fx
- :nothing
- (fn [_ _]
-   {}))
 
 (defn dispatch-role [event role]
   (if (shared/has-role role)
     (rf/dispatch event)
-    (rf/dispatch [:nothing])))
+    (rf/dispatch [::se/nothing])))
 
 (defn app-routes []
   (set! (.-hash js/location) "/")

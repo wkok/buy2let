@@ -45,4 +45,7 @@
   (fn [db [_ target]]
     (assoc-in db [:site :profile :show-menu] target)))
 
-
+(rf/reg-event-fx
+ ::nothing
+ (fn [_ _]
+   {}))
