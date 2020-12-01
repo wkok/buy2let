@@ -12,15 +12,20 @@
   (:import [goog History]
            [goog.history EventType]))
 
+(rf/reg-event-fx
+ :nothing
+ (fn [_ _]
+   {}))
+
 (defn dispatch-role [event role]
   (if (shared/has-role role)
     (rf/dispatch event)
-    (js/window.history.back)))
+    (rf/dispatch [:nothing])))
 
 (defn app-routes []
   (set! (.-hash js/location) "/")
   (sec/set-config! :prefix "#")
-  (defroute "/" [] (rf/dispatch [:set-active-page :dashboard "Dashboard"]))
+  (defroute "/" [] (dispatch-role [:set-active-page :dashboard "Dashboard"] :viewer))
   (defroute "/reconcile/:property-id/:month/:year" [property-id month year]
     (dispatch-role [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})] :viewer))
   (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
