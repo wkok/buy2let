@@ -20,7 +20,7 @@
 (defn app-routes []
   (set! (.-hash js/location) "/")
   (sec/set-config! :prefix "#")
-  (defroute "/" [] (dispatch-role [:set-active-page :dashboard "Dashboard"] :viewer))
+  (defroute "/" [] (rf/dispatch [:set-active-page :dashboard "Dashboard"]))
   (defroute "/reconcile/:property-id/:month/:year" [property-id month year]
     (dispatch-role [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})] :viewer))
   (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
