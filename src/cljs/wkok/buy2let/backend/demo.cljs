@@ -34,7 +34,7 @@
         (render-main-panel))
       (rd/render [sign-in-panel] (.getElementById js/document "app"))))
 
-  (sign-out-fx [_]
+  (sign-out-fx [_ _]
     (set! (.. js/window -location -href) "?")
     {})
 

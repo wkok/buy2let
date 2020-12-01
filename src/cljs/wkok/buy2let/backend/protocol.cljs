@@ -15,7 +15,7 @@
 
   (init-auth [_ render-main-panel sign-in-panel])
 
-  (sign-out-fx [_]
+  (sign-out-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) responsible for 
      signing out the user")
 

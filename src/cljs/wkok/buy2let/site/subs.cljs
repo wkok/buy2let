@@ -34,6 +34,11 @@
     (get-in db [:site :splash])))
 
 (rf/reg-sub
+  ::signing-out
+  (fn [db _]
+    (get-in db [:site :signing-out])))
+
+(rf/reg-sub
   ::heading
   (fn [db _]
     (get-in db [:site :heading])))

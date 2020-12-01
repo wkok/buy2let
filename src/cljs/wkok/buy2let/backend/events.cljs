@@ -272,9 +272,13 @@
 
 (rf/reg-event-fx
  :sign-out
- (fn [_ _]
-   (merge {:db            shared/default-db}
-          (bp/sign-out-fx impl/backend))))
+ (fn [cofx _]
+   (merge {:db            (-> (assoc-in (:db cofx) [:site :signing-out] true)
+                              (assoc-in [:site :dialog] {:heading "Signing out.." :closeable false}))}
+          (bp/sign-out-fx impl/backend
+                          {:on-success #(js/window.location.reload)
+                           :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                 :message (str %)}])}))))
 
 (defn create-delete-confirmation [user account delete-token]
   {:to (:email user)
