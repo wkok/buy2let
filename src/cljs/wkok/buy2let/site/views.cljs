@@ -15,12 +15,12 @@
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
+   [wkok.buy2let.account.subs :as as]
    [reagent-material-ui.icons.account-circle :refer [account-circle]]
    [reagent-material-ui.icons.dashboard :refer [dashboard]]
    [reagent-material-ui.icons.receipt :refer [receipt]]
    [reagent-material-ui.icons.menu :as icons-menu]
    [reagent-material-ui.icons.category :refer [category]]
-  ;;  [reagent-material-ui.icons.settings :refer [settings]]
    [reagent-material-ui.icons.assessment :refer [assessment]]
    [reagent-material-ui.icons.apartment :refer [apartment]]
    [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
@@ -260,8 +260,8 @@
               [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
 
 (defn error-snack []
-  (let [account-id @(rf/subscribe [::bs/account])
-        accounts @(rf/subscribe [::bs/accounts])
+  (let [account-id @(rf/subscribe [::as/account])
+        accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))
         error (when (:deleteToken account)
                 "Account deletion initiated. You may cancel this in My Account")]

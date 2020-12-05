@@ -2,7 +2,7 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.site.subs :as ss]
+            [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.backend.subs :as bs]
             [goog.crypt.base64 :as b64]
             [clojure.string :as s]
@@ -105,8 +105,8 @@
 (defn create-invite [item]
   (if (:send-invite item) 
     (assoc item :invitation
-         (let [accounts @(rf/subscribe [::bs/accounts])
-               account-id @(rf/subscribe [::bs/account])
+         (let [accounts @(rf/subscribe [::as/accounts])
+               account-id @(rf/subscribe [::as/account])
                local-user @(rf/subscribe [::bs/local-user])]
            {:to (:email item)
             :template {:name "invitation"

@@ -74,22 +74,19 @@
   (get-user-fx
    [_ {:keys [auth _]}]
    (let [user {:id :1234 :name "Demo User" :email "demo@email.com" :accounts [:1234]}]
-     (rf/dispatch [:load-user user])
      (rf/dispatch [:load-claims {:claims {:roles {:viewer [:1234]
                                                   :editor [:1234]
                                                   :owner [:1234]}
                                           :email_verified true}
-                                 :user user}]))
-
+                                 :user user}])
+     (rf/dispatch [:select-account :1234])
+     (rf/dispatch [:load-user user]))
    {})
 
-  (get-account-fx [_ _]
-    (rf/dispatch [:load-account {:id :1234 :name "Demo Account"}])
-    (rf/dispatch [:set-active-account :1234])
-    {})
-
   (get-accounts-fx [_ _]
-    {})
+                   (rf/dispatch [:load-account {:id :1234 :name "Demo Account"}])
+                   (rf/dispatch [:set-active-account :1234])
+                   {})
 
   (unlink-provider
     [_ {:keys [provider _ _]}]

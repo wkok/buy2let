@@ -47,9 +47,6 @@
   (accept-invitation-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to accept a delegate invitation")
   
-  (get-account-fx [_ options]
-    "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's account from the server")
-
   (get-accounts-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's accounts accessible from the server")
 

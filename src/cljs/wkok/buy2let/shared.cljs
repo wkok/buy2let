@@ -10,6 +10,7 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.protocol :as bp]
             [wkok.buy2let.backend.subs :as bs]
+            [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.spec :as spec]
             [reagent-material-ui.core.link :refer [link]]
@@ -29,17 +30,6 @@
      :last-year (-> last t/year str keyword)
      :last-month (-> last t/month tm/ordinal inc str keyword)}))
 
-
-(def default-db
-  {:site      {:heading      "Dashboard"
-               :show-progress true
-               :active-property      "--select--"
-               :active-page :dashboard
-               :splash true}
-   :report    {:show-invoices false}
-   :charges   {:agent-opening-balance {:id       :agent-opening-balance
-                                       :name     "Opening balance"
-                                       :reserved true}}})
 
 (def date-utils (cljs-time-utils #js {:locale DateTimeSymbols_en_US}))
 
@@ -192,14 +182,12 @@
                                   (on-click))}
    label])
 
-(defn reset-query-params []
-  (when (.-pushState js/history)
-    (let [url (str
-               (.. js/window -location -origin)
-               (.. js/window -location -pathname))]
-      (.pushState (.-history js/window) #js {:path url} "" url))))
-
 (defn has-role [role]
   (let [claims @(rf/subscribe [::bs/claims])
-        account-id @(rf/subscribe [::bs/account])]
+        account-id @(rf/subscribe [::as/account])]
     (some #{account-id} (get-in claims [:roles role]))))
+
+(defn accounts-from [roles]
+  (->> (map #(val %) roles)
+       (reduce concat)
+       distinct))

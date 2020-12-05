@@ -18,6 +18,7 @@
 (s/def ::amount float?)
 (s/def ::bank-interest float?)
 (s/def ::role #{:viewer :editor :owner})
+(s/def ::default-account-id keyword?)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,7 +28,7 @@
 (s/def ::claims (s/keys :req-un [::roles]))
 (s/def ::account (s/keys :req-un [::id ::name]))
 (s/def ::user (s/keys :req-un [::id ::name ::email]
-                      :opt-un [::avatar-url]))
+                      :opt-un [::avatar-url ::default-account-id]))
 (s/def ::delegate (s/keys :req-un [::id ::name ::email]))
 (s/def ::auth (s/keys :req-un [::uid ::display-name ::email]
                       :opt-un [::photo-url]))

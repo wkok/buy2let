@@ -12,16 +12,6 @@
     (get-in db [:security :user])))
 
 (rf/reg-sub
-  ::account
-  (fn [db _]
-    (get-in db [:security :account])))
-
-(rf/reg-sub
-  ::accounts
-  (fn [db _]
-    (get-in db [:security :accounts])))
-
-(rf/reg-sub
  ::claims
  (fn [db _]
    (get-in db [:security :claims])))

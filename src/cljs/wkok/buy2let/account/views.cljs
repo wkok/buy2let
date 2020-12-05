@@ -4,13 +4,16 @@
             [clojure.string :as s]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
-            [wkok.buy2let.backend.events :as be]
             [wkok.buy2let.shared :as shared]
-            [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.site.subs :as ss]
+            [wkok.buy2let.account.events :as ae]
+            [wkok.buy2let.account.subs :as as]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.list :refer [list]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]
+            [reagent-material-ui.core.checkbox :refer [checkbox]]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.card-actions :refer [card-actions]]
@@ -21,6 +24,66 @@
             [reagent-material-ui.core.list-subheader :refer [list-subheader]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.paper :refer [paper]]))
+
+(defn select-account []
+  (let [accounts @(rf/subscribe [::as/accounts])]
+    [text-field {:select true
+                 :label "Account"
+                 :field     :list
+                 :on-change #(rf/dispatch [:select-account (-> % .-target .-value keyword)])
+                 :value     (if (empty? accounts)
+                              ""
+                              @(rf/subscribe [::as/selected-account-id]))}
+     (for [account accounts]
+       ^{:key (key account)}
+       [menu-item {:value (key account)}
+        (-> account val :name)])]))
+
+(defn remember-account-box []
+  [form-control-label
+   {:control (ra/as-element
+              [checkbox {:checked @(rf/subscribe [::as/remember-account])
+                         :color :primary
+                         :on-change #(rf/dispatch [::ae/remember-account (-> % .-target .-checked)])}])
+    :label "Remember my choice"}])
+
+(defn account-dialog [user]
+  {:heading   "Which account?"
+   :message   "Please choose the account you want to access"
+   :panel     [grid {:container true
+                     :direction :column
+                     :spacing 2}
+               [grid {:item true}
+                [select-account]]
+               [grid {:item true}
+                [remember-account-box]]]
+   :buttons   {:middle {:text     "Continue"
+                        :on-click #(let [remember-account @(rf/subscribe [::as/remember-account])
+                                         selected-account-id @(rf/subscribe [::as/selected-account-id])]
+                                     (rf/dispatch [::ae/save-default-account user remember-account selected-account-id])
+                                     (rf/dispatch [:set-active-account selected-account-id])
+                                     (rf/dispatch [::se/dialog]))}}
+   :closeable false})
+
+(rf/reg-event-db
+ ::choose-account
+ (fn [db [_ _]]
+   (let [user (get-in db [:security :user])
+         account-id (get-in db [:security :account])
+         accounts (get-in db [:security :accounts])
+         role-accounts (-> db :security :claims :roles shared/accounts-from)
+         selected-account-id (get-in db [:site :account-selector :account-id])
+         default-value (or selected-account-id
+                           account-id
+                           (when (not (empty? accounts))
+                             (-> accounts first key))
+                           (first role-accounts))]
+     (rf/dispatch [::se/dialog (account-dialog user)])
+     (if (not (get-in db [:site :account-selector :account-id]))
+       (-> (assoc-in db [:site :account-selector :account-id] default-value)
+           (assoc-in [:site :account-selector :remember] (if (:default-account-id user)
+                                                           true false)))
+       db))))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -52,7 +115,7 @@
               :validation         #(validate-name %)
               :on-submit-response {400 "client error"
                                    500 "server error"}
-              :on-submit          #(rf/dispatch [::be/save-account (w/keywordize-keys (:values %))])
+              :on-submit          #(rf/dispatch [::ae/save-account (w/keywordize-keys (:values %))])
               :initial-values     (w/stringify-keys (:account @(rf/subscribe [:form-old])))}
    (fn [{:keys [form-id submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
@@ -77,10 +140,11 @@
                    :on-click #(js/window.history.back)}
            "Cancel"]]]]]])])
 
+
 (defn view-account [props]
   (rf/dispatch [:set-fab-actions nil])
-  (let [account-id @(rf/subscribe [::bs/account])
-        accounts @(rf/subscribe [::bs/accounts])
+  (let [account-id @(rf/subscribe [::as/account])
+        accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))]
     [grid {:container true
            :direction :row
@@ -103,7 +167,10 @@
        [card-actions
         (when (shared/has-role :owner)
           [button {:color :primary
-                   :on-click #(js/window.location.assign "#/account/edit")} "Edit"])]]]
+                   :on-click #(js/window.location.assign "#/account/edit")} "Edit"])
+        (when (second accounts) ; More that one account
+          [button {:color :primary
+                   :on-click #(rf/dispatch [::choose-account])} "Switch"])]]]
      (when (shared/has-role :owner)
        [grid {:item true
               :xs 12 :md 6}
@@ -118,14 +185,14 @@
              [list-item-text {:primary "Invite users"}]]
             (if (:deleteToken account)
               [list-item {:button true
-                          :on-click #(rf/dispatch [::be/save-account (dissoc account :deleteToken)])}
+                          :on-click #(rf/dispatch [::ae/save-account (dissoc account :deleteToken)])}
                [list-item-text {:primary "Cancel account deletion"
                                 :primary-typography-props {:color :error}}]]
               [list-item {:button true
                           :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
                                                                 :message "This will delete all data associated with this account, and is not recoverable!"
                                                                 :buttons {:left  {:text     "DELETE"
-                                                                                  :on-click (fn [] (rf/dispatch [::be/delete-account]))
+                                                                                  :on-click (fn [] (rf/dispatch [::ae/delete-account]))
                                                                                   :color :secondary}
                                                                           :right {:text "Cancel"}}}])}
                [list-item-text {:primary "Delete account"
