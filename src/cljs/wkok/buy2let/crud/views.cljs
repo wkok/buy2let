@@ -25,11 +25,14 @@
 
 
 (defn row [item type]
-  [list-item {:button true
-              :on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}
-   (for [field (filter #(:default %) (:fields type))]
-     ^{:key field}
-     [list-item-text {:primary ((:key field) item)}])])
+  (let [default-field (-> (filter #(:default %) (:fields type)) first)
+        props {:button true
+               :on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}]
+    (if-let [secondary-field (:secondary default-field)]
+      [list-item props
+       [list-item-text {:primary ((:key default-field) item) :secondary (secondary-field item)}]]
+      [list-item props
+       [list-item-text {:primary ((:key default-field) item)}]])))
 
 (defn show? [item show-hidden]
   (if (get item :hidden false)
@@ -155,6 +158,12 @@
                 s/capitalize
                 (str " "))}])
 
+(defn apply-edit-defaults [old type]
+  (into {} (for [[k v] old]
+             {k (if (contains? (-> type :defaults :edit) k)
+                  (-> type :defaults :edit k)
+                  v)})))
+
 (defn edit-panel [type props]
   (rf/dispatch [:set-fab-actions nil])
   [fork/form {:form-id            "id"
@@ -166,8 +175,8 @@
                                    500 "server error"}
               :on-submit          #(rf/dispatch [::ce/save-crud type (w/keywordize-keys (:values %))])
               :initial-values     (if-let [old ((:type type) @(rf/subscribe [:form-old]))]
-                                    (w/stringify-keys old)
-                                    (w/stringify-keys (:defaults type)))}
+                                    (-> old (apply-edit-defaults type) w/stringify-keys)
+                                    (w/stringify-keys (-> type :defaults :add)))}
    (fn [{:keys [form-id submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
       [paper {:class (get-in props [:classes :paper])}

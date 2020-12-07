@@ -148,11 +148,11 @@
 (def delegate
   {:type        :delegates
    :subs        ::cs/delegates
-   :fields      [{:key :name :type :text :default true}
+   :fields      [{:key :name :type :text :default true :secondary :status}
                  {:key :email :type :email
                   :disabled {:if-fields ["status"]}}
                  {:key :roles :type :select-multi
-                  :options {"viewer" "View only" 
+                  :options {"viewer" "View only"
                             "editor" "View & edit"
                             "owner" "Account owner"}
                   :on-change on-change-delegate-role
@@ -160,8 +160,9 @@
                  {:key :send-invite :type :checkbox
                   :label " Send invitation"
                   :disabled {:if-fields ["hidden"]}}]
-   :defaults {:send-invite true
-              :roles ["viewer"]}
+   :defaults {:add {:send-invite true
+                    :roles ["viewer"]}
+              :edit {:send-invite false}}
    :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
