@@ -173,7 +173,7 @@
                              :email      (:email auth)
                              :avatar-url (:photo-url auth)})
          account {:id   (keyword (:id cofx))
-                  :name (:display-name auth)}]
+                  :name "My Account"}]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
             (bp/create-user-fx impl/backend
                                {:user user

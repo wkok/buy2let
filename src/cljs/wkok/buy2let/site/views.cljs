@@ -101,6 +101,10 @@
                     :height (spacing 3)}
      :avatar-large {:width (spacing 10)
                     :height (spacing 10)}
+     :brand-logo {:padding "0em"
+                  :padding-top "0.5em"
+                  :padding-left "0.5em"}
+     :brand-name {:padding "0.5em"}
      :menu-button {(up "sm") {:display :none}
                    :margin-right (spacing 2)}
      :drawer-paper {:width drawer-width}
@@ -153,7 +157,7 @@
       [menu-item {:on-click #(do (js/window.location.assign "#/profile")
                                  (handle-close))} "My profile"]
       [menu-item {:on-click #(do (js/window.location.assign "#/account")
-                                 (handle-close))} "My account"]
+                                 (handle-close))} "Account settings"]
       [divider]
       [menu-item {:on-click #(rf/dispatch [:sign-out])} "Sign out"]]]))
 
@@ -177,8 +181,34 @@
   (js/window.location.assign hash)
   (rf/dispatch [::se/show-nav-menu false]))
 
-(defn nav [{:keys [classes]}]
+(defn brand [{:keys [classes]}]
+  (let [account-id  @(rf/subscribe [::as/account])
+        accounts @(rf/subscribe [::as/accounts])
+        account-name (if accounts
+                       (-> (account-id accounts) :name)
+                       "")]
+    [grid {:container true
+           :direction :row
+           :wrap :nowrap
+           :align-items :center}
+     [grid {:item true
+            :xs 4
+            :class (:brand-logo classes)}
+      [:img {:src "images/icon/icon-128.png"
+             :style {:width "100%"}}]]
+     [grid {:item true
+            :xs 8
+            :container true
+            :direction :column
+            :class (:brand-name classes)}
+      [grid {:item true}
+       [typography {:variant :h5} "Buy2Let"]]
+      [grid {:item true}
+       [typography {:variant :caption} account-name]]]]))
+
+(defn nav [{:keys [classes] :as props}]
   (let [drawer_ [:div
+                 [brand props]
                  [divider]
                  [list
                   [list-item {:button true
@@ -264,7 +294,7 @@
         accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))
         error (when (:deleteToken account)
-                "Account deletion initiated. You may cancel this in My Account")]
+                "Account deletion initiated. You may cancel this in Account settings")]
     [snackbar {:open (if error true false)
                :anchor-origin {:vertical :bottom
                                :horizontal :center}}
