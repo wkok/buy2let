@@ -26,7 +26,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (s/def ::claims (s/keys :req-un [::roles]))
-(s/def ::account (s/keys :req-un [::id ::name]))
+(s/def ::account (s/keys :req-un [::id ::name]
+                         :opt-un [::avatar-url]))
 (s/def ::user (s/keys :req-un [::id ::name ::email]
                       :opt-un [::avatar-url ::default-account-id]))
 (s/def ::delegate (s/keys :req-un [::id ::name ::email]))

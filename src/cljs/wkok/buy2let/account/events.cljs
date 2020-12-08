@@ -2,6 +2,7 @@
   (:require [re-frame.core :as rf]
             [nano-id.core :as nid]
             [wkok.buy2let.db.default :as ddb]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.backend.protocol :as bp]
             [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.db.events :as dbe]
@@ -58,9 +59,13 @@
  ::save-account
  (fn [cofx [_ input]]
    (let [db (:db cofx)
-         account (spec/conform ::spec/account input)]
+         conformed (spec/conform ::spec/account input)
+         account (if-let [avatar-url-temp (get-in db [:site :account-avatar-url-temp])]
+                   (assoc conformed :avatar-url avatar-url-temp)
+                   conformed)]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
-     (merge {:db            (assoc-in db [:security :accounts (:id account)] account)}
+     (merge {:db            (-> (assoc-in db [:security :accounts (:id account)] account)
+                                (assoc-in [:site :account-avatar-url-temp] nil))}
             (bp/save-account-fx impl/backend
                                 {:account account
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
@@ -162,3 +167,47 @@
             (bp/save-profile-fx impl/backend
                                 {:user updated-user
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
+
+(rf/reg-event-db
+ ::load-avatar-url
+ (fn [db [_ url]]
+   (-> (assoc-in db [:site :account-avatar-url-temp] url)
+       (assoc-in [:site :splash] false))))
+
+(rf/reg-event-db
+ ::clear-temp-avatar
+ (fn [db [_ _]]
+   (assoc-in db [:site :account-avatar-url-temp] nil)))
+
+(rf/reg-event-fx
+ ::get-avatar-url
+ (fn [cofx [_ avatar-id]]
+   (let [db (:db cofx)]
+     (merge {:db            db}
+            (bp/blob-url-fx
+             impl/backend
+             {:path (str "data/" 
+                         (-> (get-in db [:security :account]) name)
+                         "/avatars/" avatar-id)
+              :on-success #(rf/dispatch [::load-avatar-url %])
+              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                    :message %}])})))))
+
+(rf/reg-event-fx
+ ::upload-avatar
+ [(rf/inject-cofx ::shared/gen-id)]  ; Generate avatar-id
+ (fn [cofx [_ avatar]]
+   (let [db (:db cofx)
+         avatar-id (-> (:id cofx) name)
+         account-id (get-in db [:security :account])]
+     (merge {:db            (assoc-in db [:site :splash] true)}
+            (bp/upload-avatar-fx
+             impl/backend
+             {:path (str "data/"
+                         (-> account-id name)
+                         "/avatars/" avatar-id)
+              :metadata {:customMetadata {"accountId" account-id}}
+              :avatar-id avatar-id
+              :avatar avatar
+              :on-success #(rf/dispatch [::get-avatar-url avatar-id])
+              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))

@@ -46,7 +46,7 @@
 
   (accept-invitation-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to accept a delegate invitation")
-  
+
   (get-accounts-fx [_ options]
     "Implement this function by returning a Map of re-frame effect(s) to load an authenticated user's accounts accessible from the server")
 
@@ -78,7 +78,7 @@
     "Implement this function by returning a Map of re-frame effect(s) responsible for deleting a user's account")
 
   (apply-action-code-fx [_ options]
-     "Implement this function by returning a Map of re-frame effect(s) responsible for applting action codes on a user's account")
+    "Implement this function by returning a Map of re-frame effect(s) responsible for applting action codes on a user's account")
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Ledger

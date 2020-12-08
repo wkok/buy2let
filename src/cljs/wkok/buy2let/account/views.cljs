@@ -23,6 +23,9 @@
             [reagent-material-ui.core.list-item-text :refer [list-item-text]]
             [reagent-material-ui.core.list-subheader :refer [list-subheader]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.tooltip :refer [tooltip]]
+            [reagent-material-ui.core.avatar :refer [avatar]]
+            [reagent-material-ui.icons.account-circle :refer [account-circle]]
             [reagent-material-ui.core.paper :refer [paper]]))
 
 (defn select-account []
@@ -107,41 +110,63 @@
                   :error      error?
                   :helper-text (when error? (get errors field-name))}]]))
 
+(defn avatar-upload
+  [avatar-url-temp avatar-url {:keys [classes]} {:keys [handle-blur]}]
+  [:div
+   [:input {:id        :avatar
+            :name      "avatar"
+            :type      :file
+            :accept    "image/*"
+            :style     {:display :none}
+            :on-change #(rf/dispatch [::ae/upload-avatar (-> % .-target .-files (aget 0)) :temp])
+            :on-blur   handle-blur}]
+   [:label {:html-for :avatar}
+    [tooltip {:title "Upload account image"}
+     (if avatar-url-temp
+       [avatar {:src avatar-url-temp :variant :rounded :class (:avatar-large classes)} ":)"]
+       [avatar {:src avatar-url :variant :rounded :class (:avatar-large classes)} ":)"])]]])
+
 (defn edit-account [props]
-  [fork/form {:form-id            "id"
-              :path               :form
-              :prevent-default?   true
-              :clean-on-unmount?  true
-              :validation         #(validate-name %)
-              :on-submit-response {400 "client error"
-                                   500 "server error"}
-              :on-submit          #(rf/dispatch [::ae/save-account (w/keywordize-keys (:values %))])
-              :initial-values     (w/stringify-keys (:account @(rf/subscribe [:form-old])))}
-   (fn [{:keys [form-id submitting? handle-submit] :as options}]
-     [:form {:id form-id :on-submit handle-submit}
-      [paper {:class (get-in props [:classes :paper])}
-       [grid {:container true
-              :direction :column}
-        [build-input {:name :name} options]
-        [grid {:container true
-               :direction :row
-               :justify :flex-start
-               :spacing 1
-               :class (get-in props [:classes :buttons])}
-         [grid {:item true}
-          [button {:variant :contained
-                   :color :primary
-                   :type :submit
-                   :disabled submitting?}
-           "Save"]]
-         [grid {:item true}
-          [button {:variant :outlined
-                   :type :button
-                   :on-click #(js/window.history.back)}
-           "Cancel"]]]]]])])
+  (let [account-id @(rf/subscribe [::as/account])
+        accounts @(rf/subscribe [::as/accounts])
+        account (when account-id (account-id accounts))
+        avatar-url-temp @(rf/subscribe [::ss/account-avatar-url-temp])]
+    [fork/form {:form-id            "id"
+                :path               :form
+                :prevent-default?   true
+                :clean-on-unmount?  true
+                :validation         #(validate-name %)
+                :on-submit-response {400 "client error"
+                                     500 "server error"}
+                :on-submit          #(rf/dispatch [::ae/save-account (w/keywordize-keys (:values %))])
+                :initial-values     (w/stringify-keys (:account @(rf/subscribe [:form-old])))}
+     (fn [{:keys [form-id submitting? handle-submit] :as options}]
+       [:form {:id form-id :on-submit handle-submit}
+        [paper {:class (get-in props [:classes :paper])}
+         [grid {:container true
+                :direction :column}
+          [avatar-upload avatar-url-temp (or (:avatar-url account) "images/icon/icon-128.png") props options]
+          [build-input {:name :name} options]
+          [grid {:container true
+                 :direction :row
+                 :justify :flex-start
+                 :spacing 1
+                 :class (get-in props [:classes :buttons])}
+           [grid {:item true}
+            [button {:variant :contained
+                     :color :primary
+                     :type :submit
+                     :disabled submitting?}
+             "Save"]]
+           [grid {:item true}
+            [button {:variant :outlined
+                     :type :button
+                     :on-click #(do (rf/dispatch [::ae/clear-temp-avatar])
+                                    (js/window.history.back))}
+             "Cancel"]]]]]])]))
 
 
-(defn view-account [props]
+(defn view-account [{:keys [classes] :as props}]
   (rf/dispatch [:set-fab-actions nil])
   (let [account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
@@ -157,6 +182,10 @@
                :direction :row
                :spacing 2
                :justify :center}
+         [grid {:item true}
+          [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
+                   :variant :rounded
+                   :class (:avatar-large classes)} ":)"]]
          [grid {:item true
                 :container true
                 :direction :column

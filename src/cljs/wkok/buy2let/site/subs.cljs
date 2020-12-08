@@ -68,6 +68,11 @@
   (fn [db _]
     (get-in db [:site :avatar-url-temp])))
 
+(rf/reg-sub
+ ::account-avatar-url-temp
+ (fn [db _]
+   (get-in db [:site :account-avatar-url-temp])))
+
 
 
 

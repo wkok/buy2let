@@ -68,7 +68,7 @@
      (merge {:db            (assoc-in db [:site :splash] true)}
             (bp/upload-avatar-fx
              impl/backend
-             {:user-id (get-in db [:security :user :id])
+             {:path (str "avatars/" (-> (get-in db [:security :user :id]) name) "/" avatar-id)
               :avatar-id avatar-id
               :avatar avatar
               :on-success #(rf/dispatch [::get-avatar-url avatar-id])

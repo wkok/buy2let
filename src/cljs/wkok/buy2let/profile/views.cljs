@@ -10,12 +10,10 @@
             [fork.re-frame :as fork]
             [reagent-material-ui.icons.account-circle :refer [account-circle]]
             [reagent-material-ui.icons.link :refer [link]]
-            [reagent-material-ui.icons.cloud-upload :refer [cloud-upload]]
             [reagent-material-ui.icons.link-off :refer [link-off]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.list :refer [list]]
             [reagent-material-ui.core.tooltip :refer [tooltip]]
-            [reagent-material-ui.core.icon-button :refer [icon-button]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.button :refer [button]]
@@ -26,12 +24,11 @@
             [reagent-material-ui.core.list-item-text :refer [list-item-text]]
             [reagent-material-ui.core.list-subheader :refer [list-subheader]]
             [reagent-material-ui.core.avatar :refer [avatar]]
-            [reagent-material-ui.core.badge :refer [badge]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.paper :refer [paper]]))
 
 (defn avatar-upload 
-  [avatar-url-temp avatar-url {:keys [classes]} {:keys [state handle-blur]}]
+  [avatar-url-temp avatar-url {:keys [classes]} {:keys [handle-blur]}]
   [:div
    [:input {:id        :avatar
             :name      "avatar"

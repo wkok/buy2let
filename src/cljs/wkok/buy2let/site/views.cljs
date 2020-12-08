@@ -99,11 +99,11 @@
      :title {:flex-grow 1}
      :avatar-small {:width (spacing 3)
                     :height (spacing 3)}
+     :avatar-medium {:width (spacing 7)
+                    :height (spacing 7)}
      :avatar-large {:width (spacing 10)
                     :height (spacing 10)}
-     :brand-logo {:padding "0em"
-                  :padding-top "0.5em"
-                  :padding-left "0.5em"}
+     :brand-logo {:padding "0.5em"}
      :brand-name {:padding "0.5em"}
      :menu-button {(up "sm") {:display :none}
                    :margin-right (spacing 2)}
@@ -184,27 +184,27 @@
 (defn brand [{:keys [classes]}]
   (let [account-id  @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
-        account-name (if accounts
-                       (-> (account-id accounts) :name)
-                       "")]
+        account (when accounts (account-id accounts))]
     [grid {:container true
            :direction :row
            :wrap :nowrap
            :align-items :center}
      [grid {:item true
             :xs 4
-            :class (:brand-logo classes)}
-      [:img {:src "images/icon/icon-128.png"
-             :style {:width "100%"}}]]
+            :class (:brand-logo classes)
+            }
+      [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
+               :variant :rounded
+               :class (:avatar-medium classes)} ":)"]]
      [grid {:item true
             :xs 8
             :container true
             :direction :column
             :class (:brand-name classes)}
       [grid {:item true}
-       [typography {:variant :h5} "Buy2Let"]]
+       [typography {:variant :h4 :color :primary} "Buy2Let"]]
       [grid {:item true}
-       [typography {:variant :caption} account-name]]]]))
+       [typography {:variant :caption} (:name account)]]]]))
 
 (defn nav [{:keys [classes] :as props}]
   (let [drawer_ [:div
