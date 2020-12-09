@@ -6,8 +6,7 @@
    [wkok.buy2let.period :as period]
    [wkok.buy2let.crud.subs :as cs]
    [wkok.buy2let.site.events :as se]
-   [wkok.buy2let.backend.protocol :as bp]
-   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.site.subs :as ss]
    [wkok.buy2let.reconcile.subs :as rs]
    [wkok.buy2let.account.subs :as as]))
@@ -27,8 +26,7 @@
       (if (empty? months)
         {:db db}
         (merge {:db             db}
-               (bp/get-ledger-month-fx impl/backend 
-                                       {:property property 
+               (mm/get-ledger-month-fx {                  :property property 
                                         :account-id account-id 
                                         :this-year year 
                                         :this-month month 
@@ -199,8 +197,7 @@
      (if (not-any? nil? [(:id property) year month charges-this-month])
        (merge {:db              (-> (assoc-in db [:ledger (:id property) year month] (:data charges-this-month))
                                     (assoc-in [:site :active-panel] :reconcile-view))}
-              (bp/save-reconcile-fx impl/backend
-                                    {:account-id account-id
+              (mm/save-reconcile-fx {               :account-id account-id
                                      :property-id (:id property)
                                      :year year
                                      :month month

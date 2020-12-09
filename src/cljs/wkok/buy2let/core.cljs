@@ -4,8 +4,7 @@
    [re-frame.core :as rf]
    [wkok.buy2let.site.views :as views]
    [wkok.buy2let.config :as config]
-   [wkok.buy2let.backend.protocol :as bp]
-   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.site.routes :as routes]))
 
 
@@ -17,14 +16,13 @@
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
   (routes/app-routes)
-  (bp/init-auth impl/backend
-                #(rd/render [views/main-panel] (.getElementById js/document "app"))
-                views/sign-in-panel))
+  (mm/init-auth {   :render-main-panel #(rd/render [views/main-panel] (.getElementById js/document "app"))
+                 :sign-in-panel views/sign-in-panel}))
 
 
 
 (defn init []
   (dev-setup)
   (rf/dispatch-sync [:initialize-db])
-  (bp/init impl/backend)
+  (mm/init {})
   (mount-root))

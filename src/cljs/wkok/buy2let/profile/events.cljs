@@ -2,8 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [wkok.buy2let.shared :as shared]
-   [wkok.buy2let.backend.protocol :as bp]
-   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.site.events :as se]))
 
 
@@ -32,8 +31,7 @@
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :user] user)
                                 (assoc-in [:site :avatar-url-temp] nil))}
-            (bp/save-profile-fx impl/backend
-                                {:user user
+            (mm/save-profile-fx {           :user user
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db
@@ -52,8 +50,7 @@
  (fn [cofx [_ avatar-id]]
    (let [db (:db cofx)]
      (merge {:db            db}
-            (bp/blob-url-fx
-             impl/backend
+            (mm/blob-url-fx
              {:path (str "avatars/" (-> (get-in db [:security :user :id]) name) "/" avatar-id)
               :on-success #(rf/dispatch [::load-avatar-url %])
               :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
@@ -66,8 +63,7 @@
    (let [db (:db cofx)
          avatar-id (-> (:id cofx) name)]
      (merge {:db            (assoc-in db [:site :splash] true)}
-            (bp/upload-avatar-fx
-             impl/backend
+            (mm/upload-avatar-fx
              {:path (str "avatars/" (-> (get-in db [:security :user :id]) name) "/" avatar-id)
               :avatar-id avatar-id
               :avatar avatar

@@ -3,10 +3,9 @@
             [wkok.buy2let.account.events :as ae]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.account.views :as av]
             [wkok.buy2let.backend.effects]
-            [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.spec :as spec]
             [goog.crypt.base64 :as b64]
             [cemerick.url :as url]
@@ -17,31 +16,29 @@
  ::sign-in
  (fn [_ [_ provider]]
    (case provider
-     :google (bp/google-sign-in-fx impl/backend)
-     :facebook (bp/facebook-sign-in-fx impl/backend)
-     :twitter (bp/twitter-sign-in-fx impl/backend)
-     :github (bp/github-sign-in-fx impl/backend))))
+     :google (mm/google-sign-in-fx {})
+     :facebook (mm/facebook-sign-in-fx {}))))
 
 (rf/reg-event-db
-  :unlink-succeeded
-  (fn [db [_ provider]]
-    (-> (assoc-in db [:security :auth :provider-data] (->> (get-in db [:security :auth])
-                                                           :provider-data
-                                                           js->clj
-                                                           (remove #(= (get % "providerId") provider))))
-        (assoc-in [:site :dialog] {:heading "Unlinked" 
-                                   :message (str "Successfully unlinked " provider)
-                                   :buttons {:middle {:text     "Close"}}}))))
+ :unlink-succeeded
+ (fn [db [_ provider]]
+   (-> (assoc-in db [:security :auth :provider-data] (->> (get-in db [:security :auth])
+                                                          :provider-data
+                                                          js->clj
+                                                          (remove #(= (get % "providerId") provider))))
+       (assoc-in [:site :dialog] {:heading "Unlinked"
+                                  :message (str "Successfully unlinked " provider)
+                                  :buttons {:middle {:text     "Close"}}}))))
 
 (rf/reg-event-fx
-  ::link
-  (fn [_ [_ provider]]
-    {:link-provider provider}))
+ ::link
+ (fn [_ [_ provider]]
+   {:link-provider provider}))
 
 (rf/reg-event-fx
-  ::unlink
-  (fn [_ [_ provider]]
-    {:unlink-provider provider}))
+ ::unlink
+ (fn [_ [_ provider]]
+   {:unlink-provider provider}))
 
 (defn accepting-invitation? []
   (when-let [invitation (-> js/window .-location .-href
@@ -70,10 +67,9 @@
 (rf/reg-event-fx
  ::verify-email
  (fn [_ [_ {:keys [action-code on-success]}]]
-   (bp/apply-action-code-fx impl/backend
-                            {:action-code action-code
+   (mm/apply-action-code-fx {:action-code action-code
                              :on-success on-success
-                             :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" 
+                             :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                    :message %
                                                                    :buttons {:right {:text     "Continue"
                                                                                      :on-click on-success}}}])})))
@@ -82,8 +78,7 @@
  :get-user
  (fn [_ [_ input]]
    (let [auth (spec/conform ::spec/auth input)]
-     (bp/get-user-fx impl/backend
-                     {:auth auth
+     (mm/get-user-fx {:auth auth
                       :on-success #(if (registered? %)
                                      (if-let [invitation (accepting-invitation?)]
                                        (rf/dispatch [::accept-invitation {:invitation invitation
@@ -111,8 +106,7 @@
        (rf/dispatch [:set-active-account (first accounts)]))
      (merge
       {:db            (assoc-in db [:security :user] user)}
-      (bp/get-accounts-fx impl/backend
-                          {:account-ids accounts
+      (mm/get-accounts-fx {:account-ids accounts
                            :on-success #(rf/dispatch [:load-account %])})))))
 
 (defn verify-email-dialog [user]
@@ -145,8 +139,7 @@
                                                      :message (str "Email verification link sent to: " (:email user))
                                                      :closeable false}])]
      (rf/dispatch [::se/dialog])
-     (bp/send-email-verification-fx impl/backend
-                                    {:on-success check-your-mail
+     (mm/send-email-verification-fx {:on-success check-your-mail
                                      :on-error #(if (str/includes? % "Try again later")
                                                   (check-your-mail)
                                                   (rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %
@@ -155,12 +148,12 @@
 (rf/reg-event-fx
  :refresh-token
  (fn [_ [_ user]]
-   (bp/refresh-token-fx impl/backend {:user user})))
+   (mm/refresh-token-fx {:user user})))
 
 (rf/reg-event-fx
  ::accept-invitation
  (fn [_ [_ options]]
-   (bp/accept-invitation-fx impl/backend options)))
+   (mm/accept-invitation-fx options)))
 
 (rf/reg-event-fx
  :create-user
@@ -175,8 +168,7 @@
          account {:id   (keyword (:id cofx))
                   :name "My Account"}]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
-            (bp/create-user-fx impl/backend
-                               {:user user
+            (mm/create-user-fx {:user user
                                 :account account
                                 :invitation (accepting-invitation?)
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
@@ -187,8 +179,7 @@
  (fn [cofx _]
    (merge {:db            (-> (assoc-in (:db cofx) [:site :signing-out] true)
                               (assoc-in [:site :dialog] {:heading "Signing out.." :closeable false}))}
-          (bp/sign-out-fx impl/backend
-                          {:on-success #(js/window.location.reload)
+          (mm/sign-out-fx {:on-success #(js/window.location.reload)
                            :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                  :message (str %)}])}))))
 

@@ -3,8 +3,7 @@
    [re-frame.core :as rf]
    [clojure.string :as s]
    [wkok.buy2let.shared :as shared]
-   [wkok.buy2let.backend.protocol :as bp]
-   [wkok.buy2let.backend.impl :as impl]
+   [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.account.subs :as as]))
 
@@ -61,8 +60,7 @@
          account-id @(rf/subscribe [::as/account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}
-            (bp/save-crud-fx impl/backend 
-                             {:account-id account-id 
+            (mm/save-crud-fx {        :account-id account-id 
                               :crud-type type 
                               :id id 
                               :item item

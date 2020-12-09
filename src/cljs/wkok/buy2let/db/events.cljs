@@ -2,11 +2,9 @@
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.effects :as se]
             [tick.alpha.api :as t]
-            [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.db.default :as ddb]
-            [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.spec :as spec]
-            [wkok.buy2let.shared :as shared]))
+            [wkok.buy2let.backend.multimethods :as mm]
+            [wkok.buy2let.spec :as spec]))
 
 (rf/reg-event-fx
   :initialize-db
@@ -17,8 +15,7 @@
 (rf/reg-event-fx
   ::get-crud
   (fn [_ [_ account]]
-    (bp/get-crud-fx impl/backend 
-                    {:account account
+    (mm/get-crud-fx {       :account account
                      :on-success-delegates #(rf/dispatch [:load-delegates %])
                      :on-success-charges #(rf/dispatch [:load-charges %])
                      :on-success-properties #(rf/dispatch [:load-properties %])})))
@@ -63,8 +60,7 @@
           last-year (-> last t/year str keyword)]
       (if-not (empty? (:properties db))
         (merge {:db             (assoc-in db [:site :show-progress] true)}
-               (bp/get-ledger-year-fx impl/backend 
-                                      {:properties (:properties db) 
+               (mm/get-ledger-year-fx {                 :properties (:properties db) 
                                        :account-id account-id 
                                        :this-year this-year 
                                        :last-year last-year

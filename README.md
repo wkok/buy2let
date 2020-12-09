@@ -47,23 +47,33 @@ This repository specifically contains client-side only code. Any data captured w
 
 You are responsible for providing your own backend (server, database & messaging protocol), & here you are free to choose your favourite stack.
 
-### Protocol
+### Multimethods
 
-Hooking up your backend to this re-frame app is done by implementing the `Backend` [protocol](https://clojure.org/reference/protocols) which is defined in the namespace: `wkok.buy2let.backend.protocol`
+Hooking up your backend to this re-frame app is done by implementing various clojure [multimethods](https://clojure.org/reference/multimethods) which is defined in the namespace: `wkok.buy2let.backend.multimethods`
+
+The dispatching function assumes a variable declared in the host html page called `impl` and is currently set to "demo"
+
+Change this to whatever your `defmethod` functions expect for example:
+
+```javascript
+var impl = "my-cool-app";
+```
+
+Lastly, the namespace defing your `defmethod`'s should be listed in the `:preloads` section of shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your namespace. 
 
 ### Effects
 
 Interaction with the backend is accomplished using re-frame [effects](http://day8.github.io/re-frame/Effects/)
 
-Basically, the functions of the `Backend` [protocol](https://clojure.org/reference/protocols) you implement, are called by the application at the right times where interaction with the backend is needed. The map of backend effect(s) you return, will be merged with other application effects (like updating the local re-frame app-db)
+Basically, the [multimethods](https://clojure.org/reference/multimethods) you implement, are called by the application at the right times where interaction with the backend is needed. The map of backend effect(s) you return, will be merged with other application effects (like updating the local re-frame app-db)
 
 #### Example
 
-For example, to implement the persistence of a CRUD item (eg. Property, Charge, etc.) you'll implement the `Backend` [protocol](https://clojure.org/reference/protocols) function `save-crud-fx` and return an effect like
+For example, to implement the persistence of a CRUD item (eg. Property, Charge, etc.) you'll implement the [multimethod](https://clojure.org/reference/multimethods) `save-crud-fx` and return an effect like
 
 ```clojure
-(save-crud-fx 
-  [_ {:keys [account-id crud-type id item on-error]}]
+(defmethod save-crud-fx :my-cool-app 
+  [{:keys [account-id crud-type id item on-error]}]
   {:my-backend/save {:account-id account-id
                      :crud-type crud-type
                      :id id
@@ -71,7 +81,7 @@ For example, to implement the persistence of a CRUD item (eg. Property, Charge, 
                      :on-error on-error}})
 ```
 
-Then also register the effect (unless your backend library does this  for you)
+Then, register the effect (unless your backend library does this  for you)
 
 ```clojure
 (re-frame/reg-fx

@@ -6,8 +6,7 @@
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.report.subs :as rs]
-            [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.backend.impl :as impl]
+            [wkok.buy2let.backend.multimethods :as mm]
             [day8.re-frame.http-fx]))
 
 (rf/reg-event-db
@@ -139,8 +138,7 @@
  (fn [cofx [_ property-charges]]
    (let [db (:db cofx)]
      (merge {:db                (assoc-in db [:site :show-progress] true)}
-            (bp/zip-invoices-fx impl/backend
-                                {:account-id (get-in db [:security :account])
+            (mm/zip-invoices-fx {           :account-id (get-in db [:security :account])
                                  :uuid (-> (:id cofx) name)
                                  :file-name (calc-file-name db)
                                  :invoice-paths (calc-invoice-paths db property-charges)
@@ -156,8 +154,7 @@
 (rf/reg-event-fx
  :download-invoices
  (fn [_ [_ path]]
-   (bp/blob-url-fx impl/backend
-                   {:path path
+   (mm/blob-url-fx {      :path path
                     :on-success #(js/window.open %)
                     :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                           :message %}])})))

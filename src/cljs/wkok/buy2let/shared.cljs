@@ -8,10 +8,9 @@
             [cljc.java-time.month :as tm]
             [tick.alpha.api :as t]
             [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.backend.protocol :as bp]
+            [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.account.subs :as as]
-            [wkok.buy2let.backend.impl :as impl]
             [wkok.buy2let.spec :as spec]
             [reagent-material-ui.core.link :refer [link]]
             [reagent-material-ui.core.text-field :refer [text-field]]
@@ -115,8 +114,7 @@
          account-id (get-in db [:security :account])
          path (blob-key account-id property-id year month (name (:id charge)))]
 
-     (bp/blob-url-fx impl/backend
-                     {:path path
+     (mm/blob-url-fx {:path path
                       :on-success #(js/window.open %)
                       :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                             :message %}])}))))
@@ -127,8 +125,7 @@
         downloaded? #(contains? (get-in db [:ledger property %1]) %2)
         m (filter #(not (downloaded? (:year %) (:month %))) months)]
     (when (seq m)
-      (bp/get-ledger-fx impl/backend 
-                        {:property property 
+      (mm/get-ledger-fx {   :property property 
                          :account-id account-id 
                          :months m
                          :on-success #(rf/dispatch [:load-ledger-month %])}))))

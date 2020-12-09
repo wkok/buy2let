@@ -184,7 +184,8 @@
 (defn brand [{:keys [classes]}]
   (let [account-id  @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
-        account (when accounts (account-id accounts))]
+        account (when (and account-id accounts) 
+                  (account-id accounts))]
     [grid {:container true
            :direction :row
            :wrap :nowrap

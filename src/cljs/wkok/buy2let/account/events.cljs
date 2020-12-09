@@ -3,8 +3,7 @@
             [nano-id.core :as nid]
             [wkok.buy2let.db.default :as ddb]
             [wkok.buy2let.shared :as shared]
-            [wkok.buy2let.backend.protocol :as bp]
-            [wkok.buy2let.backend.impl :as impl]
+            [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.db.events :as dbe]
             [wkok.buy2let.spec :as spec]
             [goog.crypt.base64 :as b64]
@@ -66,8 +65,7 @@
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :accounts (:id account)] account)
                                 (assoc-in [:site :account-avatar-url-temp] nil))}
-            (bp/save-account-fx impl/backend
-                                {:account account
+            (mm/save-account-fx {           :account account
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db
@@ -109,9 +107,8 @@
                                   :buttons   {:middle {:text     "Take me there"
                                                        :on-click (fn [] (js/window.location.assign "#/delegates"))}}}])
        (merge {:db (assoc-in db [:site :splash] true)}
-              (bp/delete-account-fx
-               impl/backend
-               {:user-id (:id user)
+              (mm/delete-account-fx
+               {  :user-id (:id user)
                 :account-id account-id
                 :delete-token delete-token
                 :confirmation (create-delete-confirmation user account delete-token)
@@ -137,9 +134,9 @@
  (fn [cofx [_ {:keys [account-id user-id delete-token]} user]]
    (reset-query-params)
    (merge {:db                (assoc-in (:db cofx) [:site :splash] true)}
-          (bp/delete-account-confirm-fx
-           impl/backend
-           {:user-id user-id
+          (mm/delete-account-confirm-fx
+           {
+            :user-id user-id
             :account-id account-id
             :delete-token delete-token
             :on-success #(do
@@ -164,8 +161,7 @@
                         (assoc user :default-account-id account-id)
                         (dissoc user :default-account-id))]
      (merge {:db (assoc-in (:db cofx) [:security :user] updated-user)}
-            (bp/save-profile-fx impl/backend
-                                {:user updated-user
+            (mm/save-profile-fx {           :user updated-user
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db
@@ -184,8 +180,7 @@
  (fn [cofx [_ avatar-id]]
    (let [db (:db cofx)]
      (merge {:db            db}
-            (bp/blob-url-fx
-             impl/backend
+            (mm/blob-url-fx
              {:path (str "data/" 
                          (-> (get-in db [:security :account]) name)
                          "/avatars/" avatar-id)
@@ -201,8 +196,7 @@
          avatar-id (-> (:id cofx) name)
          account-id (get-in db [:security :account])]
      (merge {:db            (assoc-in db [:site :splash] true)}
-            (bp/upload-avatar-fx
-             impl/backend
+            (mm/upload-avatar-fx
              {:path (str "data/"
                          (-> account-id name)
                          "/avatars/" avatar-id)

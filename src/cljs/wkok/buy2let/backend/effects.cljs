@@ -1,18 +1,16 @@
 (ns wkok.buy2let.backend.effects
   (:require [re-frame.core :as rf]
-            [wkok.buy2let.backend.protocol :as protocol]
-            [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.backend.impl :as impl]))
+            [wkok.buy2let.backend.multimethods :as mm]
+            [wkok.buy2let.site.events :as se]))
 
 (rf/reg-fx
  :unlink-provider
  (fn [provider _]
-   (protocol/unlink-provider impl/backend 
-                             {:provider provider
-                              :on-success #(rf/dispatch [:unlink-succeeded %])
-                              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message (str %)}])})))
+   (mm/unlink-provider {:provider provider
+                        :on-success #(rf/dispatch [:unlink-succeeded %])
+                        :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message (str %)}])})))
 
 (rf/reg-fx
  :link-provider
  (fn [provider _]
-   (protocol/link-provider impl/backend provider)))
+   (mm/link-provider {:provider provider})))
