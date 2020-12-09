@@ -59,7 +59,7 @@ Change this to whatever your `defmethod` functions expect for example:
 var impl = "my-cool-app";
 ```
 
-Lastly, the namespace defing your `defmethod`'s should be listed in the `:preloads` section of shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your namespace. 
+Lastly, the namespace defing your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your namespace. 
 
 ### Effects
 
