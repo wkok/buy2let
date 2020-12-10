@@ -188,3 +188,12 @@
   (->> (map #(val %) roles)
        (reduce concat)
        distinct))
+
+(defn apply-breakdown [ledger applicator]
+  (let [breakdown (-> ledger :this-month :breakdown)
+        applicated (->> (map (fn [[charge-id {:keys [amount] :as detail}]]
+                               (if amount
+                                 {charge-id (update detail :amount applicator amount)}
+                                 {charge-id detail})) breakdown)
+                        (into {}))]
+    (assoc-in ledger [:this-month :breakdown] applicated)))

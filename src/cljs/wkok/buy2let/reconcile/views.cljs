@@ -319,15 +319,15 @@
    (when (some nil? [property year month])
      (rf/dispatch [:set-fab-actions nil]))])
 
-(defn swap-amount [val charge-id state format-fn parse-fn abs-fn]
+(defn swap-amount [val charge-id state parse-fn abs-fn format-fn]
   (let [path [:values :this-month :breakdown charge-id :amount]]
     (if (not (s/blank? val))
-      (swap! state assoc-in path (->> val format-fn parse-fn abs-fn))
+      (swap! state assoc-in path (->> val parse-fn abs-fn format-fn))
       (swap! state update-in [:values :this-month :breakdown charge-id] dissoc :amount))))
 
 (defn prev-month [charge values state]
   (when-let [amount (get-in values [:prev-month :breakdown (:id charge) :amount])]
-    (shared/anchor #(swap-amount amount (:id charge) state shared/format-money js/parseFloat Math/abs)
+    (shared/anchor #(swap-amount amount (:id charge) state js/parseFloat Math/abs shared/format-money)
                    (str "(use previous: " (shared/format-money amount) ")"))))
 
 (defn edit-amount-field
@@ -340,7 +340,7 @@
                  :label       (:name charge)
                  :value       (get-in values [:this-month :breakdown (:id charge) :amount])
                  :on-change   #(swap-amount (-> % .-target .-value) (:id charge) state identity identity identity)
-                 :on-blur     #(swap-amount (-> % .-target .-value) (:id charge) state shared/format-money js/parseFloat Math/abs)
+                 :on-blur     #(swap-amount (-> % .-target .-value) (:id charge) state js/parseFloat Math/abs shared/format-money)
                  :min         0 :step "0.01"
                  :placeholder "0.00"
                  :InputLabelProps {:shrink true}}]
@@ -436,7 +436,7 @@
                 :on-submit-response {400 "client error"
                                      500 "server error"}
                 :on-submit          #(rf/dispatch [::re/save-reconcile (:values %)])
-                :initial-values     ledger}
+                :initial-values     (shared/apply-breakdown ledger shared/format-money)}
      (fn [{:keys [form-id submitting? handle-submit] :as form}]
        [:form {:id form-id :on-submit handle-submit}
         [grid {:container true

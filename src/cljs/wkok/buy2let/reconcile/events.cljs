@@ -26,11 +26,11 @@
       (if (empty? months)
         {:db db}
         (merge {:db             db}
-               (mm/get-ledger-month-fx {                  :property property 
-                                        :account-id account-id 
-                                        :this-year year 
-                                        :this-month month 
-                                        :prev-year (:year prev) 
+               (mm/get-ledger-month-fx {:property property
+                                        :account-id account-id
+                                        :this-year year
+                                        :this-month month
+                                        :prev-year (:year prev)
                                         :prev-month (:month prev)
                                         :on-success-this #(rf/dispatch [:load-ledger-month %])
                                         :on-success-prev #(rf/dispatch [:load-ledger-month %])}))))
@@ -38,11 +38,11 @@
 
 
 (rf/reg-event-db
-  ::reconcile-view-toggle
-  (fn [db [_ _]]
-    (case (get-in db [:reconcile :view])
-      :accounting (assoc-in db [:reconcile :view] :overview)
-      (assoc-in db [:reconcile :view] :accounting))))
+ ::reconcile-view-toggle
+ (fn [db [_ _]]
+   (case (get-in db [:reconcile :view])
+     :accounting (assoc-in db [:reconcile :view] :overview)
+     (assoc-in db [:reconcile :view] :accounting))))
 
 
 (rf/reg-event-fx
@@ -123,7 +123,7 @@
   (into {} (map #(hash-map (first %) (shared/to-money (apply + (vals (second %))))) accounting)))
 
 (defn add-opening-balances [breakdown prev-month]
-  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 
+  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current])
                                                            0)))
 
 (defn as-data [property values]
@@ -184,8 +184,9 @@
 
 (rf/reg-event-fx
  ::save-reconcile
- (fn [cofx [_ values]]
-   (let [db (:db cofx)
+ (fn [cofx [_ ledger]]
+   (let [values (shared/apply-breakdown ledger js/parseFloat)
+         db (:db cofx)
          account-id @(rf/subscribe [::as/account])
          charges @(rf/subscribe [::cs/charges])
          properties @(rf/subscribe [::cs/properties])
@@ -197,7 +198,7 @@
      (if (not-any? nil? [(:id property) year month charges-this-month])
        (merge {:db              (-> (assoc-in db [:ledger (:id property) year month] (:data charges-this-month))
                                     (assoc-in [:site :active-panel] :reconcile-view))}
-              (mm/save-reconcile-fx {               :account-id account-id
+              (mm/save-reconcile-fx {:account-id account-id
                                      :property-id (:id property)
                                      :year year
                                      :month month
