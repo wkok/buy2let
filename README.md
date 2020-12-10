@@ -51,15 +51,15 @@ You are responsible for providing your own backend (server, database & messaging
 
 Hooking up your backend to this re-frame app is done by implementing various clojure [multimethods](https://clojure.org/reference/multimethods) which is defined in the namespace: `wkok.buy2let.backend.multimethods`
 
-The dispatching function assumes a variable declared in the host html page called `impl` and is currently set to "demo"
+The dispatching function assumes a global variable declared in the backend implementation namespace. See the example in `wkok.buy2let.backend.demo`
 
-Change this to whatever your `defmethod` functions expect for example:
+Change this global variable to whatever your `defmethod` functions expect for example:
 
-```javascript
-var impl = "my-cool-app";
+```clojure
+(set! js/impl :my-cool-app)
 ```
 
-Lastly, the namespace defing your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your namespace. 
+Lastly, the namespace defining your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your backend's namespace. 
 
 ### Effects
 

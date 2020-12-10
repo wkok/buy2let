@@ -8,6 +8,8 @@
             [tick.alpha.api :as t]
             [cljc.java-time.month :as tm]))
 
+(set! js/impl :demo)
+
 (defmethod mm/init :demo [_])
 
 (defmethod mm/init-auth :demo

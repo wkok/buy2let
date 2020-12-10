@@ -1,6 +1,6 @@
 (ns wkok.buy2let.backend.multimethods)
 
-(def dispatcher #(keyword js/impl))
+(def dispatcher (fn [] js/impl))
 
 (defmulti init dispatcher)
 
