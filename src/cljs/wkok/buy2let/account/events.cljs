@@ -16,6 +16,7 @@
      (rf/dispatch [::dbe/get-crud account-id])
      (-> ddb/default-db
          (assoc-in [:site :account-selector] (get-in db [:site :account-selector]))
+         (assoc-in [:site :location] (get-in db [:site :location]))
          (assoc :security (:security db))
          (assoc-in [:security :account] account-id)))))
 
