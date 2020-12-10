@@ -68,13 +68,12 @@
                                    [text-field {:select true
                                                 :name      field-name
                                                 :label "Paid by"
-
-                                                :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) :none)
+                                                :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) "")
                                                 :on-change #(swap! state assoc-in [:values "charges" charge-id "who-pays-whom"]
                                                                    (-> % .-target .-value))
                                                 :error error?
-                                                :helper-text (when error? (get errors field-name))}
-                                    [menu-item {:value :none} "-- choose applicable --"]
+                                                :helper-text (when error? (get errors field-name))
+                                                :full-width true}
                                     [menu-item {:value :ac} "Agent Commission"]
                                     [menu-item {:value :apo} "Agent pays Owner"]
                                     [menu-item {:value :aps} "Agent pays Supplier"]
