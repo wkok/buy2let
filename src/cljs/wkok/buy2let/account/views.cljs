@@ -211,7 +211,7 @@
            [list {:subheader (ra/as-element [list-subheader "Account settings"])}
             [list-item {:button true
                         :on-click #(js/window.location.assign "#/delegates")}
-             [list-item-text {:primary "Invite users"}]]
+             [list-item-text {:primary "Delegate access"}]]
             (if (:deleteToken account)
               [list-item {:button true
                           :on-click #(rf/dispatch [::ae/save-account (dissoc account :deleteToken)])}

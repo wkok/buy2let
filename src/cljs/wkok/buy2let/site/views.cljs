@@ -174,7 +174,7 @@
      [icons-menu/menu]]
     [typography {:variant :h5
                  :no-wrap true
-                 :class (:title classes)} "Buy2Let"]
+                 :class (:title classes)} @(rf/subscribe [::subs/heading])]
     [profile classes]]])
 
 (defn navigate [hash]

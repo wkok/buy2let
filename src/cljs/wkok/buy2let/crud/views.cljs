@@ -44,12 +44,13 @@
     (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
     (rf/dispatch [:set-fab-actions nil]))
   (let [show-hidden @(rf/subscribe [::cs/show-hidden])
-        heading (or (:label type) (-> (:subs type) name s/capitalize))]
+        ;; heading (or (:label type) (-> (:subs type) name s/capitalize))
+        ]
     [paper {:class (get-in props [:classes :paper])}
      [grid {:container true
             :direction :column}
       [grid {:item true}
-       [list {:subheader (ra/as-element [list-subheader heading])}
+       [list ;{:subheader (ra/as-element [list-subheader heading])}
         (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
                            @(rf/subscribe [(:subs type)]))]
           ^{:key item}

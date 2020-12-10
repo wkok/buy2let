@@ -84,7 +84,8 @@
                                     [menu-item {:value :ops} "Owner pays Supplier"]
                                     [menu-item {:value :tpa} "Tenant pays Agent"]
                                     [menu-item {:value :tpo} "Tenant pays Owner"]])])]]))
-                        doall)]])})
+                        doall)]])
+:singular "property"})
 
 (def charge
   {:type        :charges
@@ -92,7 +93,8 @@
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(validate-name %)
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]
-                                 :title "Add"}}}})
+                                 :title "Add"}}}
+   :singular "charge"})
 
 (defn calc-status [item]
   (assoc item :status
@@ -168,4 +170,4 @@
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
                                  :title "Add"}}}
    :hidden-label "revoked"
-   :label "Users"})
+   :singular "delegate"})

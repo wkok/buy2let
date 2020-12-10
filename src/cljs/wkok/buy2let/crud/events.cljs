@@ -31,7 +31,7 @@
   ::add-crud
   (fn [db [_ type]]
     (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
-        (assoc-in [:site :heading] (heading type)))))
+        (assoc-in [:site :heading] (str "Add " (:singular type))))))
 
 
 (rf/reg-event-db
@@ -40,7 +40,7 @@
     (-> (assoc-in db [:form :old (:type type)] (get ((:type type) db) id))
         (assoc-in [:site :active-page] (:type type))
         (assoc-in [:site :active-panel] (panel ::edit-crud type))
-        (assoc-in [:site :heading] (heading type)))))
+        (assoc-in [:site :heading] (str "Edit " (:singular type))))))
 
 (rf/reg-event-db
   ::list-crud
