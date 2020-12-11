@@ -15,6 +15,8 @@
             [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]
             [reagent-material-ui.core.icon-button :refer [icon-button]]
             [reagent-material-ui.core.tooltip :refer [tooltip]]
             [reagent-material-ui.core.table :refer [table]]
@@ -237,45 +239,62 @@
          :label "Invoices & notes"
          :label-placement :start}]]]]))
 
+(defn select-default-property [active-property properties]
+  (when (and (or (= :all active-property)
+                 (not active-property))
+             (not (empty? properties)))
+    (rf/dispatch [::re/report-set-property (-> properties first :id)])))
+
 (defn criteria
   [{:keys [properties props]}]
-  [paper {:class (get-in props [:classes :paper])}
-   [grid {:container true
-          :direction :column
-          :spacing 2}
-    [grid {:item true}
-     (shared/select-property properties
-                             #(rf/dispatch [::re/report-set-property (.. % -target -value)])
-                             @(rf/subscribe [::ss/active-property])
-                             "--select--" "Property")]
-    [grid {:item true}
+  (let [active-property @(rf/subscribe [::ss/active-property])]
+    (select-default-property active-property properties)
+    [paper {:class (get-in props [:classes :paper])}
      [grid {:container true
-            :direction :row
-            :spacing 3}
-      [grid {:item true
-             :xs 6}
-       [date-picker {:variant :inline
-                     :open-to :month
-                     :views [:year :month]
-                     :format "MMM YYYY"
-                     :label "From"
-                     :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :from])) "/"
-                                                           (name @(rf/subscribe [::rs/report-month :from]))) "yyyy/MM")
-                     :on-change #(do (rf/dispatch [::re/report-set-month :from (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                     (rf/dispatch [::re/report-set-year :from (->> % (.getYear shared/date-utils) str keyword)]))
-                     :auto-ok true}]]
-      [grid {:item true
-             :xs 6}
-       [date-picker {:variant :inline
-                     :open-to :month
-                     :views [:year :month]
-                     :format "MMM YYYY"
-                     :label "To"
-                     :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :to])) "/"
-                                                           (name @(rf/subscribe [::rs/report-month :to]))) "yyyy/MM")
-                     :on-change #(do (rf/dispatch [::re/report-set-month :to (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                     (rf/dispatch [::re/report-set-year :to (->> % (.getYear shared/date-utils) str keyword)]))
-                     :auto-ok true}]]]]]])
+            :direction :column
+            :spacing 2}
+      [grid {:item true}
+       [text-field {:select true
+                    :label "Property"
+                    :field     :list
+                    :on-change #(rf/dispatch [::re/report-set-property (.. % -target -value)])
+                    :value     (case active-property
+                                 :all ""
+                                 nil ""
+                                 active-property)}
+        (->> (filter #(not (:hidden %)) properties)
+             (map (fn [property]
+                    ^{:key property}
+                    [menu-item {:value (:id property)}
+                     (:name property)])))]]
+      [grid {:item true}
+       [grid {:container true
+              :direction :row
+              :spacing 3}
+        [grid {:item true
+               :xs 6}
+         [date-picker {:variant :inline
+                       :open-to :month
+                       :views [:year :month]
+                       :format "MMM YYYY"
+                       :label "From"
+                       :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :from])) "/"
+                                                             (name @(rf/subscribe [::rs/report-month :from]))) "yyyy/MM")
+                       :on-change #(do (rf/dispatch [::re/report-set-month :from (->> % (.getMonth shared/date-utils) inc str keyword)])
+                                       (rf/dispatch [::re/report-set-year :from (->> % (.getYear shared/date-utils) str keyword)]))
+                       :auto-ok true}]]
+        [grid {:item true
+               :xs 6}
+         [date-picker {:variant :inline
+                       :open-to :month
+                       :views [:year :month]
+                       :format "MMM YYYY"
+                       :label "To"
+                       :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :to])) "/"
+                                                             (name @(rf/subscribe [::rs/report-month :to]))) "yyyy/MM")
+                       :on-change #(do (rf/dispatch [::re/report-set-month :to (->> % (.getMonth shared/date-utils) inc str keyword)])
+                                       (rf/dispatch [::re/report-set-year :to (->> % (.getYear shared/date-utils) str keyword)]))
+                       :auto-ok true}]]]]]]))
 
 (defn view-panel 
   [{:keys [property] :as options}]

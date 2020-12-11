@@ -52,7 +52,7 @@
          property (-> (get-in db [:site :active-property]) name)
          year (-> (get-in db [:reconcile :year]) name)
          month (-> (get-in db [:reconcile :month]) name)]
-     (if (= "--select--" property)
+     (if (or (= :all property) (not property))
        (js/window.location.assign (str "#/reconcile"))
        (js/window.location.assign (str "#/reconcile/" property "/" month "/" year))))))
 
@@ -178,9 +178,9 @@
                 (assoc-in [:site :active-page] :reconcile)
                 (assoc-in [:site :active-panel] :reconcile-view)
                 (assoc-in [:site :heading] "Reconcile"))]
-     (if (not (= :--select-- property-id))
-       (load-ledger-fx db property-id year month)
-       {:db db}))))
+     (if (or (= :all property-id) (not property-id))
+       {:db db}
+       (load-ledger-fx db property-id year month)))))
 
 (rf/reg-event-fx
  ::save-reconcile
@@ -209,14 +209,13 @@
 (defn calc-options
   [{:keys [property-id year month]}]
   (let [properties @(rf/subscribe [::cs/properties])
-        active-property (let [ap @(rf/subscribe [::ss/active-property])]
-                          (if (= "--select--" ap) nil ap))
+        active-property @(rf/subscribe [::ss/active-property])
         reconcile-year @(rf/subscribe [::rs/reconcile-year])
         reconcile-month @(rf/subscribe [::rs/reconcile-month])]
     {:property-id (or (-> property-id keyword)
                       active-property
                       (->> properties first :id)
-                      :--select--)
+                      "")
      :year (or (-> year keyword)
                reconcile-year
                (:this-year shared/default-cal))

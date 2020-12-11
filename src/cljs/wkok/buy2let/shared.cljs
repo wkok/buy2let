@@ -53,19 +53,6 @@
   (-> (format-money amount)
       js/parseFloat))
 
-(defn select-property [properties on-change value select-text label]
-  [text-field {:select true
-               :label label
-               :field     :list
-               :on-change on-change
-               :value     value}
-   [menu-item {:value "--select--"} select-text]
-   (->> (filter #(not (:hidden %)) properties)
-        (map (fn [property]
-               ^{:key property}
-               [menu-item {:value (:id property)}
-                (:name property)])))])
-
 (defn month-range [from to]
   (let [from (t/new-date (-> (:year from) name js/parseInt)
                          (-> (:month from) name js/parseInt) 1)

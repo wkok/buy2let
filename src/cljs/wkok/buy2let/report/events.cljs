@@ -45,7 +45,7 @@
                          (assoc-in [:report :result :months] months)
                          (assoc-in [:site :show-progress] false)
                          shared/calc-totals)
-         remote-db-fx (when (not (= "--select--" p))
+         remote-db-fx (when (not (or (= :all p) (not p)))
                         (shared/get-ledger-fx db property months))]
      
      (rf/dispatch [::reconcile-nav])
@@ -69,7 +69,7 @@
                          (assoc-in [:report :result :months] months)
                          (assoc-in [:site :show-progress] false)
                          shared/calc-totals)
-         remote-db-fx (when (not (= "--select--" property))
+         remote-db-fx (when (not (or (= :all property) (not property)))
                         (shared/get-ledger-fx db property months))]
 
      (rf/dispatch [::reconcile-nav])
@@ -93,7 +93,7 @@
                     (assoc-in [:report :result :months] months)
                     (assoc-in [:site :show-progress] false)
                     shared/calc-totals)
-          remote-db-fx (when (not (= "--select--" property))
+          remote-db-fx (when (not (or (= :all property) (not property)))
                          (shared/get-ledger-fx db property months))]
 
      (rf/dispatch [::reconcile-nav])
@@ -164,8 +164,7 @@
 (defn calc-options
   [{:keys [property-id from-month from-year to-month to-year]}]
   (let [properties @(rf/subscribe [::cs/properties])
-        active-property (let [ap @(rf/subscribe [::ss/active-property])]
-                          (if (= "--select--" ap) nil ap))
+        active-property @(rf/subscribe [::ss/active-property])
         report-from-year @(rf/subscribe [::rs/report-year :from])
         report-from-month @(rf/subscribe [::rs/report-month :from])
         report-to-year @(rf/subscribe [::rs/report-year :to])
@@ -173,7 +172,7 @@
     {:property-id (or (-> property-id keyword)
                       active-property
                       (->> properties first :id)
-                      :--select--)
+                      "")
      :from-year (or (-> from-year keyword)
                     report-from-year
                     (:last-year shared/default-cal))

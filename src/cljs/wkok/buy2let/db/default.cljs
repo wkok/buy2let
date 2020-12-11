@@ -3,7 +3,6 @@
 (def default-db
   {:site      {:heading      "Dashboard"
                :show-progress true
-               :active-property      "--select--"
                :active-page :dashboard
                :splash true}
    :report    {:show-invoices false}

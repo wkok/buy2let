@@ -24,6 +24,7 @@
             [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.table :refer [table]]
+            [reagent-material-ui.core.menu-item :refer [menu-item]]
             [reagent-material-ui.core.button :refer [button]]
             [reagent-material-ui.core.icon-button :refer [icon-button]]
             [reagent-material-ui.core.text-field :refer [text-field]]
@@ -214,29 +215,46 @@
          "/" (-> (:year options) name)
          "/edit")))
 
+(defn select-default-property [active-property properties]
+  (when (and (or (= :all active-property)
+                 (not active-property))
+             (not (empty? properties)))
+    (rf/dispatch [::re/reconcile-set-property (-> properties first :id)])))
+
 (defn criteria
   [{:keys [properties props]}]
-  [paper {:class (get-in props [:classes :paper])}
-   [grid {:container true
-          :direction :row
-          :justify :space-between
-          :spacing 1}
-    [grid {:item true}
-     (shared/select-property properties
-                             #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
-                             @(rf/subscribe [::ss/active-property])
-                             "--select--" "Property")]
-    [grid {:item true}
-     [date-picker {:variant :inline
-                   :open-to :month
-                   :views [:year :month]
-                   :format "MMM YYYY"
-                   :label "Period"
-                   :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
-                                                         (name @(rf/subscribe [::rs/reconcile-month]))) "yyyy/MM")
-                   :on-change #(do (rf/dispatch [::re/reconcile-set-month (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                   (rf/dispatch [::re/reconcile-set-year (->> % (.getYear shared/date-utils) str keyword)]))
-                   :auto-ok true}]]]])
+  (let [active-property @(rf/subscribe [::ss/active-property])]
+    (select-default-property active-property properties)
+    [paper {:class (get-in props [:classes :paper])}
+     [grid {:container true
+            :direction :row
+            :justify :space-between
+            :spacing 1}
+      [grid {:item true}
+       [text-field {:select true
+                    :label "Property"
+                    :field     :list
+                    :on-change #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
+                    :value     (case active-property
+                                 :all ""
+                                 nil ""
+                                 active-property)}
+        (->> (filter #(not (:hidden %)) properties)
+             (map (fn [property]
+                    ^{:key property}
+                    [menu-item {:value (:id property)}
+                     (:name property)])))]]
+      [grid {:item true}
+       [date-picker {:variant :inline
+                     :open-to :month
+                     :views [:year :month]
+                     :format "MMM YYYY"
+                     :label "Period"
+                     :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
+                                                           (name @(rf/subscribe [::rs/reconcile-month]))) "yyyy/MM")
+                     :on-change #(do (rf/dispatch [::re/reconcile-set-month (->> % (.getMonth shared/date-utils) inc str keyword)])
+                                     (rf/dispatch [::re/reconcile-set-year (->> % (.getYear shared/date-utils) str keyword)]))
+                     :auto-ok true}]]]]))
 
 (defn cards
   [{:keys [ledger props]}]

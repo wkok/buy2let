@@ -5,9 +5,7 @@
 (rf/reg-event-db
   ::set-active-property
   (fn [db [_ p]]
-    (if (not (= "--select--" p))
-      (assoc-in db [:site :active-property] (keyword p))
-      (assoc-in db [:site :active-property] p))))
+    (assoc-in db [:site :active-property] (keyword p))))
 
 (rf/reg-event-db
   :set-active-page

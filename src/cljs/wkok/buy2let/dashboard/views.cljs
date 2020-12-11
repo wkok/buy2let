@@ -10,9 +10,10 @@
             [cljc.java-time.month :as tm]
             [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.card-content :refer [card-content]]
-            ))
+            [reagent-material-ui.core.menu-item :refer [menu-item]]
+            [reagent-material-ui.core.card-content :refer [card-content]]))
 
 (defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
@@ -44,11 +45,17 @@
        [grid {:item true}
         [typography {:color :textSecondary} "Monthly profit / loss"]]
        [grid {:item true}
-        (shared/select-property properties
-                                #(rf/dispatch [::se/set-active-property (.. % -target -value)])
-                                @(rf/subscribe [::ss/active-property])
-                                "All properties"
-                                "")]]
+        [text-field {:select true
+                     :label ""
+                     :field     :list
+                     :on-change #(rf/dispatch [::se/set-active-property (.. % -target -value)])
+                     :value     (or @(rf/subscribe [::ss/active-property]) :all)}
+         [menu-item {:value :all} "All properties"]
+         (->> (filter #(not (:hidden %)) properties)
+              (map (fn [property]
+                     ^{:key property}
+                     [menu-item {:value (:id property)}
+                      (:name property)])))]]]
       [charts/draw-chart
        "LineChart"
        data
