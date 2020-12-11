@@ -251,9 +251,10 @@
     (select-default-property active-property properties)
     [paper {:class (get-in props [:classes :paper])}
      [grid {:container true
-            :direction :column
+            :direction :row
             :spacing 2}
-      [grid {:item true}
+      [grid {:item true
+             :xs 12 :sm 6}
        [text-field {:select true
                     :label "Property"
                     :field     :list
@@ -267,7 +268,8 @@
                     ^{:key property}
                     [menu-item {:value (:id property)}
                      (:name property)])))]]
-      [grid {:item true}
+      [grid {:item true
+             :xs 12 :sm 6}
        [grid {:container true
               :direction :row
               :spacing 3}
