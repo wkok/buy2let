@@ -16,7 +16,7 @@
 (defn ^:dev/after-load mount-root []
   (rf/clear-subscription-cache!)
   (routes/app-routes)
-  (mm/init-auth {   :render-main-panel #(rd/render [views/main-panel] (.getElementById js/document "app"))
+  (mm/init-auth {:render-main-panel #(rd/render [views/main-panel] (.getElementById js/document "app"))
                  :sign-in-panel views/sign-in-panel}))
 
 
