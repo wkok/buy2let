@@ -12,7 +12,9 @@
    [wkok.buy2let.settings.views :as settings]
    [wkok.buy2let.profile.views :as profile]
    [wkok.buy2let.account.views :as account]
+   [wkok.buy2let.wizard.views :as wizard]
    [wkok.buy2let.crud.impl :as crud-impl]
+   [wkok.buy2let.crud.subs :as cs]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
    [wkok.buy2let.account.subs :as as]
@@ -118,6 +120,9 @@
            :right (spacing 2)
            :z-index (+ (:drawer z-index) 1)}
      :splash {:z-index (+ (:drawer z-index) 1)}
+     :wizard-backdrop {:z-index (+ (:drawer z-index) 2)
+                       :background-color "white"}
+     :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}
      :table-header {:font-weight 600}
@@ -206,10 +211,11 @@
        [typography {:variant :caption} (:name account)]]]]))
 
 (defn nav [{:keys [classes] :as props}]
-  (let [drawer_ [:div
+  (let [properties @(rf/subscribe [::cs/properties])
+        drawer_ [:div
                  [brand props]
                  [divider]
-                 [list
+                 [list {:style {:display (when (empty? properties) :none)}}
                   [list-item {:button true
                               :on-click #(navigate "#/")}
                    [list-item-icon [dashboard]]
@@ -255,6 +261,7 @@
   [:main {:class (:content classes)}
    (when-let [active-page @(rf/subscribe [::subs/active-page])]
      (condp = active-page
+       :wizard [wizard/wizard]
        :dashboard [dashboard/dashboard]
        :reconcile [reconcile/reconcile props]
        :report [report/report props]

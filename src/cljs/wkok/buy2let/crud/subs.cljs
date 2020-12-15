@@ -7,23 +7,47 @@
     (get-in db [:crud :show-hidden] false)))
 
 (rf/reg-sub
-  ::properties
+  ::all-properties
   (fn [db]
     (->> (:properties db)
          vals
          (sort-by :name))))
 
 (rf/reg-sub
-  ::charges
+  ::properties
+  (fn [db]
+    (->> (:properties db)
+         vals
+         (filter #(not (:hidden %)))
+         (sort-by :name))))
+
+(rf/reg-sub
+  ::all-charges
   (fn [db]
     (->> (:charges db)
          vals
          (sort-by :name))))
 
 (rf/reg-sub
+ ::charges
+ (fn [db]
+   (->> (:charges db)
+        vals
+        (filter #(not (:hidden %)))
+        (sort-by :name))))
+
+(rf/reg-sub
+ ::all-delegates
+ (fn [db]
+   (->> (:delegates db)
+        vals
+        (sort-by :name))))
+
+(rf/reg-sub
   ::delegates
   (fn [db]
     (->> (:delegates db)
          vals
+         (filter #(not (:hidden %)))
          (sort-by :name))))
 

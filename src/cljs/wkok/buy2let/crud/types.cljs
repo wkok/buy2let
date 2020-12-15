@@ -31,7 +31,7 @@
 
 (def property
   {:type        :properties
-   :subs        ::cs/properties
+   :subs        ::cs/all-properties
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
@@ -88,7 +88,7 @@
 
 (def charge
   {:type        :charges
-   :subs        ::cs/charges
+   :subs        ::cs/all-charges
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(validate-name %)
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]
@@ -148,7 +148,7 @@
 
 (def delegate
   {:type        :delegates
-   :subs        ::cs/delegates
+   :subs        ::cs/all-delegates
    :fields      [{:key :name :type :text :default true :secondary :status}
                  {:key :email :type :email
                   :disabled {:if-fields ["status"]}}

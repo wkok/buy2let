@@ -1,6 +1,6 @@
 (ns wkok.buy2let.db.events
   (:require [re-frame.core :as rf]
-            [wkok.buy2let.site.effects :as se]
+            [wkok.buy2let.site.effects :as sfx]
             [tick.alpha.api :as t]
             [wkok.buy2let.db.default :as ddb]
             [wkok.buy2let.backend.multimethods :as mm]
@@ -15,7 +15,7 @@
 (rf/reg-event-fx
   ::get-crud
   (fn [_ [_ account]]
-    (mm/get-crud-fx {       :account account
+    (mm/get-crud-fx {:account account
                      :on-success-delegates #(rf/dispatch [:load-delegates %])
                      :on-success-charges #(rf/dispatch [:load-charges %])
                      :on-success-properties #(rf/dispatch [:load-properties %])})))
@@ -35,12 +35,15 @@
 (rf/reg-event-fx
  :load-properties
  (fn [cofx [_ input]]
-   (let [properties (spec/conform ::spec/properties input)]
-     (rf/dispatch [::get-ledger-year])
-     {:db                (-> (assoc (:db cofx) :properties properties)
+   (let [db (:db cofx)
+         properties (spec/conform ::spec/properties input)]
+     (if (empty? properties)
+       (js/window.location.assign "#/properties/add")
+       (rf/dispatch [::get-ledger-year]))
+     {:db                (-> (assoc db :properties properties)
                              (assoc-in [:site :show-progress] false)
                              (assoc-in [:site :splash] false))
-      ::se/location-hash (get-in (:db cofx) [:site :location :hash])})))
+      ::sfx/location-hash (get-in db [:site :location :hash])})))
 
 (rf/reg-event-db
   :load-ledger-year

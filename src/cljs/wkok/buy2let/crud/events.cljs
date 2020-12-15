@@ -28,10 +28,14 @@
       keyword))
 
 (rf/reg-event-db
-  ::add-crud
-  (fn [db [_ type]]
-    (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
-        (assoc-in [:site :heading] (str "Add " (:singular type))))))
+ ::add-crud
+ (fn [db [_ type]]
+   (if (= :properties (:type type))
+     (-> (dissoc db :wizard)
+         (assoc-in [:site :active-page] :wizard)
+         (assoc-in [:site :heading] (str "Add property")))
+     (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
+         (assoc-in [:site :heading] (str "Add " (:singular type)))))))
 
 
 (rf/reg-event-db
@@ -60,7 +64,7 @@
          account-id @(rf/subscribe [::as/account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}
-            (mm/save-crud-fx {        :account-id account-id 
+            (mm/save-crud-fx {:account-id account-id 
                               :crud-type type 
                               :id id 
                               :item item

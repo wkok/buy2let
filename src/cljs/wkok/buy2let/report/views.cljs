@@ -239,16 +239,10 @@
          :label "Invoices & notes"
          :label-placement :start}]]]]))
 
-(defn select-default-property [active-property properties]
-  (when (and (or (= :all active-property)
-                 (not active-property))
-             (not (empty? properties)))
-    (rf/dispatch [::re/report-set-property (-> properties first :id)])))
-
 (defn criteria
   [{:keys [properties props]}]
   (let [active-property @(rf/subscribe [::ss/active-property])]
-    (select-default-property active-property properties)
+    (shared/select-default-property active-property properties ::re/report-set-property)
     [paper {:class (get-in props [:classes :paper])}
      [grid {:container true
             :direction :row
@@ -259,10 +253,7 @@
                     :label "Property"
                     :field     :list
                     :on-change #(rf/dispatch [::re/report-set-property (.. % -target -value)])
-                    :value     (case active-property
-                                 :all ""
-                                 nil ""
-                                 active-property)}
+                    :value     (shared/select-property-val active-property properties)}
         (->> (filter #(not (:hidden %)) properties)
              (map (fn [property]
                     ^{:key property}

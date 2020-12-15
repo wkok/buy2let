@@ -184,3 +184,19 @@
                                  {charge-id detail})) breakdown)
                         (into {}))]
     (assoc-in ledger [:this-month :breakdown] applicated)))
+
+
+(defn select-property-val [active-property properties]
+  (case active-property
+    :all ""
+    nil ""
+    (if (empty? (filter #(= active-property (:id %)) properties))
+      ""
+      active-property)))
+
+(defn select-default-property [active-property properties event]
+  (when (and (or (= :all active-property)
+                 (not active-property)
+                 (empty? (filter #(= active-property (:id %)) properties)))
+             (not (empty? properties)))
+    (rf/dispatch [event (-> properties first :id)])))
