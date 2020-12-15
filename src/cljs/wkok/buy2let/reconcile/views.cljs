@@ -115,7 +115,9 @@
 
 (defn view-accounting
   [{:keys [ledger property-charges charges props] :as options}]
-  (let [class-table-header (get-in props [:classes :table-header])]
+  (let [class-table-header (get-in props [:classes :table-header])
+        agent-opening-balance (get-in ledger [:this-month :breakdown :agent-opening-balance :amount])
+        tenant-opening-balance (get-in ledger [:this-month :breakdown :tenant-opening-balance :amount])]
     [paper
      [grid {:container true
             :direction :column}
@@ -155,7 +157,8 @@
            [table-cell {:align :right
                         :class class-table-header} "Supplier"]]]
          [table-body
-          [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger props]
+          (when (pos? agent-opening-balance) [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger props])
+          (when (pos? tenant-opening-balance) [view-accounting-row (shared/by-id :tenant-opening-balance charges) ledger props])
           (view-accounting-detail ledger property-charges props)
           [view-accounting-total options]]]]]
       [grid {:container true

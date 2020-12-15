@@ -94,30 +94,33 @@
   (if (= :agent-opening-balance charge-id)
     {:agent-current {charge-id amount}
      :owner         {charge-id (* -1 amount)}}
-    (case (get-in (:charges property) [charge-id :who-pays-whom])
-      :opa {:agent-current {charge-id amount}
-            :owner         {charge-id (* -1 amount)}}
-      :ac {:agent-commission {charge-id amount}
-           :agent-current    {charge-id (* -1 amount)}}
-      :apo {:owner         {charge-id amount}
-            :agent-current {charge-id (* -1 amount)}}
-      :aps {:supplier      {charge-id amount}
-            :agent-current {charge-id (* -1 amount)}}
-      :mi {:bank-interest {charge-id amount}
-           :bank-current  {charge-id (* -1 amount)}}
-      :opb {:bank-current {charge-id amount}
-            :owner        {charge-id (* -1 amount)}}
-      :ops {:supplier {charge-id amount}
-            :owner    {charge-id (* -1 amount)}}
-      :oct {:owner-control  {charge-id (* -1 amount)}
-            :tenant  {charge-id amount}}
-      :oca {:owner-control  {charge-id (* -1 amount)}
-            :agent-current  {charge-id amount}}
-      :tpa {:agent-current {charge-id amount}
-            :tenant        {charge-id (* -1 amount)}}
-      :tpo {:owner  {charge-id amount}
-            :tenant {charge-id (* -1 amount)}}
-      {})))
+    (if (= :tenant-opening-balance charge-id)
+      {:tenant {charge-id amount}
+       :owner  {charge-id (* -1 amount)}}
+      (case (get-in (:charges property) [charge-id :who-pays-whom])
+        :opa {:agent-current {charge-id amount}
+              :owner         {charge-id (* -1 amount)}}
+        :ac {:agent-commission {charge-id amount}
+             :agent-current    {charge-id (* -1 amount)}}
+        :apo {:owner         {charge-id amount}
+              :agent-current {charge-id (* -1 amount)}}
+        :aps {:supplier      {charge-id amount}
+              :agent-current {charge-id (* -1 amount)}}
+        :mi {:bank-interest {charge-id amount}
+             :bank-current  {charge-id (* -1 amount)}}
+        :opb {:bank-current {charge-id amount}
+              :owner        {charge-id (* -1 amount)}}
+        :ops {:supplier {charge-id amount}
+              :owner    {charge-id (* -1 amount)}}
+        :oct {:owner-control  {charge-id (* -1 amount)}
+              :tenant  {charge-id amount}}
+        :oca {:owner-control  {charge-id (* -1 amount)}
+              :agent-current  {charge-id amount}}
+        :tpa {:agent-current {charge-id amount}
+              :tenant        {charge-id (* -1 amount)}}
+        :tpo {:owner  {charge-id amount}
+              :tenant {charge-id (* -1 amount)}}
+        {}))))
 
 (defn calc-accounting [property charges]
   (->> (map #(calc-double-entries property (key %) (:amount (val %))) charges)
@@ -127,7 +130,8 @@
   (into {} (map #(hash-map (first %) (shared/to-money (apply + (vals (second %))))) accounting)))
 
 (defn add-opening-balances [breakdown prev-month]
-  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 0)))
+  (-> (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 0))
+      (assoc-in [:tenant-opening-balance :amount] (or (get-in prev-month [:totals :tenant]) 0))))
 
 (defn as-data [property values]
   (let [this-month-breakdown (-> (get-in values [:this-month :breakdown])

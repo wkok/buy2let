@@ -8,4 +8,7 @@
    :report    {:show-invoices false}
    :charges   {:agent-opening-balance {:id       :agent-opening-balance
                                        :name     "Opening balance"
+                                       :reserved true}
+               :tenant-opening-balance {:id      :tenant-opening-balance
+                                       :name     "Opening balance"
                                        :reserved true}}})
