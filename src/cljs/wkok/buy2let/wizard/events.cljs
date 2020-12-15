@@ -41,11 +41,11 @@
                         {:agent-commission {:who-pays-whom :ac}
                          :agent-inspection {:who-pays-whom :ac}
                          :payment-received {:who-pays-whom :apo}
-                         :rent-charged {:who-pays-whom :tpa}
+                         :rent-charged {:who-pays-whom :oca}
                          :rates-taxes {:who-pays-whom :aps}
                          :levy {:who-pays-whom :aps}}
                         {:payment-received {:who-pays-whom :tpo}
-                         :rent-charged {:who-pays-whom :tpo}
+                         :rent-charged {:who-pays-whom :oct}
                          :levy {:who-pays-whom :ops}
                          :rates-taxes {:who-pays-whom :ops}})
          property {:name (-> db :wizard :property-name)

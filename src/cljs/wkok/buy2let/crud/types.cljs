@@ -67,10 +67,10 @@
                                                    (not (s/blank? (get errors field-name))))]
                                    [text-field {:select true
                                                 :name      field-name
-                                                :label "Paid by"
+                                                :label "Arrangement"
                                                 :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) "")
                                                 :on-change #(swap! state assoc-in [:values "charges" charge-id "who-pays-whom"]
-                                                                   (-> % .-target .-value))
+                                                                   (-> % .-target .-value keyword))
                                                 :error error?
                                                 :helper-text (when error? (get errors field-name))
                                                 :full-width true}
@@ -78,6 +78,8 @@
                                     [menu-item {:value :apo} "Agent pays Owner"]
                                     [menu-item {:value :aps} "Agent pays Supplier"]
                                     [menu-item {:value :mi} "Mortgage Interest"]
+                                    [menu-item {:value :oca} "Owner charges Agent"]
+                                    [menu-item {:value :oct} "Owner charges Tenant"]
                                     [menu-item {:value :opa} "Owner pays Agent"]
                                     [menu-item {:value :opb} "Owner pays Bank"]
                                     [menu-item {:value :ops} "Owner pays Supplier"]

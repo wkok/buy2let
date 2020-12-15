@@ -55,6 +55,8 @@
     (format-amount ledger [:this-month :accounting :agent-commission (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :owner (:id charge)])]
+   [table-cell {:align :right}
+    (format-amount ledger [:this-month :accounting :owner-control (:id charge)])]
    [table-cell {:align :right
                 :class (get-in props [:classes :table-alternate])}
     (format-amount ledger [:this-month :accounting :bank-current (:id charge)])]
@@ -72,23 +74,35 @@
 (defn view-accounting-total
   [{:keys [ledger props]}]
   (let [class-table-header (get-in props [:classes :table-header])
-        class-table-header-alternate (get-in props [:classes :table-header-alternate])]
+        class-table-header-alternate (get-in props [:classes :table-header-alternate])
+        agent-balance (get-in ledger [:this-month :totals :agent-current] 0)
+        tenant-balance (get-in ledger [:this-month :totals :tenant] 0)
+        owner-balance (get-in ledger [:this-month :totals :owner] 0)]
     [table-row
      [table-cell {:class class-table-header} "Total:"]
      [table-cell {:align :right
-                  :class class-table-header}
-      (format-amount ledger [:this-month :totals :tenant])]
-     (let [agent-balance (get-in ledger [:this-month :totals :agent-current])]
-       [table-cell {:align :right
-                    :class class-table-header-alternate}
-        (->> agent-balance shared/format-money)])
+                  :class (if (and (zero? agent-balance)
+                                  (not (zero? tenant-balance)))
+                           (get-in props [:classes :table-header-owe])
+                           (get-in props [:classes :table-header]))}
+      (->> tenant-balance shared/format-money)]
+     [table-cell {:align :right
+                  :class (if (not (zero? agent-balance))
+                           (get-in props [:classes :table-header-alternate-owe])
+                           (get-in props [:classes :table-header-alternate]))}
+      (->> agent-balance shared/format-money)]
      [table-cell {:align :right
                   :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :agent-commission])]
-     (let [owner-balance (get-in ledger [:this-month :totals :owner])]
-       [table-cell {:align :right
-                    :class class-table-header}
-        (->> owner-balance shared/format-money)])
+     [table-cell {:align :right
+                  :class (if (neg? owner-balance)
+                           (get-in props [:classes :table-header-neg])
+                           (when (pos? owner-balance)
+                             (get-in props [:classes :table-header-pos])))}
+      (->> owner-balance shared/format-money)]
+     [table-cell {:align :right
+                  :class class-table-header}
+      (format-amount ledger [:this-month :totals :owner-control])]
      [table-cell {:align :right
                   :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :bank-current])]
@@ -115,7 +129,9 @@
            [table-cell {:align :center
                         :col-span 2
                         :class (get-in props [:classes :table-header-alternate])} "Agent"]
-           [table-cell]
+           [table-cell {:align :center
+                        :col-span 2
+                        :class (get-in props [:classes :table-header])} "Owner"]
            [table-cell {:align :center
                         :col-span 2
                         :class (get-in props [:classes :table-header-alternate])} "Bank"]
@@ -129,7 +145,9 @@
            [table-cell {:align :right
                         :class (get-in props [:classes :table-header-alternate])} "Comm."]
            [table-cell {:align :right
-                        :class class-table-header} "Owner"]
+                        :class class-table-header} "Current"]
+           [table-cell {:align :right
+                        :class class-table-header} "Control"]
            [table-cell {:align :right
                         :class (get-in props [:classes :table-header-alternate])} "Current"]
            [table-cell {:align :right
@@ -251,15 +269,26 @@
 
 (defn cards
   [{:keys [ledger props]}]
-  (let [profit (-> (+ (get-in ledger [:this-month :totals :owner])
-                      (get-in ledger [:this-month :totals :agent-current]))
-                   shared/to-money)
-        owed (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
+  (let [agent-balance (get-in ledger [:this-month :totals :agent-current])
+        tenant-balance (get-in ledger [:this-month :totals :tenant])
+        owner-balance (get-in ledger [:this-month :totals :owner])
+        profit (if (zero? agent-balance)
+                 (-> (+ owner-balance tenant-balance)
+                     shared/to-money)
+                 (-> (+ owner-balance agent-balance)
+                     shared/to-money))
+        owed (let [agent-bal (-> (get-in ledger [:this-month :totals :agent-current]) shared/to-money)
+                   tenant-bal (-> (get-in ledger [:this-month :totals :tenant]) shared/to-money)]
+               (if (not (zero? agent-bal))
+                 agent-bal tenant-bal))
         cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)
-        card-class (get-in props [:classes :reconcile-card])]
+        card-class (get-in props [:classes :reconcile-card])
+        pos-class (get-in props [:classes :pos])
+        neg-class (get-in props [:classes :neg])
+        owe-class (get-in props [:classes :owe])]
     (if (shared/has-role :editor)
       (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
-                                             :title "Edit"}}])
+                                               :title "Edit"}}])
       (rf/dispatch [:set-fab-actions nil]))
     [grid {:container true
            :direction :row
@@ -270,46 +299,58 @@
         (if (neg? profit)
           [card {:class card-class}
            [card-content
-            [typography {:variant :h6}
+            [typography {:variant :h6
+                         :class neg-class}
              (shared/format-money profit)]
-            [typography {:variant :caption}
+            [typography {:variant :caption
+                         :class neg-class}
              "(net loss)"]]]
           [card {:class card-class}
            [card-content
-            [typography {:variant :h6}
+            [typography {:variant :h6
+                         :class pos-class}
              (shared/format-money profit)]
-            [typography {:variant :caption}
+            [typography {:variant :caption
+                         :class pos-class}
              "(net profit)"]]])])
      (when (not (zero? owed))
        [grid {:item true :xs 4}
         (if (pos? owed)
           [card {:class card-class}
            [card-content
-            [typography {:variant :h6}
+            [typography {:variant :h6
+                         :class owe-class}
              (shared/format-money owed)]
-            [typography {:variant :caption}
+            [typography {:variant :caption
+                         :class owe-class}
              "(owed to owner)"]]]
           (when (neg? owed)
             [card {:class card-class}
              [card-content
-              [typography {:variant :h6}
+              [typography {:variant :h6
+                           :class owe-class}
                (shared/format-money owed)]
-              [typography {:variant :caption}
-               "(owed to agent)"]]]))])
+              [typography {:variant :caption
+                           :class owe-class}
+               "(owed by owner)"]]]))])
      (when (not (= cash profit))
        [grid {:item true :xs 4}
         (if (neg? cash)
           [card {:class card-class}
            [card-content
-            [typography {:variant :h6}
+            [typography {:variant :h6
+                         :class neg-class}
              (shared/format-money cash)]
-            [typography {:variant :caption}
+            [typography {:variant :caption
+                         :class neg-class}
              "(cash flow)"]]]
           [card {:class card-class}
            [card-content
-            [typography {:variant :h6}
+            [typography {:variant :h6
+                         :class pos-class}
              (shared/format-money cash)]
-            [typography {:variant :caption}
+            [typography {:variant :caption
+                         :class pos-class}
              "(cash flow)"]]])])]))
 
 (defn view-panel

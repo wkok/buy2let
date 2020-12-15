@@ -109,6 +109,10 @@
             :owner        {charge-id (* -1 amount)}}
       :ops {:supplier {charge-id amount}
             :owner    {charge-id (* -1 amount)}}
+      :oct {:owner-control  {charge-id (* -1 amount)}
+            :tenant  {charge-id amount}}
+      :oca {:owner-control  {charge-id (* -1 amount)}
+            :agent-current  {charge-id amount}}
       :tpa {:agent-current {charge-id amount}
             :tenant        {charge-id (* -1 amount)}}
       :tpo {:owner  {charge-id amount}
@@ -123,8 +127,7 @@
   (into {} (map #(hash-map (first %) (shared/to-money (apply + (vals (second %))))) accounting)))
 
 (defn add-opening-balances [breakdown prev-month]
-  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current])
-                                                           0)))
+  (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 0)))
 
 (defn as-data [property values]
   (let [this-month-breakdown (-> (get-in values [:this-month :breakdown])

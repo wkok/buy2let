@@ -100,9 +100,21 @@
      :avatar-small {:width (spacing 3)
                     :height (spacing 3)}
      :avatar-medium {:width (spacing 7)
-                    :height (spacing 7)}
+                     :height (spacing 7)}
      :avatar-large {:width (spacing 10)
                     :height (spacing 10)}
+     :pos {:color "blue"}
+     :neg {:color "red"}
+     :owe {:color "orange"}
+     :table-header-pos {:color "blue"
+                        :font-weight 600}
+     :table-header-neg {:color "red"
+                        :font-weight 600}
+     :table-header-owe {:color "orange"
+                        :font-weight 600}
+     :table-header-alternate-owe {:color "orange"
+                                  :font-weight 600
+                                  :background-color (get-in palette [:action :hover])}
      :brand-logo {:padding "0.5em"}
      :brand-name {:padding "0.5em"}
      :menu-button {(up "sm") {:display :none}

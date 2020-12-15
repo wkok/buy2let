@@ -36,11 +36,12 @@
  :load-properties
  (fn [cofx [_ input]]
    (let [db (:db cofx)
-         properties (spec/conform ::spec/properties input)]
+         all-properties (spec/conform ::spec/properties input)
+         properties (filter #(not (:hidden %)) (vals all-properties))]
      (if (empty? properties)
        (js/window.location.assign "#/properties/add")
        (rf/dispatch [::get-ledger-year]))
-     {:db                (-> (assoc db :properties properties)
+     {:db                (-> (assoc db :properties all-properties)
                              (assoc-in [:site :show-progress] false)
                              (assoc-in [:site :splash] false))
       ::sfx/location-hash (get-in db [:site :location :hash])})))

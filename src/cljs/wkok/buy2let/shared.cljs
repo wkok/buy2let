@@ -181,10 +181,9 @@
         applicated (->> (map (fn [[charge-id {:keys [amount] :as detail}]]
                                (if amount
                                  {charge-id (update detail :amount applicator amount)}
-                                 {charge-id detail})) breakdown)
+                                 {charge-id (assoc detail :amount 0)})) breakdown)
                         (into {}))]
     (assoc-in ledger [:this-month :breakdown] applicated)))
-
 
 (defn select-property-val [active-property properties]
   (case active-property
