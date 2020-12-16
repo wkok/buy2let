@@ -11,7 +11,7 @@
 (set! js/impl :demo)
 
 (defmethod mm/app-name :demo [_]
-  "Demo")
+  "DemoApp")
 
 (defmethod mm/init :demo [_])
 
