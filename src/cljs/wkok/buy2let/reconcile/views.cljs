@@ -253,11 +253,10 @@
                     :field     :list
                     :on-change #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
                     :value     (shared/select-property-val active-property properties)}
-        (->> (filter #(not (:hidden %)) properties)
-             (map (fn [property]
-                    ^{:key property}
-                    [menu-item {:value (:id property)}
-                     (:name property)])))]]
+        (map (fn [property]
+               ^{:key property}
+               [menu-item {:value (:id property)}
+                (:name property)]) properties)]]
       [grid {:item true}
        [date-picker {:variant :inline
                      :open-to :month

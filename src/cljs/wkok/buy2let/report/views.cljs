@@ -256,11 +256,10 @@
                     :field     :list
                     :on-change #(rf/dispatch [::re/report-set-property (.. % -target -value)])
                     :value     (shared/select-property-val active-property properties)}
-        (->> (filter #(not (:hidden %)) properties)
-             (map (fn [property]
-                    ^{:key property}
-                    [menu-item {:value (:id property)}
-                     (:name property)])))]]
+        (map (fn [property]
+               ^{:key property}
+               [menu-item {:value (:id property)}
+                (:name property)]) properties)]]
       [grid {:item true
              :xs 12 :sm 6}
        [grid {:container true

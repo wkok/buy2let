@@ -34,10 +34,10 @@
                                 (:profit m)
                                 (if (neg? (:profit m)) "color: red" "color: blue")
                                 (when (and (= (:month m) this-month)
-                                         (= (:year m) this-year))
+                                           (= (:year m) this-year))
                                   (shared/format-money (:profit m)))]))
                   (concat [["Month" "Profit / loss" {:type :string :role :style} {:type :string :role :annotation}]]))]
-    [card 
+    [card
      [card-content
       [grid {:container true
              :direction :row
@@ -51,11 +51,10 @@
                      :on-change #(rf/dispatch [::se/set-active-property (.. % -target -value)])
                      :value     (or @(rf/subscribe [::ss/active-property]) :all)}
          [menu-item {:value :all} "All properties"]
-         (->> (filter #(not (:hidden %)) properties)
-              (map (fn [property]
-                     ^{:key property}
-                     [menu-item {:value (:id property)}
-                      (:name property)])))]]]
+         (map (fn [property]
+                ^{:key property}
+                [menu-item {:value (:id property)}
+                 (:name property)]) properties)]]]
       [charts/draw-chart
        "LineChart"
        data

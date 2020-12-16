@@ -39,7 +39,7 @@
    :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]
                   [grid {:item true}
                    [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
-                    (-> (for [charge (filter #(and (not (:reserved %)) (not (:hidden %)))
+                    (-> (for [charge (filter #(not (:reserved %))
                                              @(rf/subscribe [::cs/charges]))]
                           (let [charge-id (name (:id charge))
                                 charge-selected (contains? (get values "charges") charge-id)]
