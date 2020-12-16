@@ -112,6 +112,12 @@
                         :font-weight 600}
      :table-header-owe {:color "orange"
                         :font-weight 600}
+     :table-header-alternate-pos {:color "blue"
+                                  :font-weight 600
+                                  :background-color (get-in palette [:action :hover])}
+     :table-header-alternate-neg {:color "red"
+                                  :font-weight 600
+                                  :background-color (get-in palette [:action :hover])}
      :table-header-alternate-owe {:color "orange"
                                   :font-weight 600
                                   :background-color (get-in palette [:action :hover])}

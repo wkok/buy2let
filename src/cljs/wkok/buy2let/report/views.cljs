@@ -29,23 +29,48 @@
             [reagent-material-ui.core.switch-component :refer [switch]]
             [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
 
-(defn calc-class-table-header [m props]
-  (if (odd? (-> m :month name js/parseInt))
-    (get-in props [:classes :table-header-alternate])
-    (get-in props [:classes :table-header])))
+(defn cell-class
+  ([m amount classes]
+   (cell-class m amount :none classes))
+  ([m amount type classes]
+   (let [odd (odd? (-> m :month name js/parseInt))
+         class-key (if (neg? amount)
+                     (if odd
+                       (case type
+                         :owed :table-header-alternate-owe
+                         :profit :table-header-alternate-neg
+                         :table-header-alternate)
+                       (case type
+                         :owed :table-header-owe
+                         :profit :table-header-neg
+                         :table-header))
+                     (if (pos? amount)
+                       (if odd
+                         (case type
+                           :owed :table-header-alternate-owe
+                           :profit :table-header-alternate-pos
+                           :table-header-alternate)
+                         (case type
+                           :owed :table-header-owe
+                           :profit :table-header-pos
+                           :table-header))
+                       (if odd
+                         :table-header-alternate
+                         :table-header)))]
+     (class-key classes))))
 
 (defn format-amount [ledger path]
   (->> (get-in ledger path) shared/format-money))
 
 (defn report-header [months props]
-  (let [class-table-header (get-in props [:classes :table-header])]
+  (let [class (get-in props [:classes :table-header])]
     [table-row
-     [table-cell {:class class-table-header} "Charge"]
+     [table-cell {:class class} "Charge"]
      (for [m months]
        ^{:key m}
-       [table-cell {:class (calc-class-table-header m props)
+       [table-cell {:class (cell-class m 0 (:classes props))
                     :align :right} (str (shared/format-month (:date m)) " " (t/year (:date m)))])
-     [table-cell {:class class-table-header
+     [table-cell {:class class
                   :align :right} "Total"]]))
 
 (defn report-charge-col
@@ -79,55 +104,32 @@
 (defn report-profit-col
   [m {:keys [ledger props]}]
   (let [profit (shared/calc-profit-property ledger m)
-        class-table-header (calc-class-table-header m props)]
-    (if (neg? profit)
-      [table-cell {:align :right
-                   :class class-table-header} (shared/format-money profit)]
-      (if (pos? profit)
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money profit)]
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money profit)]))))
+        class (cell-class m profit :profit (:classes props))]
+    [table-cell {:align :right
+                 :class class}
+     (shared/format-money profit)]))
 
 (defn report-owed-col 
   [m {:keys [ledger props]}]
   (let [owed (-> (get-in ledger [(:year m) (:month m) :totals :agent-current]) shared/to-money)
-        class-table-header (calc-class-table-header m props)]
-    (if (neg? owed)
-      [table-cell {:align :right
-                   :class class-table-header}
-       (shared/format-money owed)]
-      (if (pos? owed)
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money owed)]
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money owed)]))))
+        class (cell-class m owed :owed (:classes props))]
+    [table-cell {:align :right
+                 :class class}
+     (shared/format-money owed)]))
 
 
 (defn report-cash-col 
   [m {:keys [ledger props]}]
   (let [cash (-> (get-in ledger [(:year m) (:month m) :totals :owner]) shared/to-money)
-        class-table-header (calc-class-table-header m props)]
-    (if (neg? cash)
-      [table-cell {:align :right
-                   :class class-table-header}
-       (shared/format-money cash)]
-      (if (pos? cash)
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money cash)]
-        [table-cell {:align :right
-                     :class class-table-header}
-         (shared/format-money cash)]))))
+        class (cell-class m cash (:classes props))]
+    [table-cell {:align :right
+                 :class class}
+     (shared/format-money cash)]))
 
 (defn report-edit-col 
   [m {:keys [property props]}]
   [table-cell {:align :right
-               :class (calc-class-table-header m props)}
+               :class (cell-class m 0 (:classes props))}
    [tooltip {:title "Edit"}
     [icon-button {:on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                                       "/" (-> (:month m) name)

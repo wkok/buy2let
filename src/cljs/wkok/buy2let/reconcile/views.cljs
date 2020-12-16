@@ -342,18 +342,22 @@
           [card {:class card-class}
            [card-content
             [typography {:variant :h6
-                         :class neg-class}
+                        ;;  :class neg-class
+                         }
              (shared/format-money cash)]
             [typography {:variant :caption
-                         :class neg-class}
+                        ;;  :class neg-class
+                         }
              "(cash flow)"]]]
           [card {:class card-class}
            [card-content
             [typography {:variant :h6
-                         :class pos-class}
+                        ;;  :class pos-class
+                         }
              (shared/format-money cash)]
             [typography {:variant :caption
-                         :class pos-class}
+                        ;;  :class pos-class
+                         }
              "(cash flow)"]]])])]))
 
 (defn view-panel
