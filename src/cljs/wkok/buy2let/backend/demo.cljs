@@ -10,6 +10,9 @@
 
 (set! js/impl :demo)
 
+(defmethod mm/app-name :demo [_]
+  "Demo")
+
 (defmethod mm/init :demo [_])
 
 (defmethod mm/init-auth :demo

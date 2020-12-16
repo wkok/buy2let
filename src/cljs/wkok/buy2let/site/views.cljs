@@ -18,6 +18,7 @@
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.subs :as bs]
    [wkok.buy2let.account.subs :as as]
+   [wkok.buy2let.backend.multimethods :as mm]
    [reagent-material-ui.icons.account-circle :refer [account-circle]]
    [reagent-material-ui.icons.dashboard :refer [dashboard]]
    [reagent-material-ui.icons.receipt :refer [receipt]]
@@ -224,7 +225,7 @@
             :direction :column
             :class (:brand-name classes)}
       [grid {:item true}
-       [typography {:variant :h4 :color :primary} "Buy2Let"]]
+       [typography {:variant :h4 :color :primary} (mm/app-name)]]
       [grid {:item true}
        [typography {:variant :caption} (:name account)]]]]))
 

@@ -2,6 +2,8 @@
 
 (def dispatcher (fn [] js/impl))
 
+(defmulti app-name dispatcher)
+
 (defmulti init dispatcher)
 
 (defmulti init-auth dispatcher)
