@@ -40,7 +40,7 @@
     [grid {:container true
            :direction :column}
      [grid {:item true}
-      [typography "Enter a short name for the property, like the first line of its address"]]
+      [typography "Enter a short name for the property, for example, the first line of its address"]]
      [grid {:item true}
       [text-field {:label "Name"
                    :margin :normal

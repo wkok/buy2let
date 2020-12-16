@@ -274,6 +274,7 @@
   (let [agent-balance (get-in ledger [:this-month :totals :agent-current])
         tenant-balance (get-in ledger [:this-month :totals :tenant])
         owner-balance (get-in ledger [:this-month :totals :owner])
+        owner-control (get-in ledger [:this-month :totals :owner-control])
         profit (if (zero? agent-balance)
                  (-> (+ owner-balance tenant-balance)
                      shared/to-money)
@@ -296,7 +297,7 @@
            :direction :row
            :justify :space-between
            :spacing 2}
-     (when (not (zero? profit))
+     (when (not (zero? owner-control))
        [grid {:item true :xs 4}
         (if (neg? profit)
           [card {:class card-class}
@@ -307,14 +308,21 @@
             [typography {:variant :caption
                          :class neg-class}
              "(net loss)"]]]
-          [card {:class card-class}
-           [card-content
-            [typography {:variant :h6
-                         :class pos-class}
-             (shared/format-money profit)]
-            [typography {:variant :caption
-                         :class pos-class}
-             "(net profit)"]]])])
+          (if (pos? profit)
+            [card {:class card-class}
+             [card-content
+              [typography {:variant :h6
+                           :class pos-class}
+               (shared/format-money profit)]
+              [typography {:variant :caption
+                           :class pos-class}
+               "(net profit)"]]]
+            [card {:class card-class}
+             [card-content
+              [typography {:variant :h6}
+               (shared/format-money profit)]
+              [typography {:variant :caption}
+               "(net profit)"]]]))])
      (when (not (zero? owed))
        [grid {:item true :xs 4}
         (if (pos? owed)
