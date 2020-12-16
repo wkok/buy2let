@@ -54,6 +54,7 @@
            :class (:wizard-actions classes)}
      [grid {:item true}
       [button {:disabled true
+               :variant :outlined
                :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
      [grid {:item true}
       [button {:variant :contained
@@ -77,7 +78,8 @@
            :spacing 2
            :class (:wizard-actions classes)}
      [grid {:item true}
-      [button {:on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
+      [button {:variant :outlined
+               :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
      [grid {:item true}
       [button {:variant :contained
                :color :primary
@@ -100,7 +102,8 @@
            :spacing 2
            :class (:wizard-actions classes)}
      [grid {:item true}
-      [button {:on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
+      [button {:variant :outlined
+               :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
      [grid {:item true}
       [button {:variant :contained
                :color :primary
