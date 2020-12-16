@@ -34,7 +34,7 @@
                           :mortgage-repayment-id {:who-pays-whom :opb}
                           :payment-received-id {:who-pays-whom :apo}
                           :rates-taxes-id {:who-pays-whom :ops}
-                          :rent-charged-id {:who-pays-whom :tpa}}]
+                          :rent-charged-id {:who-pays-whom :oca}}]
 
     (on-success-charges {:rent-charged-id {:id :rent-charged-id :name "Rent charged"}
                          :agent-commission-id {:id :agent-commission-id :name "Agent commission"}
@@ -142,14 +142,14 @@
                                                                             :bank-interest {:mortgage-interest-id 900}
                                                                             :bank-current {:mortgage-interest-id -900
                                                                                            :mortgage-repayment-id 1000}
-                                                                            :tenant {:rent-charged-id -2000}}
+                                                                            :owner-control {:rent-charged-id -2000}}
                                                                :totals {:agent-commission 100
                                                                         :agent-current 0
                                                                         :owner 550
                                                                         :supplier 350
                                                                         :bank-interest 900
                                                                         :bank-current 100
-                                                                        :tenant -2000}
+                                                                        :owner-control -2000}
                                                                :breakdown {:agent-commission-id {:amount 100 :invoiced false}
                                                                            :agent-opening-balance {:amount 0 :invoiced false}
                                                                            :levy-id {:amount 200 :invoiced false}
@@ -173,14 +173,14 @@
                                                                              :bank-interest {:mortgage-interest-id 900}
                                                                              :bank-current {:mortgage-interest-id -900
                                                                                             :mortgage-repayment-id 1000}
-                                                                             :tenant {:rent-charged-id -1900}}
+                                                                             :owner-control {:rent-charged-id -1900}}
                                                                 :totals {:agent-commission 100
                                                                          :agent-current 0
                                                                          :owner 450
                                                                          :supplier 350
                                                                          :bank-interest 900
                                                                          :bank-current 100
-                                                                         :tenant -1900}
+                                                                         :owner-control -1900}
                                                                 :breakdown {:agent-commission-id {:amount 100
                                                                                                   :invoiced false}
                                                                             :agent-opening-balance {:amount 0
@@ -213,14 +213,14 @@
                                                                            :bank-interest {:mortgage-interest-id 900}
                                                                            :bank-current {:mortgage-interest-id -900
                                                                                           :mortgage-repayment-id 1000}
-                                                                           :tenant {:rent-charged-id -1800}}
+                                                                           :owner-control {:rent-charged-id -1800}}
                                                               :totals {:agent-commission 100
                                                                        :agent-current 0
                                                                        :owner 350
                                                                        :supplier 350
                                                                        :bank-interest 900
                                                                        :bank-current 100
-                                                                       :tenant -1800}
+                                                                       :owner-control -1800}
                                                               :breakdown {:agent-commission-id {:amount 100
                                                                                                 :invoiced false}
                                                                           :agent-opening-balance {:amount 0
@@ -256,14 +256,14 @@
                                                                             :bank-interest {:mortgage-interest-id 900}
                                                                             :bank-current {:mortgage-interest-id -900
                                                                                            :mortgage-repayment-id 1000}
-                                                                            :tenant {:rent-charged-id -1300}}
+                                                                            :owner-control {:rent-charged-id -1300}}
                                                                :totals {:agent-commission 100
                                                                         :agent-current 0
                                                                         :owner -150
                                                                         :supplier 350
                                                                         :bank-interest 900
                                                                         :bank-current 100
-                                                                        :tenant -1300}
+                                                                        :owner-control -1300}
                                                                :breakdown {:agent-commission-id {:amount 100
                                                                                                  :invoiced false}
                                                                            :agent-opening-balance {:amount 0
@@ -296,14 +296,14 @@
                                                                              :bank-interest {:mortgage-interest-id 900}
                                                                              :bank-current {:mortgage-interest-id -900
                                                                                             :mortgage-repayment-id 1000}
-                                                                             :tenant {:rent-charged-id -1300}}
+                                                                             :owner-control {:rent-charged-id -1300}}
                                                                 :totals {:agent-commission 100
                                                                          :agent-current 0
                                                                          :owner -150
                                                                          :supplier 350
                                                                          :bank-interest 900
                                                                          :bank-current 100
-                                                                         :tenant -1300}
+                                                                         :owner-control -1300}
                                                                 :breakdown {:agent-commission-id {:amount 100
                                                                                                   :invoiced false}
                                                                             :agent-opening-balance {:amount 0
@@ -336,14 +336,14 @@
                                                                            :bank-interest {:mortgage-interest-id 900}
                                                                            :bank-current {:mortgage-interest-id -900
                                                                                           :mortgage-repayment-id 1000}
-                                                                           :tenant {:rent-charged-id -1400}}
+                                                                           :owner-control {:rent-charged-id -1400}}
                                                               :totals {:agent-commission 100
                                                                        :agent-current 0
                                                                        :owner -50
                                                                        :supplier 350
                                                                        :bank-interest 900
                                                                        :bank-current 100
-                                                                       :tenant -1400}
+                                                                       :owner-control -1400}
                                                               :breakdown {:agent-commission-id {:amount 100
                                                                                                 :invoiced false}
                                                                           :agent-opening-balance {:amount 0
