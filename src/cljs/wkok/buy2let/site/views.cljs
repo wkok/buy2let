@@ -107,6 +107,9 @@
      :pos {:color "blue"}
      :neg {:color "red"}
      :owe {:color "orange"}
+     :table-header {:font-weight 600}
+     :table-header-alternate {:font-weight 600
+                              :background-color (get-in palette [:action :hover])}
      :table-header-pos {:color "blue"
                         :font-weight 600}
      :table-header-neg {:color "red"
@@ -122,6 +125,7 @@
      :table-header-alternate-owe {:color "orange"
                                   :font-weight 600
                                   :background-color (get-in palette [:action :hover])}
+     :table-alternate {:background-color (get-in palette [:action :hover])}
      :brand-logo {:padding "0.5em"}
      :brand-name {:padding "0.5em"}
      :menu-button {(up "sm") {:display :none}
@@ -143,11 +147,7 @@
                        :background-color "white"}
      :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
-     :paper {:padding (spacing 2)}
-     :table-header {:font-weight 600}
-     :table-header-alternate {:font-weight 600
-                              :background-color (get-in palette [:action :hover])}
-     :table-alternate {:background-color (get-in palette [:action :hover])}}))
+     :paper {:padding (spacing 2)}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 

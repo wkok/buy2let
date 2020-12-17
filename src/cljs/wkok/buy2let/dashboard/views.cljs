@@ -17,7 +17,7 @@
 
 (defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
-  (let [today (t/- (t/today) (t/new-period 1 :months))
+  (let [today (t/- (t/today) (t/new-period 0 :months))
         last (t/- today (t/new-period 11 :months))
         this-year (-> today t/year str keyword)
         this-month (-> today t/month tm/ordinal inc str keyword)

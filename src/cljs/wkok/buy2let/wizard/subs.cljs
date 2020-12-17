@@ -22,3 +22,22 @@
  (fn [db _]
    (get-in db [:wizard :rental-agent])))
 
+(rf/reg-sub
+ ::wizard-mortgage-repayment-amount
+ (fn [db _]
+   (get-in db [:wizard :breakdown :mortgage-repayment-id :amount])))
+
+(rf/reg-sub
+ ::wizard-mortgage-interest-amount
+ (fn [db _]
+   (get-in db [:wizard :breakdown :mortgage-interest-id :amount])))
+
+(rf/reg-sub
+ ::wizard-commission-amount
+ (fn [db _]
+   (get-in db [:wizard :breakdown :agent-commission-id :amount])))
+
+(rf/reg-sub
+ ::wizard-rent-charged-amount
+ (fn [db _]
+   (get-in db [:wizard :breakdown :rent-charged-id :amount])))

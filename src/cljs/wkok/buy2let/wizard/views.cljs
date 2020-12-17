@@ -17,6 +17,7 @@
    [reagent-material-ui.core.form-control-label :refer [form-control-label]]
    [reagent-material-ui.core.radio-group :refer [radio-group]]
    [wkok.buy2let.wizard.subs :as ws]
+   [wkok.buy2let.shared :as shared]
    [wkok.buy2let.wizard.events :as we]))
 
 (defn yes-no [event answer]
@@ -46,7 +47,7 @@
                    :margin :normal
                    :auto-focus true
                    :helper-text "For example: 123 Hill Street"
-                   :on-change #(rf/dispatch [::we/set-property-name (-> % .-target .-value)])
+                   :on-change #(rf/dispatch-sync [::we/set-property-name (-> % .-target .-value)])
                    :value property-name}]]]
     [grid {:container true
            :direction :row
@@ -68,11 +69,52 @@
    [step-label "Mortgage payment"]
    [step-content
     [grid {:container true
-           :direction :column}
+           :direction :column
+           :spacing 2}
      [grid {:item true}
       [typography "Do you have a monthly mortgage payment on this property?"]]
      [grid {:item true}
-      [yes-no ::we/set-mortgage-payment mortgage-payment?]]]
+      [form-control
+       [radio-group
+        [grid {:container true
+               :direction :row
+               :spacing 1}
+         [grid {:item true}
+          [form-control-label {:value :yes? :label "Yes" :control (ra/as-element [radio {:color :primary}])
+                               :on-change #(rf/dispatch [::we/set-mortgage-payment :yes? (-> % .-target .-checked)])
+                               :checked (if (nil? mortgage-payment?)
+                                          false
+                                          mortgage-payment?)}]]
+         [grid {:container true
+                :direction :row
+                :item true
+                :spacing 2
+                :style {:margin-left "2em"}}
+          [grid {:item true
+                 :style {:display (when (not mortgage-payment?) :none)}}
+           [text-field {:type        :number
+                        :label       "Mortgage repayment"
+                        :value       @(rf/subscribe [::ws/wizard-mortgage-repayment-amount])
+                        :on-change   #(rf/dispatch-sync [::we/set-mortgage-repayment-amount (-> % .-target .-value)])
+                        :min         0 :step "0.01"
+                        :placeholder "0.00"
+                        :auto-focus true
+                        :InputLabelProps {:shrink true}}]]
+          [grid {:item true
+                 :style {:display (when (not mortgage-payment?) :none)}}
+           [text-field {:type        :number
+                        :label       "Mortgage interest"
+                        :value       @(rf/subscribe [::ws/wizard-mortgage-interest-amount])
+                        :on-change   #(rf/dispatch-sync [::we/set-mortgage-interest-amount (-> % .-target .-value)])
+                        :min         0 :step "0.01"
+                        :placeholder "0.00"
+                        :InputLabelProps {:shrink true}}]]]]
+        [grid {:item true}
+         [form-control-label {:value :no? :label "No" :control (ra/as-element [radio {:color :primary}])
+                              :on-change #(rf/dispatch [::we/set-mortgage-payment :no? (-> % .-target .-checked)])
+                              :checked (if (nil? mortgage-payment?)
+                                         false
+                                         (not mortgage-payment?))}]]]]]]
     [grid {:container true
            :direction :row
            :spacing 2
@@ -87,6 +129,38 @@
                :on-click #(rf/dispatch [::we/navigate :next])}
        "Next"]]]]])
 
+(defn step-rent-charged [classes]
+  [step
+   [step-label "Rent charged"]
+   [step-content
+    [grid {:container true
+           :direction :column
+           :spacing 2}
+     [grid {:item true}
+      [typography "What is the monthly rent amount charged to the tenant?"]]
+     [grid {:item true}
+      [text-field {:type        :number
+                   :label       "Rent charged"
+                   :value       @(rf/subscribe [::ws/wizard-rent-charged-amount])
+                   :on-change   #(rf/dispatch-sync [::we/set-rent-charged-amount (-> % .-target .-value)])
+                   :min         0 :step "0.01"
+                   :placeholder "0.00"
+                   :auto-focus true
+                   :InputLabelProps {:shrink true}}]]
+     [grid {:container true
+            :item true
+            :direction :row
+            :spacing 2
+            :class (:wizard-actions classes)}
+      [grid {:item true}
+       [button {:variant :outlined
+                :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
+      [grid {:item true}
+       [button {:variant :contained
+                :color :primary
+                :on-click #(rf/dispatch [::we/navigate :next])}
+        "Next"]]]]]])
+
 (defn step-rental-agent [rental-agent? classes]
   [step
    [step-label "Rental agent"]
@@ -96,7 +170,38 @@
      [grid {:item true}
       [typography "Do you employ a rental agent to manage this property?"]]
      [grid {:item true}
-      [yes-no ::we/set-rental-agent rental-agent?]]]
+      [form-control
+       [radio-group
+        [grid {:container true
+               :direction :row
+               :spacing 1}
+         [grid {:item true}
+          [form-control-label {:value :yes? :label "Yes" :control (ra/as-element [radio {:color :primary}])
+                               :on-change #(rf/dispatch [::we/set-rental-agent :yes? (-> % .-target .-checked)])
+                               :checked (if (nil? rental-agent?)
+                                          false
+                                          rental-agent?)}]]
+         [grid {:container true
+                :direction :row
+                :item true
+                :spacing 2
+                :style {:margin-left "2em"}}
+          [grid {:item true
+                 :style {:display (when (not rental-agent?) :none)}}
+           [text-field {:type        :number
+                        :label       "Monthly commission"
+                        :value       @(rf/subscribe [::ws/wizard-commission-amount])
+                        :on-change   #(rf/dispatch-sync [::we/set-commission-amount (-> % .-target .-value)])
+                        :min         0 :step "0.01"
+                        :placeholder "0.00"
+                        :auto-focus true
+                        :InputLabelProps {:shrink true}}]]]]
+        [grid {:item true}
+         [form-control-label {:value :no? :label "No" :control (ra/as-element [radio {:color :primary}])
+                              :on-change #(rf/dispatch [::we/set-rental-agent :no? (-> % .-target .-checked)])
+                              :checked (if (nil? rental-agent?)
+                                         false
+                                         (not rental-agent?))}]]]]]]
     [grid {:container true
            :direction :row
            :spacing 2
@@ -127,5 +232,6 @@
                  :active-step active-step}
         (step-property-name property-name classes)
         (step-mortgage-payment mortgage-payment? classes)
+        (step-rent-charged classes)
         (step-rental-agent rental-agent? classes)]]]]))
 

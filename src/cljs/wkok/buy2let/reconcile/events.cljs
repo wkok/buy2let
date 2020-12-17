@@ -194,9 +194,15 @@
  (fn [cofx [_ ledger]]
    (let [values (shared/apply-breakdown ledger js/parseFloat)
          db (:db cofx)
-         account-id @(rf/subscribe [::as/account])
-         charges @(rf/subscribe [::cs/charges])
-         properties @(rf/subscribe [::cs/properties])
+         account-id (get-in db [:security :account])
+         charges (->> (:charges db)
+                      vals
+                      (filter #(not (:hidden %)))
+                      (sort-by :name))
+         properties (->> (:properties db)
+                         vals
+                         (filter #(not (:hidden %)))
+                         (sort-by :name))
          property (shared/by-id (get-in db [:site :active-property]) properties)
          year (-> (get-in db [:reconcile :year]) keyword)
          month (-> (get-in db [:reconcile :month]) keyword)

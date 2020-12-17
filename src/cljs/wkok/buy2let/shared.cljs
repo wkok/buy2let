@@ -77,7 +77,8 @@
 
 (defn calc-profit-property [property-ledger m]
   (-> (+ (get-in property-ledger [(:year m) (:month m) :totals :owner])
-         (get-in property-ledger [(:year m) (:month m) :totals :agent-current]))
+         (get-in property-ledger [(:year m) (:month m) :totals :agent-current])
+         (get-in property-ledger [(:year m) (:month m) :totals :tenant]))
       to-money))
 
 (defn hidden? [property-id properties]

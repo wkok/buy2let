@@ -111,7 +111,10 @@
 
 (defn report-owed-col 
   [m {:keys [ledger props]}]
-  (let [owed (-> (get-in ledger [(:year m) (:month m) :totals :agent-current]) shared/to-money)
+  (let [agent-bal (-> (get-in ledger [(:year m) (:month m) :totals :agent-current]) shared/to-money)
+        tenant-bal (-> (get-in ledger [(:year m) (:month m) :totals :tenant]) shared/to-money)
+        owed (if (not (zero? agent-bal))
+               agent-bal tenant-bal)
         class (cell-class m owed :owed (:classes props))]
     [table-cell {:align :right
                  :class class}
@@ -152,14 +155,16 @@
 (defn report-profit-row-total 
   [{:keys [report props]}]
   (let [profit (+ (get-in report [:result :totals :accounting :owner])
-                  (get-in report [:result :totals :accounting :agent-current]))]
-    (if (neg? profit)
-      [table-cell {:align :right
-                   :class (get-in props [:classes :table-header])} 
-       (shared/format-money profit)]
-      [table-cell {:align :right
-                   :class (get-in props [:classes :table-header])} 
-       (shared/format-money profit)])))
+                  (get-in report [:result :totals :accounting :agent-current])
+                  (get-in report [:result :totals :accounting :tenant]))
+        class (if (neg? profit)
+                (get-in props [:classes :table-header-neg])
+                (if (pos? profit)
+                  (get-in props [:classes :table-header-pos])
+                  (get-in props [:classes :table-header])))]
+    [table-cell {:align :right
+                 :class class}
+     (shared/format-money profit)]))
 
 (defn report-profit-row 
   [months {:keys [props] :as options}]
