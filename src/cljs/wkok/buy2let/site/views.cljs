@@ -1,6 +1,7 @@
 (ns wkok.buy2let.site.views
   (:require
    [re-frame.core :as rf]
+   [reagent.core :as ra]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -100,6 +101,10 @@
      :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
      :toolbar {:margin-top "-4px"}
      :title {:flex-grow 1}
+     :bottom-nav {(up "xs") {:width "100%"
+                             :position :fixed
+                             :bottom 0}
+                  (up "sm") {:display :none}}
      :avatar-small {:width (spacing 3)
                     :height (spacing 3)}
      :avatar-medium {:width (spacing 7)
@@ -137,13 +142,17 @@
      :content {:flex-grow 1
                :padding (spacing 2)
                :padding-top (spacing 8)
-               :padding-bottom (spacing 10)
+               :padding-bottom (spacing 17)
                :overflow-x :hidden}
      :buttons {:padding-top (spacing 1)}
-     :fab {:position :fixed
-           :bottom (spacing 2)
-           :right (spacing 2)
-           :z-index (+ (:drawer z-index) 1)}
+     :fab {(up "xs") {:position :fixed
+                      :bottom (spacing 8)
+                      :right (spacing 2)
+                      :z-index (+ (:drawer z-index) 1)}
+           (up "sm") {:position :fixed
+                      :bottom (spacing 2)
+                      :right (spacing 2)
+                      :z-index (+ (:drawer z-index) 1)}}
      :splash {:z-index (+ (:drawer z-index) 1)}
      :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
@@ -276,11 +285,24 @@
                :open true}
        drawer_]]]))
 
-(defn bottom-nav []
-  [bottom-navigation
-   [bottom-navigation-action {:label "Dashboard"}]
-   [bottom-navigation-action {:label "Reconcile"}]
-   [bottom-navigation-action {:label "Report"}]])
+(defn bottom-nav [{:keys [classes]}]
+  [bottom-navigation {:show-labels true
+                      :class (:bottom-nav classes)
+                      :value @(rf/subscribe [::subs/active-page])
+                      :on-change (fn [_ val]
+                                   (case (keyword val)
+                                     :reconcile (navigate (build-reconcile-url))
+                                     :report (navigate (build-report-url))
+                                     (navigate "#/")))}
+   [bottom-navigation-action {:label "Dashboard"
+                              :icon (ra/as-element [dashboard])
+                              :value :dashboard}]
+   [bottom-navigation-action {:label "Reconcile"
+                              :icon (ra/as-element [receipt])
+                              :value :reconcile}]
+   [bottom-navigation-action {:label "Report"
+                              :icon (ra/as-element [assessment])
+                              :value :report}]])
 
 (defn main [{:keys [classes] :as props}]
   [:main {:class (:content classes)}
@@ -351,8 +373,8 @@
              [fab-button props]
              [header props]
              [nav props]
-            ;  [bottom-nav props]
              [main props]
+             [bottom-nav props]
              [dialog/create-dialog]]))]]]]]])
 
 
