@@ -37,14 +37,16 @@
  (fn [cofx [_ input]]
    (let [db (:db cofx)
          all-properties (spec/conform ::spec/properties input)
-         properties (filter #(not (:hidden %)) (vals all-properties))]
+         properties (filter #(not (:hidden %)) (vals all-properties))
+         updated-db (-> (assoc db :properties all-properties)
+                        (assoc-in [:site :show-progress] false)
+                        (assoc-in [:site :splash] false))]
      (if (empty? properties)
-       (js/window.location.assign "#/properties/add")
-       (rf/dispatch [::get-ledger-year]))
-     {:db                (-> (assoc db :properties all-properties)
-                             (assoc-in [:site :show-progress] false)
-                             (assoc-in [:site :splash] false))
-      ::sfx/location-hash (get-in db [:site :location :hash])})))
+       (do (js/window.location.assign "#/properties/add") ; start wizard
+           {:db                 (assoc-in updated-db [:wizard :active-page] :wizard)})
+       (do (rf/dispatch [::get-ledger-year])
+           {:db                 updated-db
+            ::sfx/location-hash (get-in db [:site :location :hash])})))))
 
 (rf/reg-event-db
   :load-ledger-year

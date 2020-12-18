@@ -71,10 +71,16 @@
 (rf/reg-event-db
  ::set-charge
  (fn [db [_ selected? charge]]
-   (let [rental-agent? (get-in db [:wizard :rental-agent?] false)]
-     (if selected?
-       (assoc-in db [:wizard :charges (:id charge)] {:who-pays-whom (if rental-agent? :aps :ops)})
-       (update-in db [:wizard :charges] dissoc (:id charge))))))
+   (if selected?
+     (assoc-in db [:wizard :charges (:id charge)] {})
+     (update-in db [:wizard :charges] dissoc (:id charge)))))
+
+(defn build-property-charges [db]
+  (let [rental-agent? (get-in db [:wizard :rental-agent] false)
+        charges (get-in db [:wizard :charges])]
+    (->> (map (fn [[charge-id _]]
+                {charge-id {:who-pays-whom (if rental-agent? :aps :ops)}}) charges)
+         (into {}))))
 
 (defn build-property [property-id db]
   (let [mortgage-payment (if (get-in db [:wizard :mortgage-payment])
@@ -84,16 +90,13 @@
         rental-agent (if (get-in db [:wizard :rental-agent])
                        {:agent-commission-id {:who-pays-whom :ac}
                         :payment-received-id {:who-pays-whom :apo}
-                        :rent-charged-id {:who-pays-whom :oca}
-                        :rates-taxes-id {:who-pays-whom :aps}
-                        :levy-id {:who-pays-whom :aps}}
+                        :rent-charged-id {:who-pays-whom :oca}}
                        {:payment-received-id {:who-pays-whom :tpo}
-                        :rent-charged-id {:who-pays-whom :oct}
-                        :levy-id {:who-pays-whom :ops}
-                        :rates-taxes-id {:who-pays-whom :ops}})]
+                        :rent-charged-id {:who-pays-whom :oct}})
+        charges (build-property-charges db)]
     {:id property-id
      :name (-> db :wizard :property-name)
-     :charges (merge mortgage-payment rental-agent)}))
+     :charges (merge mortgage-payment rental-agent charges)}))
 
 (rf/reg-event-fx
  ::finish

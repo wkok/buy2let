@@ -83,7 +83,6 @@
                    :on-blur     #(rf/dispatch-sync [::we/set-rent-charged-amount (-> % .-target .-value shared/format-money)])
                    :min         0 :step "0.01"
                    :placeholder "0.00"
-                   :auto-focus true
                    :InputLabelProps {:shrink true}}]]
      [grid {:container true
             :item true
@@ -133,7 +132,6 @@
                         :on-blur     #(rf/dispatch-sync [::we/set-commission-amount (-> % .-target .-value shared/format-money)])
                         :min         0 :step "0.01"
                         :placeholder "0.00"
-                        :auto-focus true
                         :InputLabelProps {:shrink true}}]]]]
         [grid {:item true}
          [form-control-label {:value :no? :label "No" :control (ra/as-element [radio {:color :primary}])
@@ -176,13 +174,14 @@
                                        (= :mortgage-repayment-id (:id %))
                                        (= :payment-received-id (:id %))
                                        (= :tenant-opening-balance (:id %))
-                                       (= :agent-opening-balance (:id %))))
+                                       (= :agent-opening-balance (:id %))
+                                       (= :bank-charges-id (:id %))))
                              @(rf/subscribe [::cs/charges]))]
           ^{:key (:id charge)}
           [grid {:item true}
            [form-control-label
             {:control (ra/as-element
-                       [checkbox {:checked ((:id charge) selected-charges)
+                       [checkbox {:checked (if ((:id charge) selected-charges) true false)
                                   :color :primary
                                   :on-change #(rf/dispatch [::we/set-charge (-> % .-target .-checked) charge])}])
              :label (:name charge)}]])]]
@@ -234,7 +233,6 @@
                         :on-blur     #(rf/dispatch-sync [::we/set-mortgage-repayment-amount (-> % .-target .-value shared/format-money)])
                         :min         0 :step "0.01"
                         :placeholder "0.00"
-                        :auto-focus true
                         :InputLabelProps {:shrink true}}]]
           [grid {:item true
                  :style {:display (when (not mortgage-payment?) :none)}}
