@@ -99,6 +99,16 @@
      :charges (merge mortgage-payment rental-agent charges)}))
 
 (rf/reg-event-fx
+ ::save-property
+ (fn [_ [_ options]]
+   (mm/save-crud-fx options)))
+
+(rf/reg-event-fx
+ ::save-reconcile
+ (fn [_ [_ options]]
+   (mm/save-reconcile-fx options)))
+
+(rf/reg-event-fx
  ::finish
  [(rf/inject-cofx ::shared/gen-id)] ; new property-id
  (fn [cofx _]
@@ -119,18 +129,18 @@
                       (filter #(not (:hidden %)))
                       (sort-by :name))
          charges-this-month (re/by-storage-type account-id property this-year this-month this-ledger charges account-id)]
+     (rf/dispatch [::save-property {:account-id account-id
+                                    :crud-type types/property
+                                    :id (:id property)
+                                    :item property
+                                    :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])}])
+     (rf/dispatch [::save-reconcile {:account-id account-id
+                                     :property-id (:id property)
+                                     :year this-year
+                                     :month this-month
+                                     :charges-this-month charges-this-month}])
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
-     (merge {:db              (-> (assoc-in db [:properties (:id property)] property)
-                                  (assoc-in [:ledger (:id property) this-year this-month] (:data charges-this-month))
-                                  (assoc-in [:site :active-panel] :reconcile-view)
-                                  (dissoc :wizard))}
-            (mm/save-crud-fx {:account-id account-id
-                              :crud-type types/property
-                              :id (:id property)
-                              :item property
-                              :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})
-            (mm/save-reconcile-fx {:account-id account-id
-                                   :property-id (:id property)
-                                   :year this-year
-                                   :month this-month
-                                   :charges-this-month charges-this-month})))))
+     {:db              (-> (assoc-in db [:properties (:id property)] property)
+                           (assoc-in [:ledger (:id property) this-year this-month] (:data charges-this-month))
+                           (assoc-in [:site :active-panel] :reconcile-view)
+                           (dissoc :wizard))})))

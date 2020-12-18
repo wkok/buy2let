@@ -53,6 +53,8 @@
    [reagent-material-ui.core.typography :refer [typography]]
    [reagent-material-ui.core.icon-button :refer [icon-button]]
    [reagent-material-ui.core.toolbar :refer [toolbar]]
+   [reagent-material-ui.core.bottom-navigation :refer [bottom-navigation]]
+   [reagent-material-ui.core.bottom-navigation-action :refer [bottom-navigation-action]]
    [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
    [reagent-material-ui.styles :as styles]
    [reagent-material-ui.core.dialog :refer [dialog]]
@@ -274,6 +276,12 @@
                :open true}
        drawer_]]]))
 
+(defn bottom-nav []
+  [bottom-navigation
+   [bottom-navigation-action {:label "Dashboard"}]
+   [bottom-navigation-action {:label "Reconcile"}]
+   [bottom-navigation-action {:label "Report"}]])
+
 (defn main [{:keys [classes] :as props}]
   [:main {:class (:content classes)}
    (when-let [active-page @(rf/subscribe [::subs/active-page])]
@@ -343,6 +351,7 @@
              [fab-button props]
              [header props]
              [nav props]
+            ;  [bottom-nav props]
              [main props]
              [dialog/create-dialog]]))]]]]]])
 
