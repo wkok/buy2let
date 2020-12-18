@@ -143,8 +143,6 @@
            :right (spacing 2)
            :z-index (+ (:drawer z-index) 1)}
      :splash {:z-index (+ (:drawer z-index) 1)}
-     :wizard-backdrop {:z-index (+ (:drawer z-index) 2)
-                       :background-color "white"}
      :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}}))
