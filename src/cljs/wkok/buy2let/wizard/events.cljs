@@ -69,6 +69,14 @@
            (assoc-in [:wizard :breakdown :payment-received-id :amount] parsed)))
      db)))
 
+(rf/reg-event-db
+ ::set-charge
+ (fn [db [_ selected? charge]]
+   (let [rental-agent? (get-in db [:wizard :rental-agent?] false)]
+     (if selected?
+       (assoc-in db [:wizard :charges (:id charge)] {:who-pays-whom (if rental-agent? :aps :ops)})
+       (update-in db [:wizard :charges] dissoc (:id charge))))))
+
 (defn build-property [property-id db]
   (let [mortgage-payment (if (get-in db [:wizard :mortgage-payment])
                            {:mortgage-interest-id {:who-pays-whom :mi}
@@ -98,26 +106,17 @@
          today (t/today)
          this-year (-> today t/year str keyword)
          this-month (-> today t/month tm/ordinal inc str keyword)
-        ;;  prev (period/prev-month this-month this-year)
-        ;;  prev-year (:year prev)
-        ;;  prev-month (:month prev)
          this-breadown (-> db :wizard :breakdown
                            (dissoc :payment-received-id)
                            (assoc :payment-received-id {:note "Awaiting rent payment for this month! Please capture the amount received from the agent / tenant."}))
-        ;;  prev-breadown (-> db :wizard :breakdown)
          this-ledger (shared/apply-breakdown
                       {:this-month {:breakdown this-breadown}}
                       js/parseFloat)
-        ;;  prev-ledger (shared/apply-breakdown
-        ;;               {:this-month {:breakdown prev-breadown}}
-        ;;               js/parseFloat)
          charges (->> (:charges db)
                       vals
                       (filter #(not (:hidden %)))
                       (sort-by :name))
-         charges-this-month (re/by-storage-type account-id property this-year this-month this-ledger charges account-id)
-        ;;  charges-prev-month (re/by-storage-type account-id property prev-year prev-month prev-ledger charges account-id)
-         ]
+         charges-this-month (re/by-storage-type account-id property this-year this-month this-ledger charges account-id)]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db              (-> (assoc-in db [:properties (:id property)] property)
                                   (assoc-in [:ledger (:id property) this-year this-month] (:data charges-this-month))

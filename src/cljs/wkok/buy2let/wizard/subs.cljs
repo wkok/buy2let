@@ -41,3 +41,8 @@
  ::wizard-rent-charged-amount
  (fn [db _]
    (get-in db [:wizard :breakdown :rent-charged-id :amount])))
+
+(rf/reg-sub
+ ::wizard-charges
+ (fn [db _]
+   (get-in db [:wizard :charges])))
