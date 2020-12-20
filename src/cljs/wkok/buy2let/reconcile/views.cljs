@@ -247,7 +247,8 @@
             :direction :row
             :justify :space-between
             :spacing 1}
-      [grid {:item true}
+      [grid {:item true
+             :xs 8}
        [text-field {:select true
                     :label "Property"
                     :field     :list
@@ -257,7 +258,8 @@
                ^{:key property}
                [menu-item {:value (:id property)}
                 (:name property)]) properties)]]
-      [grid {:item true}
+      [grid {:item true
+             :xs 4}
        [date-picker {:variant :inline
                      :open-to :month
                      :views [:year :month]

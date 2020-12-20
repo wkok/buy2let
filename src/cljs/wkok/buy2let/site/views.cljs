@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [reagent.core :as ra]
+   [clojure.string :as str]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -53,6 +54,7 @@
    [reagent-material-ui.core.list-item-text :refer [list-item-text]]
    [reagent-material-ui.core.typography :refer [typography]]
    [reagent-material-ui.core.icon-button :refer [icon-button]]
+   [reagent-material-ui.core.box :refer [box]]
    [reagent-material-ui.core.toolbar :refer [toolbar]]
    [reagent-material-ui.core.bottom-navigation :refer [bottom-navigation]]
    [reagent-material-ui.core.bottom-navigation-action :refer [bottom-navigation-action]]
@@ -101,10 +103,6 @@
      :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
      :toolbar {:margin-top "-4px"}
      :title {:flex-grow 1}
-     :bottom-nav {(up "xs") {:width "100%"
-                             :position :fixed
-                             :bottom 0}
-                  (up "sm") {:display :none}}
      :avatar-small {:width (spacing 3)
                     :height (spacing 3)}
      :avatar-medium {:width (spacing 7)
@@ -285,24 +283,32 @@
                :open true}
        drawer_]]]))
 
-(defn bottom-nav [{:keys [classes]}]
-  [bottom-navigation {:show-labels true
-                      :class (:bottom-nav classes)
-                      :value @(rf/subscribe [::subs/active-page])
-                      :on-change (fn [_ val]
-                                   (case (keyword val)
-                                     :reconcile (navigate (build-reconcile-url))
-                                     :report (navigate (build-report-url))
-                                     (navigate "#/")))}
-   [bottom-navigation-action {:label "Dashboard"
-                              :icon (ra/as-element [dashboard])
-                              :value :dashboard}]
-   [bottom-navigation-action {:label "Reconcile"
-                              :icon (ra/as-element [receipt])
-                              :value :reconcile}]
-   [bottom-navigation-action {:label "Report"
-                              :icon (ra/as-element [assessment])
-                              :value :report}]])
+(defn bottom-nav []
+  (let [active-page @(rf/subscribe [::subs/active-page])
+        active-panel @(rf/subscribe [::subs/active-panel])]
+    [box {:position :fixed
+          :bottom 0
+          :width "100%"
+          :display {:sm :none}
+          :border-top 0.1
+          :visibility (if (and active-panel (str/ends-with? (name active-panel) "-edit"))
+                        :hidden :visible)}
+     [bottom-navigation {:show-labels true
+                         :value active-page
+                         :on-change (fn [_ val]
+                                      (case (keyword val)
+                                        :reconcile (navigate (build-reconcile-url))
+                                        :report (navigate (build-report-url))
+                                        (navigate "#/")))}
+      [bottom-navigation-action {:label "Dashboard"
+                                 :icon (ra/as-element [dashboard])
+                                 :value :dashboard}]
+      [bottom-navigation-action {:label "Reconcile"
+                                 :icon (ra/as-element [receipt])
+                                 :value :reconcile}]
+      [bottom-navigation-action {:label "Report"
+                                 :icon (ra/as-element [assessment])
+                                 :value :report}]]]))
 
 (defn main [{:keys [classes] :as props}]
   [:main {:class (:content classes)}
@@ -374,7 +380,7 @@
              [header props]
              [nav props]
              [main props]
-             [bottom-nav props]
+             [bottom-nav]
              [dialog/create-dialog]]))]]]]]])
 
 
