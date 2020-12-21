@@ -11,7 +11,7 @@
    [wkok.buy2let.report.views :as report]
    [wkok.buy2let.report.events :as repe]
    [wkok.buy2let.dashboard.views :as dashboard]
-   [wkok.buy2let.settings.views :as settings]
+   [wkok.buy2let.subscription.views :as subscription]
    [wkok.buy2let.profile.views :as profile]
    [wkok.buy2let.account.views :as account]
    [wkok.buy2let.wizard.views :as wizard]
@@ -319,7 +319,7 @@
        :properties [crud-impl/properties props]
        :charges [crud-impl/charges props]
        :delegates [crud-impl/delegates props]
-       :settings [settings/settings props]
+       :subscription [subscription/subscription]
        :profile [profile/profile props]
        :account [account/account props]))])
 

@@ -27,13 +27,38 @@
              ::list-crud "-list"))
       keyword))
 
+(defn subscription-allows? [current-properties subscribed-properties]
+  (>= subscribed-properties (inc current-properties)))
+
+(defn add-property [db]
+  (let [account-id (-> db :security :account)
+        accounts (-> db :security :accounts)
+        account (when account-id (account-id accounts))
+        current-properties (-> db :properties count)
+        subscribed-properties (get-in account [:subscription :properties] 1)
+        property-s (if (> subscribed-properties 1)
+                     " properties" " property")]
+    (if (subscription-allows? current-properties subscribed-properties)
+      (-> (dissoc db :wizard)
+          (assoc-in [:site :active-page] :wizard)
+          (assoc-in [:site :heading] (str "Add property")))
+      (do (rf/dispatch [::se/dialog {:heading "Upgrade subscription"
+                                     :message (str "Your current subscription allows " subscribed-properties " " property-s
+                                                   " (incl. those that are hidden). Please upgrade your subscription to add more.")
+                                     :buttons   {:middle {:text     "Upgrade"
+                                                          :on-click #(js/window.location.assign "#/subscription")
+                                                          :color :secondary}
+                                                 :right {:text     "Not now"
+                                                         :on-click #(rf/dispatch [::se/dialog])}}
+                                     :closeable false}])
+          (js/window.history.back)
+          db))))
+
 (rf/reg-event-db
  ::add-crud
  (fn [db [_ type]]
    (if (= :properties (:type type))
-     (-> (dissoc db :wizard)
-         (assoc-in [:site :active-page] :wizard)
-         (assoc-in [:site :heading] (str "Add property")))
+     (add-property db)
      (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
          (assoc-in [:site :heading] (str "Add " (:singular type)))))))
 

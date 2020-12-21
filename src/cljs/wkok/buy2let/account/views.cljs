@@ -21,11 +21,16 @@
             [reagent-material-ui.core.button :refer [button]]
             [reagent-material-ui.core.list-item :refer [list-item]]
             [reagent-material-ui.core.list-item-text :refer [list-item-text]]
+            [reagent-material-ui.core.list-item-secondary-action :refer [list-item-secondary-action]]
             [reagent-material-ui.core.list-subheader :refer [list-subheader]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.icon-button :refer [icon-button]]
             [reagent-material-ui.core.tooltip :refer [tooltip]]
             [reagent-material-ui.core.avatar :refer [avatar]]
-            [reagent-material-ui.icons.account-circle :refer [account-circle]]
+            [reagent-material-ui.icons.person-add :refer [person-add]]
+            [reagent-material-ui.icons.card-membership :refer [card-membership]]
+            [reagent-material-ui.icons.cancel :refer [cancel]]
+            [reagent-material-ui.icons.delete-icon :refer [delete]]
             [reagent-material-ui.core.paper :refer [paper]]))
 
 (defn select-account []
@@ -165,8 +170,81 @@
                                     (js/window.history.back))}
              "Cancel"]]]]]])]))
 
+(defn account-card [account accounts classes]
+  [card
+   [card-content
+    [grid {:container true
+           :direction :row
+           :spacing 2
+           :justify :center}
+     [grid {:item true}
+      [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
+               :variant :rounded
+               :class (:avatar-large classes)} ":)"]]
+     [grid {:item true
+            :container true
+            :direction :column
+            :align-items :center}
+      [grid {:item true}
+       [typography {:variant :h5}
+        (:name account)]]]]]
+   [card-actions
+    (when (shared/has-role :owner)
+      [button {:color :primary
+               :on-click #(js/window.location.assign "#/account/edit")} "Edit"])
+    (when (second accounts) ; More that one account
+      [button {:color :primary
+               :on-click #(rf/dispatch [::choose-account])} "Switch"])]])
 
-(defn view-account [{:keys [classes] :as props}]
+(defn account-settings [account classes]
+  (let [subs-properties (get-in account [:subscription :properties] 1)
+        on-delegate #(js/window.location.assign "#/delegates")
+        on-subscription #(js/window.location.assign "#/subscription")
+        on-delete-cancel #(rf/dispatch [::ae/save-account (dissoc account :deleteToken)])
+        on-delete #(rf/dispatch [::se/dialog {:heading "Delete account?"
+                                              :message "This will delete all data associated with this account, and is not recoverable!"
+                                              :buttons {:left  {:text     "DELETE"
+                                                                :on-click (fn [] (rf/dispatch [::ae/delete-account]))
+                                                                :color :secondary}
+                                                        :right {:text "Cancel"}}}])]
+    [paper {:class (:paper classes)}
+     [list {:subheader (ra/as-element [list-subheader "Account settings"])}
+      [list-item {:button true
+                  :on-click on-delegate}
+       [list-item-text {:primary "Delegate access"}]
+       [list-item-secondary-action
+        [icon-button {:edge :end
+                      :on-click on-delegate}
+         [person-add]]]]
+      [list-item {:button true
+                  :on-click on-subscription}
+       [list-item-text {:primary "Subscription"
+                        :secondary (str subs-properties
+                                        (if (> subs-properties 1)
+                                          " properties" " property"))}]
+       [list-item-secondary-action
+        [icon-button {:edge :end
+                      :on-click on-subscription}
+         [card-membership]]]]
+      (if (:deleteToken account)
+        [list-item {:button true
+                    :on-click on-delete-cancel}
+         [list-item-text {:primary "Cancel account deletion"
+                          :primary-typography-props {:color :error}}]
+         [list-item-secondary-action
+          [icon-button {:edge :end
+                        :on-click on-delete-cancel}
+           [cancel]]]]
+        [list-item {:button true
+                    :on-click on-delete}
+         [list-item-text {:primary "Delete account"
+                          :primary-typography-props {:color :error}}]
+         [list-item-secondary-action
+          [icon-button {:edge :end
+                        :on-click on-delete}
+           [delete]]]])]]))
+
+(defn view-account [{:keys [classes]}]
   (rf/dispatch [:set-fab-actions nil])
   (let [account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
@@ -176,30 +254,7 @@
            :spacing 2}
      [grid {:item true
             :xs 12 :md 6}
-      [card
-       [card-content
-        [grid {:container true
-               :direction :row
-               :spacing 2
-               :justify :center}
-         [grid {:item true}
-          [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
-                   :variant :rounded
-                   :class (:avatar-large classes)} ":)"]]
-         [grid {:item true
-                :container true
-                :direction :column
-                :align-items :center}
-          [grid {:item true}
-           [typography {:variant :h5}
-            (:name account)]]]]]
-       [card-actions
-        (when (shared/has-role :owner)
-          [button {:color :primary
-                   :on-click #(js/window.location.assign "#/account/edit")} "Edit"])
-        (when (second accounts) ; More that one account
-          [button {:color :primary
-                   :on-click #(rf/dispatch [::choose-account])} "Switch"])]]]
+      [account-card account accounts classes]]
      (when (shared/has-role :owner)
        [grid {:item true
               :xs 12 :md 6}
@@ -207,25 +262,7 @@
                :direction :column
                :spacing 2}
          [grid {:item true}
-          [paper {:class (get-in props [:classes :paper])}
-           [list {:subheader (ra/as-element [list-subheader "Account settings"])}
-            [list-item {:button true
-                        :on-click #(js/window.location.assign "#/delegates")}
-             [list-item-text {:primary "Delegate access"}]]
-            (if (:deleteToken account)
-              [list-item {:button true
-                          :on-click #(rf/dispatch [::ae/save-account (dissoc account :deleteToken)])}
-               [list-item-text {:primary "Cancel account deletion"
-                                :primary-typography-props {:color :error}}]]
-              [list-item {:button true
-                          :on-click #(rf/dispatch [::se/dialog {:heading "Delete account?"
-                                                                :message "This will delete all data associated with this account, and is not recoverable!"
-                                                                :buttons {:left  {:text     "DELETE"
-                                                                                  :on-click (fn [] (rf/dispatch [::ae/delete-account]))
-                                                                                  :color :secondary}
-                                                                          :right {:text "Cancel"}}}])}
-               [list-item-text {:primary "Delete account"
-                                :primary-typography-props {:color :error}}]])]]]]])]))
+          [account-settings account classes]]]])]))
 
 
 (defn account [props]

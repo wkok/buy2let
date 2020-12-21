@@ -6,6 +6,7 @@
             [wkok.buy2let.profile.events :as pe]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.account.events :as ae]
+            [wkok.buy2let.subscription.events :as sbse]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.report.events :as repe]
             [wkok.buy2let.crud.types :as type]
@@ -45,6 +46,7 @@
   (defroute "/settings" [] (dispatch-role [:set-active-page :settings "Settings"] :editor))
   (defroute "/profile" [] (dispatch-role [::pe/view-profile] :viewer))
   (defroute "/profile/edit" [] (dispatch-role [::pe/edit-profile] :viewer))
+  (defroute "/subscription" [] (dispatch-role [::sbse/view-subscription] :owner))
   (defroute "/account" [] (dispatch-role [::ae/view-account] :viewer))
   (defroute "/account/edit" [] (dispatch-role [::ae/edit-account] :owner)))
 

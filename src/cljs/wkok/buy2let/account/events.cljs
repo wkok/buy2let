@@ -66,7 +66,7 @@
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :accounts (:id account)] account)
                                 (assoc-in [:site :account-avatar-url-temp] nil))}
-            (mm/save-account-fx {           :account account
+            (mm/save-account-fx {:account account
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db
