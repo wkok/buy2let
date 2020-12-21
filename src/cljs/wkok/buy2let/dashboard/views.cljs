@@ -84,6 +84,6 @@
                               :checked incl-this-month}])
            :label (ra/as-element
                    [typography {:variant :body2} 
-                    (str "Incl. " today-month)])
+                    (str "Include " today-month)])
            :label-placement :start}]]]]]]))
 

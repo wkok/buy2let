@@ -241,32 +241,28 @@
         drawer_ [:div
                  [brand props]
                  [divider]
-                 [list {:style {:display (when (empty? properties) :none)}}
-                  [list-item {:button true
-                              :on-click #(navigate "#/")}
-                   [list-item-icon [dashboard]]
-                   [list-item-text {:primary "Dashboard"}]]
-                  [list-item {:button true
-                              :on-click #(navigate (build-reconcile-url))}
-                   [list-item-icon [receipt]]
-                   [list-item-text {:primary "Reconcile"}]]
-                  [list-item {:button true
-                              :on-click #(navigate (build-report-url))}
-                   [list-item-icon [assessment]]
-                   [list-item-text {:primary "Report"}]]
-                  [list-item {:button true
-                              :on-click #(navigate "#/properties")}
-                   [list-item-icon [apartment]]
-                   [list-item-text {:primary "Properties"}]]
-                  [list-item {:button true
-                              :on-click #(navigate "#/charges")}
-                   [list-item-icon [category]]
-                   [list-item-text {:primary "Charges"}]]
-                  ;; [list-item {:button true
-                  ;;             :on-click #(navigate "#/settings")}
-                  ;;  [list-item-icon [settings]]
-                  ;;  [list-item-text {:primary "Settings"}]]
-                  ]]]
+                 [box {:visibility (if (empty? properties) :hidden :visible)}
+                  [list
+                   [list-item {:button true
+                               :on-click #(navigate "#/")}
+                    [list-item-icon [dashboard]]
+                    [list-item-text {:primary "Dashboard"}]]
+                   [list-item {:button true
+                               :on-click #(navigate (build-reconcile-url))}
+                    [list-item-icon [receipt]]
+                    [list-item-text {:primary "Reconcile"}]]
+                   [list-item {:button true
+                               :on-click #(navigate (build-report-url))}
+                    [list-item-icon [assessment]]
+                    [list-item-text {:primary "Report"}]]
+                   [list-item {:button true
+                               :on-click #(navigate "#/properties")}
+                    [list-item-icon [apartment]]
+                    [list-item-text {:primary "Properties"}]]
+                   [list-item {:button true
+                               :on-click #(navigate "#/charges")}
+                    [list-item-icon [category]]
+                    [list-item-text {:primary "Charges"}]]]]]]
     [:nav {:class (:drawer classes)}
      [hidden {:sm-up true}
       [drawer {:container (.. js/window -document -body)

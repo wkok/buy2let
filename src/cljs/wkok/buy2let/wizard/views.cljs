@@ -262,7 +262,8 @@
 
 (defn wizard []
   (rf/dispatch [:set-fab-actions nil])
-  (let [active-step @(rf/subscribe [::ws/wizard-active-step])
+  (let [properties @(rf/subscribe [::cs/properties])
+        active-step @(rf/subscribe [::ws/wizard-active-step])
         property-name @(rf/subscribe [::ws/wizard-property-name])
         rental-agent? @(rf/subscribe [::ws/wizard-rental-agent?])
         mortgage-payment? @(rf/subscribe [::ws/wizard-mortgage-payment?])]
@@ -277,7 +278,8 @@
         (step-rental-agent rental-agent?)
         (step-charges)
         (step-mortgage-payment mortgage-payment?)]]
-      [box {:p 2}
+      [box {:p 2
+            :visibility (if (empty? properties) :hidden :visible)}
        [grid {:container true
               :item true
               :justify :flex-end}
