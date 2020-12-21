@@ -171,7 +171,9 @@
                     [switch {:color :primary
                              :on-change #(rf/dispatch [::re/reconcile-view-toggle])
                              :checked (= :accounting @(rf/subscribe [::rs/reconcile-view-toggle]))}])
-          :label "Detailed"
+          :label (ra/as-element
+                  [typography {:variant :body2}
+                   "Detailed"])
           :label-placement :start}]]]]]))
 
 (defn view-overview-row
@@ -226,7 +228,9 @@
                     [switch {:color :primary
                              :on-change #(rf/dispatch [::re/reconcile-view-toggle])
                              :checked (= :accounting @(rf/subscribe [::rs/reconcile-view-toggle]))}])
-          :label "Detailed"
+          :label (ra/as-element
+                  [typography {:variant :body2}
+                   "Detailed"])
           :label-placement :start}]]]]]))
 
 (defn build-edit-url []

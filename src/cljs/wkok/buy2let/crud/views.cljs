@@ -8,11 +8,11 @@
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-material-ui.core.list :refer [list]]
-            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
             [reagent-material-ui.core.list-item :refer [list-item]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.switch-component :refer [switch]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.select :refer [select]]
@@ -61,7 +61,9 @@
                     [switch {:color :primary
                              :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
                              :checked show-hidden}])
-          :label (str "Show " (get type :hidden-label "hidden"))
+          :label (ra/as-element
+                  [typography {:variant :body2}
+                   (str "Show " (get type :hidden-label "hidden"))])
           :label-placement :start}]]]]]))
 
 

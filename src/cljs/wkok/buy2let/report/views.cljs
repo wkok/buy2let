@@ -15,6 +15,7 @@
             [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.grid :refer [grid]]
+            [reagent-material-ui.core.typography :refer [typography]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.menu-item :refer [menu-item]]
             [reagent-material-ui.core.icon-button :refer [icon-button]]
@@ -243,7 +244,9 @@
                    [switch {:color :primary
                             :on-change #(rf/dispatch [::re/report-show-invoices-toggle])
                             :checked @(rf/subscribe [::rs/report-show-invoices])}])
-         :label "Invoices & notes"
+         :label (ra/as-element
+                 [typography {:variant :body2}
+                  "Invoices & notes"]) 
          :label-placement :start}]]]]))
 
 (defn criteria

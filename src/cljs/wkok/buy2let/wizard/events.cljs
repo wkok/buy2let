@@ -98,6 +98,12 @@
      :name (-> db :wizard :property-name)
      :charges (merge mortgage-payment rental-agent charges)}))
 
+(rf/reg-event-db
+ ::skip
+ (fn [db _]
+   (-> (assoc-in db [:site :active-page] :properties)
+       (assoc-in [:site :active-panel] :properties-edit))))
+
 (rf/reg-event-fx
  ::save-property
  (fn [_ [_ options]]

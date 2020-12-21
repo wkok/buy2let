@@ -289,9 +289,11 @@
     [box {:position :fixed
           :bottom 0
           :width "100%"
-          :display {:sm :none}
+          :display {:xs :block :sm :none}
           :border-top 0.1
-          :visibility (if (and active-panel (str/ends-with? (name active-panel) "-edit"))
+          :border-color "text.disabled"
+          :visibility (if (or (and active-panel (str/ends-with? (name active-panel) "-edit"))
+                              (= :wizard active-page))
                         :hidden :visible)}
      [bottom-navigation {:show-labels true
                          :value active-page

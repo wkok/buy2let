@@ -10,6 +10,7 @@
    [reagent-material-ui.core.step-label :refer [step-label]]
    [reagent-material-ui.core.step-content :refer [step-content]]
    [reagent-material-ui.core.grid :refer [grid]]
+   [reagent-material-ui.core.box :refer [box]]
    [reagent-material-ui.core.typography :refer [typography]]
    [reagent-material-ui.core.text-field :refer [text-field]]
    [reagent-material-ui.core.radio :refer [radio]]
@@ -36,7 +37,7 @@
                                     false
                                     (not answer))}]]])
 
-(defn step-property-name [property-name classes]
+(defn step-property-name [property-name]
   [step
    [step-label "Property name"]
    [step-content
@@ -53,8 +54,7 @@
                    :value property-name}]]]
     [grid {:container true
            :direction :row
-           :spacing 2
-           :class (:wizard-actions classes)}
+           :spacing 2}
      [grid {:item true}
       [button {:disabled true
                :variant :outlined
@@ -66,7 +66,7 @@
                :on-click #(rf/dispatch [::we/navigate :next])}
        "Next"]]]]])
 
-(defn step-rent-charged [classes]
+(defn step-rent-charged []
   [step
    [step-label "Rent charged"]
    [step-content
@@ -87,8 +87,7 @@
      [grid {:container true
             :item true
             :direction :row
-            :spacing 2
-            :class (:wizard-actions classes)}
+            :spacing 2}
       [grid {:item true}
        [button {:variant :outlined
                 :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
@@ -98,7 +97,7 @@
                 :on-click #(rf/dispatch [::we/navigate :next])}
         "Next"]]]]]])
 
-(defn step-rental-agent [rental-agent? classes]
+(defn step-rental-agent [rental-agent?]
   [step
    [step-label "Rental agent"]
    [step-content
@@ -141,8 +140,7 @@
                                          (not rental-agent?))}]]]]]]
     [grid {:container true
            :direction :row
-           :spacing 2
-           :class (:wizard-actions classes)}
+           :spacing 2}
      [grid {:item true}
       [button {:variant :outlined
                :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
@@ -153,7 +151,7 @@
                :on-click #(rf/dispatch [::we/navigate :next])}
        "Next"]]]]])
 
-(defn step-charges [classes]
+(defn step-charges []
   (let [selected-charges @(rf/subscribe [::ws/wizard-charges])]
     [step
      [step-label "Charges"]
@@ -187,8 +185,7 @@
              :label (:name charge)}]])]]
       [grid {:container true
              :direction :row
-             :spacing 2
-             :class (:wizard-actions classes)}
+             :spacing 2}
        [grid {:item true}
         [button {:variant :outlined
                  :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
@@ -198,7 +195,7 @@
                  :on-click #(rf/dispatch [::we/navigate :next])}
          "Next"]]]]]))
 
-(defn step-mortgage-payment [mortgage-payment? classes]
+(defn step-mortgage-payment [mortgage-payment?]
   [step
    [step-label "Mortgage payment"]
    [step-content
@@ -252,8 +249,7 @@
                                          (not mortgage-payment?))}]]]]]]
     [grid {:container true
            :direction :row
-           :spacing 2
-           :class (:wizard-actions classes)}
+           :spacing 2}
      [grid {:item true}
       [button {:variant :outlined
                :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
@@ -264,23 +260,27 @@
                :on-click #(rf/dispatch [::we/finish])}
        "Finish"]]]]])
 
-(defn wizard [{:keys [classes]}]
+(defn wizard []
   (rf/dispatch [:set-fab-actions nil])
   (let [active-step @(rf/subscribe [::ws/wizard-active-step])
         property-name @(rf/subscribe [::ws/wizard-property-name])
         rental-agent? @(rf/subscribe [::ws/wizard-rental-agent?])
         mortgage-payment? @(rf/subscribe [::ws/wizard-mortgage-payment?])]
-    [paper {:class (:paper classes)}
+    [paper
      [grid {:container true
-            :direction :row
-            :align-items :center}
-      [grid {:item true
-             :xs 12}
+            :direction :column}
+      [grid {:item true}
        [stepper {:orientation :vertical
                  :active-step active-step}
-        (step-property-name property-name classes)
-        (step-rent-charged classes)
-        (step-rental-agent rental-agent? classes)
-        (step-charges classes)
-        (step-mortgage-payment mortgage-payment? classes)]]]]))
+        (step-property-name property-name)
+        (step-rent-charged)
+        (step-rental-agent rental-agent?)
+        (step-charges)
+        (step-mortgage-payment mortgage-payment?)]]
+      [box {:p 2}
+       [grid {:container true
+              :item true
+              :justify :flex-end}
+        [button {:color :primary
+                 :on-click #(rf/dispatch [::we/skip])} "Skip"]]]]]))
 

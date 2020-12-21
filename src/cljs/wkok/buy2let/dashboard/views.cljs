@@ -1,8 +1,12 @@
 (ns wkok.buy2let.dashboard.views
   (:require [re-frame.core :as rf]
+            [clojure.string :as s]
+            [reagent.core :as ra]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.charts :as charts]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.dashboard.events :as de]
+            [wkok.buy2let.dashboard.subs :as ds]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.db.subs :as dbs]
@@ -12,12 +16,18 @@
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.card :refer [card]]
+            [reagent-material-ui.core.box :refer [box]]
+            [reagent-material-ui.core.switch-component :refer [switch]]
+            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
+            [reagent-material-ui.core.card-actions :refer [card-actions]]
             [reagent-material-ui.core.menu-item :refer [menu-item]]
             [reagent-material-ui.core.card-content :refer [card-content]]))
 
 (defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
-  (let [today (t/- (t/today) (t/new-period 0 :months))
+  (let [incl-this-month @(rf/subscribe [::ds/incl-this-month])
+        today (t/- (t/today) (t/new-period (if incl-this-month 0 1) :months))
+        today-month (-> (t/today) t/month str (subs 0 3) s/capitalize)
         last (t/- today (t/new-period 11 :months))
         this-year (-> today t/year str keyword)
         this-month (-> today t/month tm/ordinal inc str keyword)
@@ -61,5 +71,19 @@
        {:legend {:position :none}
         :chartArea {:width "80%"
                     :left  "15%"}
-        :curveType :function}]]]))
+        :curveType :function}]]
+     [card-actions
+      [grid {:container true
+             :justify :flex-end}
+       [grid {:item true}
+        [box {:mr 1}
+         [form-control-label
+          {:control (ra/as-element
+                     [switch {:color :primary
+                              :on-change #(rf/dispatch [::de/incl-this-month (not incl-this-month)])
+                              :checked incl-this-month}])
+           :label (ra/as-element
+                   [typography {:variant :body2} 
+                    (str "Incl. " today-month)])
+           :label-placement :start}]]]]]]))
 
