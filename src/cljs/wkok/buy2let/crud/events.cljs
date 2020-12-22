@@ -44,7 +44,7 @@
           (assoc-in [:site :heading] (str "Add property")))
       (do (rf/dispatch [::se/dialog {:heading "Upgrade subscription"
                                      :message (str "Your current subscription allows " subscribed-properties " " property-s
-                                                   " (incl. those that are hidden). Please upgrade your subscription to add more.")
+                                                   ". Please upgrade your subscription to add more.")
                                      :buttons   {:middle {:text     "Upgrade"
                                                           :on-click #(js/window.location.assign "#/subscription")
                                                           :color :secondary}

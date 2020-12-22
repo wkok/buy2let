@@ -11,7 +11,8 @@
   :set-active-page
   (fn [db [_ page heading]]
     (-> (assoc-in db [:site :active-page] page)
-        (assoc-in [:site :heading] heading))))
+        (assoc-in [:site :heading] heading)
+        (update-in [:site] dissoc :active-panel))))
 
 (rf/reg-event-db
   :set-fab-actions

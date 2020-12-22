@@ -4,6 +4,7 @@
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.account.events :as ae]
             [reagent-material-ui.icons.card-membership :refer [card-membership]]
+            [reagent-material-ui.core.box :refer [box]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.card-content :refer [card-content]]
             [reagent-material-ui.core.card-actions :refer [card-actions]]
@@ -35,8 +36,9 @@
         "Depending on user demand, we might offer paid subscriptions in future, allowing you to add more properties."]]
       [grid {:item true}
        (if (:keep-me-informed account)
-         [typography
-          "You've already indicated that you're interested. We'll let you know when this feature is available."]
+         [typography {:component :div}
+          [box {:font-style :italic}
+           "You've already indicated that you're interested. We'll let you know when this feature is available."]]
          [typography
           "Please register your interest by clicking below & we'll let you know!"])]]]]
    [card-actions

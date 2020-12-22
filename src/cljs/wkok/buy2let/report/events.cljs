@@ -19,7 +19,8 @@
          (assoc-in [:report :to :year] to-year)
          (assoc-in [:site :active-property] property-id)
          (assoc-in [:site :active-page] :report)
-         (assoc-in [:site :heading] "Report")))))
+         (assoc-in [:site :heading] "Report")
+         (update-in [:site] dissoc :active-panel)))))
 
 (rf/reg-event-fx
  ::reconcile-nav
