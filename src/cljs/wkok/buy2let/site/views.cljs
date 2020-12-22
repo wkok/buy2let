@@ -145,7 +145,7 @@
      :buttons {:padding-top (spacing 1)}
      :fab {(up "xs") {:position :fixed
                       :bottom (spacing 8)
-                      :right (spacing 2)
+                      :right (spacing 1)
                       :z-index (+ (:drawer z-index) 1)}
            (up "sm") {:position :fixed
                       :bottom (spacing 2)
@@ -206,9 +206,18 @@
                  :class (:title classes)} @(rf/subscribe [::subs/heading])]
     [profile classes]]])
 
-(defn navigate [hash]
-  (js/window.location.assign hash)
-  (rf/dispatch [::se/show-nav-menu false]))
+(defn navigate [view]
+  (let [properties @(rf/subscribe [::cs/properties])
+        hash (if (empty? properties)
+               "#/properties/add"
+               (case view
+                 :dashboard "#/"
+                 :reconcile (build-reconcile-url)
+                 :report (build-report-url)
+                 :properties "#/properties"
+                 :charges "#/charges"))]
+    (js/window.location.assign hash)
+    (rf/dispatch [::se/show-nav-menu false])))
 
 (defn brand [{:keys [classes]}]
   (let [account-id  @(rf/subscribe [::as/account])
@@ -237,30 +246,29 @@
        [typography {:variant :caption} (:name account)]]]]))
 
 (defn nav [{:keys [classes] :as props}]
-  (let [properties @(rf/subscribe [::cs/properties])
-        drawer_ [:div
+  (let [drawer_ [:div
                  [brand props]
                  [divider]
-                 [box {:visibility (if (empty? properties) :hidden :visible)}
+                 [box
                   [list
                    [list-item {:button true
-                               :on-click #(navigate "#/")}
+                               :on-click #(navigate :dashboard)}
                     [list-item-icon [dashboard]]
                     [list-item-text {:primary "Dashboard"}]]
                    [list-item {:button true
-                               :on-click #(navigate (build-reconcile-url))}
+                               :on-click #(navigate :reconcile)}
                     [list-item-icon [receipt]]
                     [list-item-text {:primary "Reconcile"}]]
                    [list-item {:button true
-                               :on-click #(navigate (build-report-url))}
+                               :on-click #(navigate :report)}
                     [list-item-icon [assessment]]
                     [list-item-text {:primary "Report"}]]
                    [list-item {:button true
-                               :on-click #(navigate "#/properties")}
+                               :on-click #(navigate :properties)}
                     [list-item-icon [apartment]]
                     [list-item-text {:primary "Properties"}]]
                    [list-item {:button true
-                               :on-click #(navigate "#/charges")}
+                               :on-click #(navigate :charges)}
                     [list-item-icon [category]]
                     [list-item-text {:primary "Charges"}]]]]]]
     [:nav {:class (:drawer classes)}
@@ -295,9 +303,9 @@
                          :value active-page
                          :on-change (fn [_ val]
                                       (case (keyword val)
-                                        :reconcile (navigate (build-reconcile-url))
-                                        :report (navigate (build-report-url))
-                                        (navigate "#/")))}
+                                        :reconcile (navigate :reconcile)
+                                        :report (navigate :report)
+                                        (navigate :dashboard)))}
       [bottom-navigation-action {:label "Dashboard"
                                  :icon (ra/as-element [dashboard])
                                  :value :dashboard}]

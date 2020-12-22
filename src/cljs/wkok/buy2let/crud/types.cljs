@@ -86,7 +86,11 @@
                                     [menu-item {:value :tpa} "Tenant pays Agent"]
                                     [menu-item {:value :tpo} "Tenant pays Owner"]])])]]))
                         doall)]])
-:singular "property"})
+   :singular "property"
+   :allow-hidden? #(let [properties @(rf/subscribe [::cs/properties])]
+                     (> (count properties) 1))
+   :show-show-hidden? #(let [properties @(rf/subscribe [::cs/hidden-properties])]
+                         (>= (count properties) 1))})
 
 (def charge
   {:type        :charges
@@ -95,7 +99,9 @@
    :validate-fn #(validate-name %)
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]
                                  :title "Add"}}}
-   :singular "charge"})
+   :singular "charge"
+   :show-show-hidden? #(let [charges @(rf/subscribe [::cs/hidden-charges])]
+                         (>= (count charges) 1))})
 
 (defn calc-status [item]
   (assoc item :status
@@ -171,4 +177,6 @@
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
                                  :title "Add"}}}
    :hidden-label "revoked"
-   :singular "delegate"})
+   :singular "delegate"
+   :show-show-hidden? #(let [delegates @(rf/subscribe [::cs/hidden-delegates])]
+                         (>= (count delegates) 1))})

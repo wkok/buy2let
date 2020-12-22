@@ -53,18 +53,19 @@
                            @(rf/subscribe [(:subs type)]))]
           ^{:key item}
           [row item type])]]
-      [grid {:container true
-             :justify :flex-end}
-       [grid {:item true}
-        [form-control-label
-         {:control (ra/as-element
-                    [switch {:color :primary
-                             :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
-                             :checked show-hidden}])
-          :label (ra/as-element
-                  [typography {:variant :body2}
-                   (str "Show " (get type :hidden-label "hidden"))])
-          :label-placement :start}]]]]]))
+      (when ((:show-show-hidden? type))
+       [grid {:container true
+              :justify :flex-end}
+        [grid {:item true}
+         [form-control-label
+          {:control (ra/as-element
+                     [switch {:color :primary
+                              :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
+                              :checked show-hidden}])
+           :label (ra/as-element
+                   [typography {:variant :body2}
+                    (str "Show " (get type :hidden-label "hidden"))])
+           :label-placement :start}]]])]]))
 
 
 (defn build-checkbox
@@ -192,7 +193,10 @@
              (build-input type field options))))
         (if-let [extra-fn (:extra type)]
           (extra-fn props options))
-        (build-hidden type options)
+        (if-let [allow-hidden? (:allow-hidden? type)]
+          (when (allow-hidden?)
+            (build-hidden type options))
+          (build-hidden type options))
         [grid {:container true
                :direction :row
                :justify :flex-start

@@ -14,6 +14,14 @@
          (sort-by :name))))
 
 (rf/reg-sub
+ ::hidden-properties
+ (fn [db]
+   (->> (:properties db)
+        vals
+        (filter #(:hidden %))
+        (sort-by :name))))
+
+(rf/reg-sub
   ::properties
   (fn [db]
     (->> (:properties db)
@@ -29,6 +37,14 @@
          (sort-by :name))))
 
 (rf/reg-sub
+ ::hidden-charges
+ (fn [db]
+   (->> (:charges db)
+        vals
+        (filter #(:hidden %))
+        (sort-by :name))))
+
+(rf/reg-sub
  ::charges
  (fn [db]
    (->> (:charges db)
@@ -41,6 +57,14 @@
  (fn [db]
    (->> (:delegates db)
         vals
+        (sort-by :name))))
+
+(rf/reg-sub
+ ::hidden-delegates
+ (fn [db]
+   (->> (:delegates db)
+        vals
+        (filter #(:hidden %))
         (sort-by :name))))
 
 (rf/reg-sub
