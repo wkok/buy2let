@@ -427,8 +427,10 @@
             :type      :file
             :accept    "image/*,.pdf"
             :style     {:display :none}
-            :on-change #(do (swap! state assoc-in [:values :this-month :breakdown (:id charge) :invoice] (-> % .-target .-files (aget 0)))
-                            (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice-deleted))
+            :on-change #(let [file (-> % .-target .-files (aget 0))]
+                          (when (shared/validate-file-size file 2000000)
+                            (swap! state assoc-in [:values :this-month :breakdown (:id charge) :invoice] file)
+                            (swap! state update-in [:values :this-month :breakdown (:id charge)] dissoc :invoice-deleted)))
             :on-blur   handle-blur}]
    [:label {:html-for (:id charge)}
     [tooltip {:title "Upload invoice"}

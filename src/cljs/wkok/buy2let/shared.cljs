@@ -200,3 +200,20 @@
                  (empty? (filter #(= active-property (:id %)) properties)))
              (not (empty? properties)))
     (rf/dispatch [event (-> properties first :id)])))
+
+(defn validate-file-size [file max-bytes]
+  (let [file-bytes (.-size file)
+        file-mega-bytes (-> file-bytes (/ 1000) (/ 1000))
+        file-mega-bytes-str (gstring/format "%.3f" file-mega-bytes)
+        max-mega-bytes (-> max-bytes (/ 1000) (/ 1000))
+        max-mega-bytes-str (gstring/format "%.0f" max-mega-bytes)]
+    (if (> file-bytes max-bytes)
+      (do (rf/dispatch [::se/dialog {:heading   "File too large"
+                                     :message   (str "Please keep the file size below "
+                                                     max-mega-bytes-str " MB. "
+                                                     "(This file is " file-mega-bytes-str " MB)")
+                                     :buttons   {:middle {:text     "OK"
+                                                          :on-click #(rf/dispatch [::se/dialog])}}
+                                     :closeable false}])
+          false)
+      true)))

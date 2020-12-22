@@ -4,6 +4,7 @@
             [wkok.buy2let.backend.events :as be]
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.subs :as ss]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.profile.events :as pe]
             [clojure.walk :as w]
             [clojure.string :as s]
@@ -35,7 +36,9 @@
             :type      :file
             :accept    "image/*"
             :style     {:display :none}
-            :on-change #(rf/dispatch [::pe/upload-avatar (-> % .-target .-files (aget 0)) :temp])
+            :on-change #(let [file (-> % .-target .-files (aget 0))]
+                          (when (shared/validate-file-size file 1000000)
+                            (rf/dispatch [::pe/upload-avatar (-> % .-target .-files (aget 0)) :temp])))
             :on-blur   handle-blur}]
    [:label {:html-for :avatar}
     [tooltip {:title "Upload profile image"}

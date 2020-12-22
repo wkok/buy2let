@@ -123,7 +123,9 @@
             :type      :file
             :accept    "image/*"
             :style     {:display :none}
-            :on-change #(rf/dispatch [::ae/upload-avatar (-> % .-target .-files (aget 0)) :temp])
+            :on-change #(let [file (-> % .-target .-files (aget 0))]
+                          (when (shared/validate-file-size file 1000000)
+                            (rf/dispatch [::ae/upload-avatar (-> % .-target .-files (aget 0)) :temp])))
             :on-blur   handle-blur}]
    [:label {:html-for :avatar}
     [tooltip {:title "Upload account image"}
