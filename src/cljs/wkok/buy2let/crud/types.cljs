@@ -179,4 +179,5 @@
    :hidden-label "revoked"
    :singular "delegate"
    :show-show-hidden? #(let [delegates @(rf/subscribe [::cs/hidden-delegates])]
-                         (>= (count delegates) 1))})
+                         (>= (count delegates) 1))
+   :empty-message "Invite people to access your account by clicking the add button below"})

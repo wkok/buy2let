@@ -557,18 +557,17 @@
                     :on-click #(js/window.history.back)}
             "Cancel"]]]]])]]])
 
-
 (defn reconcile [props]
   (let [properties @(rf/subscribe [::cs/properties])
         charges @(rf/subscribe [::cs/charges])
         property (shared/by-id @(rf/subscribe [::ss/active-property]) properties)
         property-charges (->> (map #(shared/by-id % charges) (keys (:charges property)))
                               (filter #(not (:hidden %)))
+                              (remove nil?)
                               (sort-by :name))
         year @(rf/subscribe [::rs/reconcile-year])
         month @(rf/subscribe [::rs/reconcile-month])
         ledger @(rf/subscribe [:ledger-months (:id property) year month])]
-
     (case @(rf/subscribe [::ss/active-panel])
       :reconcile-edit [edit-panel {:property property
                                    :year year

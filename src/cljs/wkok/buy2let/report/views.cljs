@@ -319,6 +319,7 @@
         property (shared/by-id property-id properties)
         property-charges (->> (map #(shared/by-id % charges) (keys (:charges property)))
                               (filter #(not (:hidden %)))
+                              (remove nil?)
                               (sort-by :name))
         ledger @(rf/subscribe [:ledger-property (:id property)])]
 

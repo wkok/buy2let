@@ -7,6 +7,7 @@
             [wkok.buy2let.crud.subs :as cs]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
+            [reagent-material-ui.core.box :refer [box]]
             [reagent-material-ui.core.list :refer [list]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
@@ -43,29 +44,41 @@
   (if (shared/has-role :editor)
     (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
     (rf/dispatch [:set-fab-actions nil]))
-  (let [show-hidden @(rf/subscribe [::cs/show-hidden])]
-    [paper {:class (get-in props [:classes :paper])}
-     [grid {:container true
-            :direction :column}
-      [grid {:item true}
-       [list
-        (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
-                           @(rf/subscribe [(:subs type)]))]
-          ^{:key item}
-          [row item type])]]
-      (when ((:show-show-hidden? type))
+  (let [show-hidden @(rf/subscribe [::cs/show-hidden])
+        cruds @(rf/subscribe [(:subs type)])]
+    (if (empty? cruds)
+      [grid {:container true
+             :direction :column
+             :justify :center
+             :align-items :center
+             :style {:min-height "60vh"}
+             :spacing 2}
+       [grid {:item true}
+        [typography {:variant :h5} (str "No " (-> type :type name) " yet")]]
+       [grid {:item true}
+        [typography (:empty-message type)]]]
+      [paper {:class (get-in props [:classes :paper])}
        [grid {:container true
-              :justify :flex-end}
+              :direction :column}
         [grid {:item true}
-         [form-control-label
-          {:control (ra/as-element
-                     [switch {:color :primary
-                              :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
-                              :checked show-hidden}])
-           :label (ra/as-element
-                   [typography {:variant :body2}
-                    (str "Show " (get type :hidden-label "hidden"))])
-           :label-placement :start}]]])]]))
+         [list
+          (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
+                             cruds)]
+            ^{:key item}
+            [row item type])]]
+        (when ((:show-show-hidden? type))
+          [grid {:container true
+                 :justify :flex-end}
+           [grid {:item true}
+            [form-control-label
+             {:control (ra/as-element
+                        [switch {:color :primary
+                                 :on-change #(rf/dispatch [::ce/crud-set-show-hidden (not show-hidden)])
+                                 :checked show-hidden}])
+              :label (ra/as-element
+                      [typography {:variant :body2}
+                       (str "Show " (get type :hidden-label "hidden"))])
+              :label-placement :start}]]])]])))
 
 
 (defn build-checkbox
