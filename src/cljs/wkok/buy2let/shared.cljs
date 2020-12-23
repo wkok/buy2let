@@ -85,12 +85,12 @@
   (-> (by-id property-id properties)
       (get :hidden false)))
 
-(defn calc-profit-total [ledger m properties property]
+(defn calc-profit-total [ledger m properties property-id]
   (apply + (map #(calc-profit-property ((first %) ledger) m)
                 (filter #(and (not (hidden? (key %) properties))
-                              (if property
-                                (= (key %) (:id property))
-                                true)) ledger))))
+                              (if (or (nil? property-id) (= :all property-id))
+                                true
+                                (= (key %) property-id))) ledger))))
 
 (defn blob-key [account property year month charge-id]
   (str "data/" (name account) "/ledger/" (name property) "/" (name year) "/" (name month) "/" charge-id))
