@@ -96,9 +96,9 @@
         properties-by-currency (group-by :currency @(rf/subscribe [::cs/properties]))
         ledger @(rf/subscribe [::dbs/ledger])
         data-by-currency (->> (map (fn [[currency properties]]
-                                     {:currency currency
+                                     {:currency (or currency :none)
                                       :properties properties
-                                      :data (chart-data {:property-id @(rf/subscribe [::ds/active-property (keyword currency)])
+                                      :data (chart-data {:property-id @(rf/subscribe [::ds/active-property (or (keyword currency) :none)])
                                                          :months months
                                                          :ledger (filter-ledger ledger properties)
                                                          :properties properties

@@ -8,7 +8,7 @@
             [tick.alpha.api :as t]
             [cljc.java-time.month :as tm]))
 
-(set! js/impl :demo)
+(set! js/backend-impl :demo)
 
 (defmethod mm/app-name :demo [_]
   "Demo")

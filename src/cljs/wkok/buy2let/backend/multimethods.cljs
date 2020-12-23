@@ -1,6 +1,6 @@
 (ns wkok.buy2let.backend.multimethods)
 
-(def dispatcher (fn [] js/impl))
+(def dispatcher (fn [] js/backend-impl))
 
 (defmulti app-name dispatcher)
 
