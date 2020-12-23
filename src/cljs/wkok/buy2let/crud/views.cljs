@@ -5,9 +5,9 @@
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.currencies :as currencies]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
-            [reagent-material-ui.core.box :refer [box]]
             [reagent-material-ui.core.list :refer [list]]
             [reagent-material-ui.core.paper :refer [paper]]
             [reagent-material-ui.core.form-control-label :refer [form-control-label]]
@@ -108,7 +108,8 @@
      [text-field {:name       field-name
                   :label      (-> field-name s/capitalize)
                   :type       (:type field)
-                  :margin      :normal
+                  :margin     :normal
+                  :full-width true
                   :auto-focus (and (:default field)
                                    (nil? ((:type type) @(rf/subscribe [:form-old]))))
                   :value      (values field-name "")
@@ -119,19 +120,28 @@
                   :error      error?
                   :helper-text (when error? (get errors field-name))}]]))
 
-(defn build-select
-  [field {:keys [values handle-change handle-blur]}]
+(defn build-select-currency
+  [field {:keys [values state]}]
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [grid {:item true}
-     [:label (get field :label (-> field-name s/capitalize))]
-     [:select {:name      field-name
-               :value     (values field-name)
-               :on-change handle-change
-               :on-blur   handle-blur}
+     [currencies/select-currency {:value (values field-name "")
+                                  :on-change #(swap! state assoc-in [:values field-name] %)}]]))
+
+(defn build-select
+  [field {:keys [values state]}]
+  (let [field-name (name (:key field))]
+    ^{:key field-name}
+    [grid {:item true}
+     [text-field {:select true
+                  :name  field-name
+                  :label (get field :label (-> field-name s/capitalize))
+                  :value (values field-name "")
+                  :on-change #(swap! state assoc-in [:values field-name]
+                                     (-> % .-target .-value keyword))}
       (for [option (:options field)]
-        ^{:key (key option)}
-        [:option {:value (key option)} (-> option val)])]]))
+        ^{:key (:key option)}
+        [menu-item {:value (:key option)} (:val option)])]]))
 
 (defn build-multi-select
   [field {:keys [values set-handle-change]}]
@@ -196,13 +206,15 @@
      [:form {:id form-id :on-submit handle-submit}
       [paper {:class (get-in props [:classes :paper])}
        [grid {:container true
-              :direction :column}
+              :direction :column
+              :spacing 1}
         (doall
          (for [field (:fields type)]
            (case (:type field)
              :checkbox (build-checkbox field options)
              :select (build-select field options)
              :select-multi (build-multi-select field options)
+             :select-currency (build-select-currency field options)
              (build-input type field options))))
         (if-let [extra-fn (:extra type)]
           (extra-fn props options))

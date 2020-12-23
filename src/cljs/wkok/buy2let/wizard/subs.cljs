@@ -13,6 +13,11 @@
    (get-in db [:wizard :property-name])))
 
 (rf/reg-sub
+ ::wizard-property-currency
+ (fn [db _]
+   (get-in db [:wizard :property-currency])))
+
+(rf/reg-sub
  ::wizard-mortgage-payment?
  (fn [db _]
    (get-in db [:wizard :mortgage-payment])))

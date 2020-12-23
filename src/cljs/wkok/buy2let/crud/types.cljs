@@ -32,7 +32,8 @@
 (def property
   {:type        :properties
    :subs        ::cs/all-properties
-   :fields      [{:key :name :type :text :default true}]
+   :fields      [{:key :name :type :text :default true}
+                 {:key :currency :type :select-currency}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
                                  :title "Add"}}}

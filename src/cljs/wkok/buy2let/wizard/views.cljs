@@ -1,5 +1,5 @@
 (ns wkok.buy2let.wizard.views
-  (:require 
+  (:require
    [clojure.string :as str]
    [re-frame.core :as rf]
    [reagent.core :as ra]
@@ -20,6 +20,7 @@
    [reagent-material-ui.core.radio-group :refer [radio-group]]
    [wkok.buy2let.wizard.subs :as ws]
    [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.currencies :as currencies]
    [wkok.buy2let.shared :as shared]
    [wkok.buy2let.wizard.events :as we]))
 
@@ -63,6 +64,31 @@
       [button {:variant :contained
                :color :primary
                :disabled (str/blank? property-name)
+               :on-click #(rf/dispatch [::we/navigate :next])}
+       "Next"]]]]])
+
+(defn step-property-currency [currency]
+  [step
+   [step-label "Currency"]
+   [step-content
+    [grid {:container true
+           :direction :column
+           :spacing 2}
+     [grid {:item true}
+      [typography "Which currency does this property operate in?"]]
+     [grid {:item true}
+      [currencies/select-currency {:value currency
+                                   :on-change #(rf/dispatch-sync [::we/set-property-currency %])}]]]
+    [grid {:container true
+           :direction :row
+           :spacing 2}
+     [grid {:item true}
+      [button {:variant :outlined
+               :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
+     [grid {:item true}
+      [button {:variant :contained
+               :color :primary
+               :disabled (str/blank? currency)
                :on-click #(rf/dispatch [::we/navigate :next])}
        "Next"]]]]])
 
@@ -265,6 +291,7 @@
   (let [properties @(rf/subscribe [::cs/properties])
         active-step @(rf/subscribe [::ws/wizard-active-step])
         property-name @(rf/subscribe [::ws/wizard-property-name])
+        property-currency @(rf/subscribe [::ws/wizard-property-currency])
         rental-agent? @(rf/subscribe [::ws/wizard-rental-agent?])
         mortgage-payment? @(rf/subscribe [::ws/wizard-mortgage-payment?])]
     [paper
@@ -274,6 +301,7 @@
        [stepper {:orientation :vertical
                  :active-step active-step}
         (step-property-name property-name)
+        (step-property-currency property-currency)
         (step-rent-charged)
         (step-rental-agent rental-agent?)
         (step-charges)

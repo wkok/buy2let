@@ -22,6 +22,11 @@
    (assoc-in db [:wizard :property-name] name)))
 
 (rf/reg-event-db
+ ::set-property-currency
+ (fn [db [_ currency]]
+   (assoc-in db [:wizard :property-currency] currency)))
+
+(rf/reg-event-db
  ::set-mortgage-payment
  (fn [db [_ question answer]]
    (case question
@@ -96,6 +101,7 @@
         charges (build-property-charges db)]
     {:id property-id
      :name (-> db :wizard :property-name)
+     :currency (-> db :wizard :property-currency)
      :charges (merge mortgage-payment rental-agent charges)}))
 
 (rf/reg-event-db
