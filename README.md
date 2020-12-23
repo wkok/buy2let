@@ -56,7 +56,7 @@ The dispatching function assumes a global variable declared in the backend imple
 Change this global variable to whatever your `defmethod` functions expect for example:
 
 ```clojure
-(set! js/impl :my-cool-app)
+(set! js/backend-impl :my-cool-app)
 ```
 
 Lastly, the namespace defining your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your backend's namespace. 
