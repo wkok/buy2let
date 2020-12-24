@@ -3,7 +3,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wkok/re-frame-buy2let.git"
+    "url": "https://github.com/wkok/buy2let.git"
   },
   "devDependencies": {
     "check-prop-types": "^1.1.2",
