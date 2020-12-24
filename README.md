@@ -1,8 +1,8 @@
-# re-frame-buy2let
+# buy2let
 
-![CI](https://github.com/wkok/re-frame-buy2let/workflows/CI/badge.svg)
+![CI](https://github.com/wkok/buy2let/workflows/CI/badge.svg)
 
-A [re-frame](http://day8.github.io/re-frame/) application designed to
+A [ClojureScript](https://clojurescript.org/), [re-frame](http://day8.github.io/re-frame/) application designed to
 
 - serve as a showcase of some of the ClojureScript / re-frame concepts I've learned
 - invite collaboration as to ClojureScript / re-frame usage & best practices
@@ -11,7 +11,7 @@ A [re-frame](http://day8.github.io/re-frame/) application designed to
 
 ## Demo
 
-View the [Online Demo](https://wkok.github.io/re-frame-buy2let/demo)
+View the [Online Demo](https://wkok.github.io/buy2let/demo)
 
 ### Notes
 
