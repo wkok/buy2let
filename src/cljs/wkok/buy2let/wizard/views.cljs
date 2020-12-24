@@ -188,7 +188,7 @@
        [grid {:item true}
         [:div
          [typography "Do any of these charges apply to the property from time to time?"]
-         [typography {:variant :body2} "(Tip: you can add more under the 'Charges' menu)"]]]
+         [typography {:variant :body2} "(Tip: you can add more later under the 'Charges' menu)"]]]
        [grid {:item true
               :container true
               :direction :row}

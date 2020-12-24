@@ -126,12 +126,14 @@
 
 
 (defn select-currency
-  [{:keys [value on-change]}]
+  [{:keys [value on-change error helper-text]}]
   (let [options (sort-by :code currencies)]
     [autocomplete
      {:options options
       :render-input (fn [^js params]
                       (set! (.-label params) "Currency")
+                      (set! (.-error params) error)
+                      (set! (.-helperText params) helper-text)
                       (ra/create-element mui/TextField params))
       :render-option #(let [option (js->clj %)]
                         (str (get option "code") " - " (get option "name")))

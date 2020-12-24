@@ -70,7 +70,8 @@
   {})
 
 (defmethod mm/get-accounts-fx :demo [_]
-  (rf/dispatch [:load-account {:id :1234 :name "Demo Account"}])
+  (rf/dispatch [:load-account {:id :1234 :name "Demo Account"
+                               :subscription {:properties 100}}])
   (rf/dispatch [:set-active-account :1234])
   {})
 

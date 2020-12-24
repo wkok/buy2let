@@ -20,6 +20,10 @@
   (when (s/blank? (get values "name"))
     {"name" "Name is required"}))
 
+(defn validate-currency [values]
+  (when (s/blank? (get values "currency"))
+    {"currency" "Currency is required"}))
+
 (defn validate-email [values]
   (when (s/blank? (get values "email"))
     {"email" "Email is required"}))
@@ -34,7 +38,7 @@
    :subs        ::cs/all-properties
    :fields      [{:key :name :type :text :default true}
                  {:key :currency :type :select-currency}]
-   :validate-fn #(merge (validate-name %) (validate-who-pays %))
+   :validate-fn #(merge (validate-name %) (validate-who-pays %) (validate-currency %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
                                  :title "Add"}}}
    :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]

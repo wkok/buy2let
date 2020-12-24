@@ -121,12 +121,16 @@
                   :helper-text (when error? (get errors field-name))}]]))
 
 (defn build-select-currency
-  [field {:keys [values state]}]
-  (let [field-name (name (:key field))]
+  [field {:keys [values state touched errors]}]
+  (let [field-name (name (:key field))
+        error? (and (touched field-name)
+                    (not (s/blank? (get errors field-name))))]
     ^{:key field-name}
     [grid {:item true}
      [currencies/select-currency {:value (values field-name "")
-                                  :on-change #(swap! state assoc-in [:values field-name] %)}]]))
+                                  :on-change #(swap! state assoc-in [:values field-name] %)
+                                  :error      error?
+                                  :helper-text (when error? (get errors field-name))}]]))
 
 (defn build-select
   [field {:keys [values state]}]

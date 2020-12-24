@@ -166,8 +166,7 @@
                              :email      (:email auth)
                              :avatar-url (:photo-url auth)})
          account {:id   (keyword (:id cofx))
-                  :name "My Account"
-                  :subscription {:properties 1}}]
+                  :name "My Account"}]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
             (mm/create-user-fx {:user user
                                 :account account
