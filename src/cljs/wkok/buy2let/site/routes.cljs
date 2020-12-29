@@ -5,6 +5,8 @@
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.profile.events :as pe]
             [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.about.events :as abe]
+            [wkok.buy2let.opensource.events :as ose]
             [wkok.buy2let.account.events :as ae]
             [wkok.buy2let.subscription.events :as sbse]
             [wkok.buy2let.reconcile.events :as re]
@@ -48,7 +50,9 @@
   (defroute "/profile/edit" [] (dispatch-role [::pe/edit-profile] :viewer))
   (defroute "/subscription" [] (dispatch-role [::sbse/view-subscription] :owner))
   (defroute "/account" [] (dispatch-role [::ae/view-account] :viewer))
-  (defroute "/account/edit" [] (dispatch-role [::ae/edit-account] :owner)))
+  (defroute "/account/edit" [] (dispatch-role [::ae/edit-account] :owner))
+  (defroute "/about" [] (dispatch-role [::abe/about] :viewer))
+  (defroute "/opensource" [] (dispatch-role [::ose/opensource] :viewer)))
 
 
 (doto (History.)

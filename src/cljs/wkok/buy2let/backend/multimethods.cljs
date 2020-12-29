@@ -8,6 +8,8 @@
 
 (defmulti init-auth dispatcher)
 
+(defmulti packages dispatcher)
+
 (defmulti sign-out-fx dispatcher)
 
 (defmulti get-crud-fx dispatcher)

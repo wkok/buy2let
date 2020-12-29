@@ -11,6 +11,8 @@
    [wkok.buy2let.report.views :as report]
    [wkok.buy2let.report.events :as repe]
    [wkok.buy2let.dashboard.views :as dashboard]
+   [wkok.buy2let.about.views :as about]
+   [wkok.buy2let.opensource.views :as opensource]
    [wkok.buy2let.subscription.views :as subscription]
    [wkok.buy2let.profile.views :as profile]
    [wkok.buy2let.account.views :as account]
@@ -26,6 +28,7 @@
    [reagent-material-ui.icons.receipt :refer [receipt]]
    [reagent-material-ui.icons.menu :as icons-menu]
    [reagent-material-ui.icons.category :refer [category]]
+   [reagent-material-ui.icons.info :refer [info]]
    [reagent-material-ui.icons.assessment :refer [assessment]]
    [reagent-material-ui.icons.apartment :refer [apartment]]
    [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
@@ -154,7 +157,8 @@
      :splash {:z-index (+ (:drawer z-index) 1)}
      :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
-     :paper {:padding (spacing 2)}}))
+     :paper {:padding (spacing 2)}
+     :legal {:font-size :0.8em}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 
@@ -215,7 +219,8 @@
                  :reconcile (build-reconcile-url)
                  :report (build-report-url)
                  :properties "#/properties"
-                 :charges "#/charges"))]
+                 :charges "#/charges"
+                 :about "#/about"))]
     (js/window.location.assign hash)
     (rf/dispatch [::se/show-nav-menu false])))
 
@@ -249,28 +254,32 @@
   (let [drawer_ [:div
                  [brand props]
                  [divider]
-                 [box
-                  [list
-                   [list-item {:button true
-                               :on-click #(navigate :dashboard)}
-                    [list-item-icon [dashboard]]
-                    [list-item-text {:primary "Dashboard"}]]
-                   [list-item {:button true
-                               :on-click #(navigate :reconcile)}
-                    [list-item-icon [receipt]]
-                    [list-item-text {:primary "Reconcile"}]]
-                   [list-item {:button true
-                               :on-click #(navigate :report)}
-                    [list-item-icon [assessment]]
-                    [list-item-text {:primary "Report"}]]
-                   [list-item {:button true
-                               :on-click #(navigate :properties)}
-                    [list-item-icon [apartment]]
-                    [list-item-text {:primary "Properties"}]]
-                   [list-item {:button true
-                               :on-click #(navigate :charges)}
-                    [list-item-icon [category]]
-                    [list-item-text {:primary "Charges"}]]]]]]
+                 [list
+                  [list-item {:button true
+                              :on-click #(navigate :dashboard)}
+                   [list-item-icon [dashboard]]
+                   [list-item-text {:primary "Dashboard"}]]
+                  [list-item {:button true
+                              :on-click #(navigate :reconcile)}
+                   [list-item-icon [receipt]]
+                   [list-item-text {:primary "Reconcile"}]]
+                  [list-item {:button true
+                              :on-click #(navigate :report)}
+                   [list-item-icon [assessment]]
+                   [list-item-text {:primary "Report"}]]
+                  [list-item {:button true
+                              :on-click #(navigate :properties)}
+                   [list-item-icon [apartment]]
+                   [list-item-text {:primary "Properties"}]]
+                  [list-item {:button true
+                              :on-click #(navigate :charges)}
+                   [list-item-icon [category]]
+                   [list-item-text {:primary "Charges"}]]
+                  [divider]
+                  [list-item {:button true
+                              :on-click #(navigate :about)}
+                   [list-item-icon [info]]
+                   [list-item-text {:primary "About"}]]]]]
     [:nav {:class (:drawer classes)}
      [hidden {:sm-up true}
       [drawer {:container (.. js/window -document -body)
@@ -329,7 +338,9 @@
        :delegates [crud-impl/delegates props]
        :subscription [subscription/subscription]
        :profile [profile/profile props]
-       :account [account/account props]))])
+       :account [account/account props]
+       :about [about/about props]
+       :opensource [opensource/opensource props]))])
 
 (defn sign-in-panel []
   [:div

@@ -6,8 +6,7 @@
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.report.subs :as rs]
-            [wkok.buy2let.backend.multimethods :as mm]
-            [day8.re-frame.http-fx]))
+            [wkok.buy2let.backend.multimethods :as mm]))
 
 (rf/reg-event-db
  ::view-report
