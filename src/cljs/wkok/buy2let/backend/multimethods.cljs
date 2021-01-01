@@ -10,6 +10,10 @@
 
 (defmulti packages dispatcher)
 
+(defmulti terms-of-service dispatcher)
+
+(defmulti privacy-policy dispatcher)
+
 (defmulti sign-out-fx dispatcher)
 
 (defmulti get-crud-fx dispatcher)

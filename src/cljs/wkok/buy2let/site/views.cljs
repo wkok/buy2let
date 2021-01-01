@@ -158,7 +158,8 @@
      :wizard-actions {:margin-top (spacing 2)}
      :who-pays-whom {:padding-left (spacing 4)}
      :paper {:padding (spacing 2)}
-     :legal {:font-size :0.8em}}))
+     :legal {:font-size :0.8em
+             :color (get-in palette [:text :primary])}}))
 
 (def with-custom-styles (styles/with-styles custom-styles))
 

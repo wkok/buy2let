@@ -130,6 +130,7 @@
             [shared/anchor
              #(rf/dispatch [::se/dialog {:panel [text-field {:multiline true
                                                              :value (-> package :license :text)
+                                                             :disabled true
                                                              :rows-max 1000
                                                              :style {:width "800px"}
                                                              :InputProps {:classes 

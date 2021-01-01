@@ -1,5 +1,6 @@
 (ns wkok.buy2let.backend.demo
   (:require [re-frame.core :as rf]
+            [wkok.buy2let.legal.ipsum :as ipsum]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.period :as period]
             [wkok.buy2let.backend.multimethods :as mm]
@@ -22,6 +23,15 @@
       (rf/dispatch [:get-user auth])
       (render-main-panel))
     (rd/render [sign-in-panel] (.getElementById js/document "app"))))
+
+(defmethod mm/packages :demo []
+  [])
+
+(defmethod mm/terms-of-service :demo []
+  ipsum/ipsum-3)
+
+(defmethod mm/privacy-policy :demo []
+  ipsum/ipsum-3)
 
 (defmethod mm/sign-out-fx :demo [_]
   (set! (.. js/window -location -href) "?"))
