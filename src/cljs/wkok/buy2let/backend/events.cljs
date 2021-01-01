@@ -10,6 +10,7 @@
             [goog.crypt.base64 :as b64]
             [cemerick.url :as url]
             [clojure.string :as str]
+            [clojure.walk :as w]
             [cljs.reader]))
 
 (rf/reg-event-fx
@@ -121,12 +122,24 @@
                       :on-click #(rf/dispatch [:sign-out])
                       :color :primary}}})
 
+(defn email-verified? [db claims]
+  (let [provider-id (-> db
+                        :security
+                        :auth
+                        :provider-data
+                        js->clj
+                        first
+                        w/keywordize-keys
+                        :providerId)]
+    (or (:email_verified claims)
+        (= "facebook.com" provider-id))))
+
 (rf/reg-event-db
  :load-claims
  (fn [db [_ input]]
    (let [user (spec/conform ::spec/user (:user input))
          claims (spec/conform ::spec/claims (:claims input))]
-     (if (:email_verified claims)
+     (if (email-verified? db claims)
        (do
          (rf/dispatch [:load-user user])
          (assoc-in db [:security :claims] claims))
