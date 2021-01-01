@@ -28,10 +28,10 @@
   [])
 
 (defmethod mm/terms-of-service :demo []
-  ipsum/ipsum-3)
+  "https://github.com/wkok/buy2let/blob/master/LICENSE.txt")
 
 (defmethod mm/privacy-policy :demo []
-  ipsum/ipsum-3)
+  "https://github.com/wkok/buy2let/blob/master/LICENSE.txt")
 
 (defmethod mm/sign-out-fx :demo [_]
   (set! (.. js/window -location -href) "?"))
