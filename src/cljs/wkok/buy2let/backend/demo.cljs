@@ -1,6 +1,5 @@
 (ns wkok.buy2let.backend.demo
   (:require [re-frame.core :as rf]
-            [wkok.buy2let.legal.ipsum :as ipsum]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.period :as period]
             [wkok.buy2let.backend.multimethods :as mm]
@@ -8,8 +7,6 @@
             [clojure.string :as str]
             [tick.alpha.api :as t]
             [cljc.java-time.month :as tm]))
-
-(set! js/backend-impl :demo)
 
 (defmethod mm/app-name :demo [_]
   "Demo")
