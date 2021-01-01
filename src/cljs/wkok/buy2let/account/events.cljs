@@ -107,21 +107,24 @@
                                                their access first, before continuing with account deletion"
                                   :buttons   {:middle {:text     "Take me there"
                                                        :on-click (fn [] (js/window.location.assign "#/delegates"))}}}])
-       (merge {:db (assoc-in db [:site :splash] true)}
-              (mm/delete-account-fx
-               {  :user-id (:id user)
-                :account-id account-id
-                :delete-token delete-token
-                :confirmation (create-delete-confirmation user account delete-token)
-                :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
-                                                        :message   "Please check your email for an account deletion link.
+       (if (:email user)
+         (merge {:db (assoc-in db [:site :splash] true)}
+                (mm/delete-account-fx
+                 {:user-id (:id user)
+                  :account-id account-id
+                  :delete-token delete-token
+                  :confirmation (create-delete-confirmation user account delete-token)
+                  :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
+                                                          :message   "Please check your email for an account deletion link.
                                                                                 Your account will remain active until you confirm deletion 
                                                                                 by clicking the link in the email."
-                                                        :buttons   {:middle {:text     "Understood"
-                                                                             :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
-                                                        :closeable false}])
-                :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                      :message (str %)}])}))))))
+                                                          :buttons   {:middle {:text     "Understood"
+                                                                               :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
+                                                          :closeable false}])
+                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                        :message (str %)}])}))
+         (rf/dispatch [::delete-account-confirm {:user-id (:id user)
+                                                 :account-id account-id} user]))))))
 
 (defn reset-query-params []
   (when (.-pushState js/history)

@@ -71,10 +71,6 @@
   (when (s/blank? (get values "name"))
     {"name" "Name is required"}))
 
-(defn validate-email [values]
-  (when (s/blank? (get values "email"))
-    {"email" "Email is required"}))
-
 (defn edit-profile [props]
   (let [user @(rf/subscribe [::bs/local-user])
         avatar-url-temp @(rf/subscribe [::ss/avatar-url-temp])]
@@ -82,7 +78,7 @@
                 :path               :form
                 :prevent-default?   true
                 :clean-on-unmount?  true
-                :validation         #(merge (validate-name %) (validate-email %))
+                :validation         #(validate-name %)
                 :on-submit-response {400 "client error"
                                      500 "server error"}
                 :on-submit          #(rf/dispatch [::pe/save-profile (w/keywordize-keys (:values %))])
