@@ -26,10 +26,14 @@
   (set! (.-hash js/location) "/")
   (sec/set-config! :prefix "#")
   (defroute "/" [] (dispatch-role [:set-active-page :dashboard "Dashboard"] :viewer))
+  (defroute "/reconcile" []
+    (dispatch-role [::re/view-reconcile (re/calc-options {})] :viewer))
   (defroute "/reconcile/:property-id/:month/:year" [property-id month year]
     (dispatch-role [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})] :viewer))
   (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
     (dispatch-role [::re/edit-reconcile (re/calc-options {:property-id property-id :year year :month month})] :editor))
+  (defroute "/report" []
+    (dispatch-role [::repe/view-report (repe/calc-options {})] :viewer))
   (defroute "/report/:property-id/:from-month/:from-year/:to-month/:to-year" [property-id
                                                                               from-month from-year
                                                                               to-month to-year]

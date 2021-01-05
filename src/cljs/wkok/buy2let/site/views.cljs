@@ -198,7 +198,7 @@
 (defn header [{:keys [classes]}]
   [app-bar {:position :fixed
             :class (:app-bar classes)}
-   [progress-bar]
+  ;  [progress-bar]
    [toolbar {:variant :dense
              :class (:toolbar classes)}
     [icon-button {:edge :start
