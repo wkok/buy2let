@@ -29,10 +29,14 @@
       [list-item {:button true}
        [list-item-text {:primary "Version" :secondary "0.0.1"}]]
       [list-item {:button true
-                  :on-click #(js/window.location.assign (mm/terms-of-service))}
+                  :component "a"
+                  :href (mm/terms-of-service)
+                  :target "_blank"}
        [list-item-text {:primary "Terms of service"}]]
       [list-item {:button true
-                  :on-click #(js/window.location.assign (mm/privacy-policy))}
+                  :component "a"
+                  :href (mm/privacy-policy)
+                  :target "_blank"}
        [list-item-text {:primary "Privacy policy"}]]
       [list-item {:button true
                   :on-click #(js/window.location.assign "#/opensource")}
