@@ -371,7 +371,7 @@
         accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))
         error (when (:deleteToken account)
-                "Account deletion initiated. You may cancel this in Account settings")]
+                "Account deletion initiated, please check you email. You may cancel this in Account settings")]
     [snackbar {:open (if error true false)
                :anchor-origin {:vertical :bottom
                                :horizontal :center}}
