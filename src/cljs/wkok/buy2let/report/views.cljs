@@ -207,7 +207,7 @@
 
 (defn zip-invoices-confirm [property-charges]
   (rf/dispatch [::se/dialog {:heading "Download?"
-                             :message "This will download all invoices for the selected period & might take a while"
+                             :message "This will download all invoices for the selected period in a categorised zipped file"
                              :buttons {:left  {:text     "Yes"
                                                :on-click #(rf/dispatch [::re/zip-invoices property-charges])}
                                        :right {:text     "Cancel"}}}]))
