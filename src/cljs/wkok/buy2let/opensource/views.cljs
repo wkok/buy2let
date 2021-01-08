@@ -125,7 +125,8 @@
           ^{:key package}
           [table-row
            [table-cell
-            [link {:href (-> package :url)} (-> package :name)]]
+            [link {:href (-> package :url)
+                   :target "_blank"} (-> package :name)]]
            [table-cell
             [shared/anchor
              #(rf/dispatch [::se/dialog {:panel [text-field {:multiline true
