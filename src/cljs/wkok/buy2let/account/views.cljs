@@ -145,7 +145,7 @@
                 :validation         #(validate-name %)
                 :on-submit-response {400 "client error"
                                      500 "server error"}
-                :on-submit          #(rf/dispatch [::ae/save-account (w/keywordize-keys (:values %))])
+                :on-submit          #(rf/dispatch [::ae/save-account {:account (w/keywordize-keys (:values %))}])
                 :initial-values     (w/stringify-keys (:account @(rf/subscribe [:form-old])))}
      (fn [{:keys [form-id submitting? handle-submit] :as options}]
        [:form {:id form-id :on-submit handle-submit}
@@ -202,9 +202,9 @@
   (let [subs-properties (get-in account [:subscription :properties] 1)
         on-delegate #(js/window.location.assign "#/delegates")
         on-subscription #(js/window.location.assign "#/subscription")
-        on-delete-cancel #(rf/dispatch [::ae/save-account (dissoc account :deleteToken)])
+        on-delete-cancel #(rf/dispatch [::ae/save-account {:account (dissoc account :deleteToken)}])
         on-delete #(rf/dispatch [::se/dialog {:heading "Delete account?"
-                                              :message "This will delete all data associated with this account, and is not recoverable!"
+                                              :message "This will delete all data associated with this account, and is not recoverable! Any active subscriptions will be automatically cancelled."
                                               :buttons {:left  {:text     "DELETE"
                                                                 :on-click (fn [] (rf/dispatch [::ae/delete-account]))
                                                                 :color :secondary}

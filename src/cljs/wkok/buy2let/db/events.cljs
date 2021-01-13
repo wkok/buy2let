@@ -4,7 +4,8 @@
             [tick.alpha.api :as t]
             [wkok.buy2let.db.default :as ddb]
             [wkok.buy2let.backend.multimethods :as mm]
-            [wkok.buy2let.spec :as spec]))
+            [wkok.buy2let.spec :as spec]
+            [wkok.buy2let.subscription.events :as subse]))
 
 (rf/reg-event-fx
   :initialize-db
@@ -36,6 +37,7 @@
  :load-properties
  (fn [cofx [_ input]]
    (let [db (:db cofx)
+         account-id (get-in db [:security :account])
          all-properties (spec/conform ::spec/properties input)
          properties (filter #(not (:hidden %)) (vals all-properties))
          updated-db (-> (assoc db :properties all-properties)
@@ -45,8 +47,10 @@
        (do (js/window.location.assign "#/properties/add") ; start wizard
            {:db                 (assoc-in updated-db [:wizard :active-page] :wizard)})
        (do (rf/dispatch [::get-ledger-year])
-           {:db                 updated-db
-            ::sfx/location-hash (get-in db [:site :location :hash])})))))
+           (merge {:db                 updated-db
+                   ::sfx/location-hash (get-in db [:site :location :hash])}
+                  (mm/refresh-subscription {:account-id account-id
+                                            :on-next #(rf/dispatch [::subse/validate-subscription %])})))))))
 
 (rf/reg-event-db
   :load-ledger-year

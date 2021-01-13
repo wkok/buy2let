@@ -12,9 +12,7 @@
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.spec :as spec]
-            [reagent-material-ui.core.link :refer [link]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]])
+            [reagent-material-ui.core.link :refer [link]])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
 

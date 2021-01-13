@@ -59,11 +59,12 @@
  ::save-account
  (fn [cofx [_ input]]
    (let [db (:db cofx)
-         conformed (spec/conform ::spec/account input)
+         conformed (spec/conform ::spec/account (:account input))
          account (if-let [avatar-url-temp (get-in db [:site :account-avatar-url-temp])]
                    (assoc conformed :avatar-url avatar-url-temp)
                    conformed)]
-     (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
+     (when (:back input true) 
+       (js/window.history.back))                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :accounts (:id account)] account)
                                 (assoc-in [:site :account-avatar-url-temp] nil))}
             (mm/save-account-fx {:account account
@@ -139,15 +140,14 @@
    (reset-query-params)
    (merge {:db                (assoc-in (:db cofx) [:site :splash] true)}
           (mm/delete-account-confirm-fx
-           {
-            :user-id user-id
+           {:user-id user-id
             :account-id account-id
             :delete-token delete-token
             :on-success #(do
                            (rf/dispatch [::se/splash false])
                            (rf/dispatch [::se/show-progress false])
                            (rf/dispatch [::se/dialog {:heading   "Account deleted"
-                                                      :message   "Successfully deleted your account. Hope to have you back soon!"
+                                                      :message   "Successfully deleted your account. Any subscriptions were automatically cancelled. Hope to have you back soon!"
                                                       :buttons   {:middle {:text     "Goodbye"
                                                                            :on-click (fn [] (rf/dispatch [:sign-out]))}}
                                                       :closeable false}]))

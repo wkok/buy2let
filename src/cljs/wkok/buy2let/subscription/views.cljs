@@ -1,10 +1,15 @@
 (ns wkok.buy2let.subscription.views
   (:require [re-frame.core :as rf]
+            [cemerick.url :as url]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.account.subs :as as]
+            [wkok.buy2let.subscription.events :as subse]
             [wkok.buy2let.account.events :as ae]
+            [wkok.buy2let.subscription.subs :as subss]
+            [wkok.buy2let.backend.multimethods :as mm]
+            [reagent-material-ui.icons.thumb-up :refer [thumb-up]]
             [reagent-material-ui.icons.card-membership :refer [card-membership]]
-            [reagent-material-ui.core.box :refer [box]]
+            [reagent-material-ui.core.text-field :refer [text-field]]
             [reagent-material-ui.core.card :refer [card]]
             [reagent-material-ui.core.card-content :refer [card-content]]
             [reagent-material-ui.core.card-actions :refer [card-actions]]
@@ -12,10 +17,107 @@
             [reagent-material-ui.core.grid :refer [grid]]
             [reagent-material-ui.core.typography :refer [typography]]))
 
+
 (defn edit-subscription []
   [:div])
 
-(defn subscription-card [account]
+(defn subscription-single-card [account]
+  (let [pos-fn #(if (< % 2) 2 %)]
+    [card
+     [card-content
+      [grid {:container true
+             :direction :row
+             :spacing 2
+             :justify :center}
+       [grid {:item true}
+        [card-membership {:font-size :large}]]
+       [grid {:item true
+              :container true
+              :direction :column
+              :spacing 2}
+        (when (= "cancelled" (get-in account [:subscription :status]))
+          [grid {:item true}
+           [typography
+            "Your subscription to the Multi Property Plan has been cancelled."]])
+        [grid {:item true}
+         [typography
+          "You are currently subscribed to the Single Property Plan which includes 1 property, free forever."]]
+        [grid {:item true}
+         [text-field {:type        :number
+                      :label       "Increase properties to"
+                      :value       @(rf/subscribe [::subss/subscription-properties])
+                      :on-change   #(rf/dispatch [::subse/set-subscription-properties (-> % .-target .-value js/parseInt Math/abs pos-fn)])
+                      :step 1}]]]]]
+     [card-actions
+      [button {:color :secondary
+               :disabled @(rf/subscribe [::ss/show-progress])
+               :on-click #(rf/dispatch [::subse/upgrade-subscription])} "Upgrade"]
+      [button {:color :primary
+               :disabled @(rf/subscribe [::ss/show-progress])
+               :component "a"
+               :href (mm/pricing-url)
+               :target "_blank"} "PRICING"]]]))
+
+(defn subscription-multi-card [account]
+  (let [subscribed-properties (get-in account [:subscription :properties] 1)
+        property-s (if (> subscribed-properties 1)
+                     " properties" " property")]
+    [card
+     [card-content
+      [grid {:container true
+             :direction :row
+             :spacing 2
+             :justify :center}
+       [grid {:item true}
+        [card-membership {:font-size :large}]]
+       [grid {:item true
+              :container true
+              :direction :column
+              :spacing 2}
+        [grid {:item true}
+         (if (= "cancelling" (get-in account [:subscription :status]))
+           [typography
+            "Your subscription to the Multi Property Plan will be cancelled at the end of this billing period, 
+             after witch you will automatically revert to the free Single Property Plan."]
+           [typography
+            (str "You are currently subscribed to the Multi Property Plan for "
+                 (get-in account [:subscription :properties])
+                 property-s " (includes one free property)")])]]]]
+     [card-actions
+      [button {:color :primary
+               :disabled @(rf/subscribe [::ss/show-progress])
+               :on-click #(rf/dispatch [::subse/manage-subscription])} "Manage subscription"]]]))
+
+(defn subscription-activated-card [account]
+  (let [subscribed-properties (get-in account [:subscription :properties] 1)
+        property-s (if (> subscribed-properties 1)
+                     " properties" " property")]
+    [card
+     [card-content
+      [grid {:container true
+             :direction :row
+             :spacing 2
+             :justify :center}
+       [grid {:item true}
+        [thumb-up {:font-size :large}]]
+       [grid {:item true
+              :container true
+              :direction :column
+              :spacing 2}
+        [grid {:item true}
+         [typography
+          "Thank you!"]]
+        [grid {:item true}
+         [typography
+          (str "Your subscription has been successfully upgraded to the Multi Property Plan for "
+               (get-in account [:subscription :properties])
+               property-s " (includes one free property)")]]]]]
+     [card-actions
+      [button {:color :primary
+               :disabled @(rf/subscribe [::ss/show-progress])
+               :on-click #(rf/dispatch [::subse/manage-subscription])} "Manage subscription"]]]))
+
+(defn subscription-cancelled-card []
   [card
    [card-content
     [grid {:container true
@@ -23,29 +125,34 @@
            :spacing 2
            :justify :center}
      [grid {:item true}
-      [card-membership {:font-size :large}]]
+      [thumb-up {:font-size :large}]]
      [grid {:item true
             :container true
             :direction :column
-            :spacing 1}
+            :spacing 2}
       [grid {:item true}
        [typography
-        "Your current subscription includes 1 property, free forever."]]
+        "Your Multi Property Plan subscription has been successfully cancelled."]]
       [grid {:item true}
        [typography
-        "Depending on user demand, we might offer paid subscriptions in future, allowing you to add more properties."]]
-      [grid {:item true}
-       (if (:keep-me-informed account)
-         [typography {:component :div}
-          [box {:font-style :italic}
-           "You've already indicated that you're interested. We'll let you know when this feature is available."]]
-         [typography
-          "Please register your interest by clicking below & we'll let you know!"])]]]]
+        "You are now on the Single Property Plan which includes one free property."]]]]]
    [card-actions
-    (when (not (:keep-me-informed account))
-      [button {:color :secondary
-               :on-click #(rf/dispatch [::ae/save-account
-                                        (assoc account :keep-me-informed true)])} "Keep me informed"])]])
+    [button {:color :primary
+             :disabled @(rf/subscribe [::ss/show-progress])
+             :on-click #(rf/dispatch [::subse/manage-subscription])} "Resubscribe"]]])
+
+(defn subscription-actioned? []
+  (case (-> js/window .-location .-href
+            url/url
+            :anchor)
+    "/subscription?action=activated" :activated
+    "/subscription?action=cancelled" :cancelled
+    :unchanged))
+
+(defn save-subscription-status [account status]
+  (rf/dispatch [::ae/save-account
+                {:account (assoc-in account [:subscription :status] status)
+                 :back false}]))
 
 (defn view-subscription []
   (let [account-id @(rf/subscribe [::as/account])
@@ -56,7 +163,16 @@
            :spacing 2}
      [grid {:item true
             :xs 12 :md 6}
-      [subscription-card account]]]))
+      (case (subscription-actioned?)
+        :activated (do (save-subscription-status account "active")
+                       [subscription-activated-card account])
+        ; :cancelled (do (save-subscription-status account "cancelled")
+                      ;  [subscription-cancelled-card])
+        (case (get-in account [:subscription :status])
+          "active"    [subscription-multi-card account]
+          "cancelling" [subscription-multi-card account]
+          "cancelled" [subscription-single-card account]
+          [subscription-single-card account]))]]))
 
 (defn subscription []
   (rf/dispatch [:set-fab-actions nil])

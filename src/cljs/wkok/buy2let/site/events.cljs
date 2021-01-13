@@ -44,6 +44,11 @@
   (fn [db [_ target]]
     (assoc-in db [:site :profile :show-menu] target)))
 
+(rf/reg-event-db
+ ::set-snack-error
+ (fn [db [_ error]]
+   (assoc-in db [:site :snack :error] error)))
+
 (rf/reg-event-fx
  ::nothing
  (fn [_ _]

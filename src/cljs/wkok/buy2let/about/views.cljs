@@ -30,12 +30,12 @@
        [list-item-text {:primary "Version" :secondary "0.0.3"}]]
       [list-item {:button true
                   :component "a"
-                  :href (mm/terms-of-service)
+                  :href (mm/terms-of-service-url)
                   :target "_blank"}
        [list-item-text {:primary "Terms of service"}]]
       [list-item {:button true
                   :component "a"
-                  :href (mm/privacy-policy)
+                  :href (mm/privacy-policy-url)
                   :target "_blank"}
        [list-item-text {:primary "Privacy policy"}]]
       [list-item {:button true

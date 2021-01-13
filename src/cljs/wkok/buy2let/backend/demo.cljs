@@ -24,10 +24,10 @@
 (defmethod mm/packages :demo []
   [])
 
-(defmethod mm/terms-of-service :demo []
+(defmethod mm/terms-of-service-url :demo []
   "https://github.com/wkok/buy2let/blob/master/LICENSE.txt")
 
-(defmethod mm/privacy-policy :demo []
+(defmethod mm/privacy-policy-url :demo []
   "https://github.com/wkok/buy2let/blob/master/LICENSE.txt")
 
 (defmethod mm/sign-out-fx :demo [_]

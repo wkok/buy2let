@@ -31,7 +31,7 @@
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :user] user)
                                 (assoc-in [:site :avatar-url-temp] nil))}
-            (mm/save-profile-fx {           :user user
+            (mm/save-profile-fx {:user user
                                  :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
 
 (rf/reg-event-db

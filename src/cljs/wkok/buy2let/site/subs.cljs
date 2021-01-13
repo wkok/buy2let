@@ -73,6 +73,11 @@
  (fn [db _]
    (get-in db [:site :account-avatar-url-temp])))
 
+(rf/reg-sub
+ ::snack-error
+ (fn [db _]
+   (get-in db [:site :snack :error])))
+
 
 
 

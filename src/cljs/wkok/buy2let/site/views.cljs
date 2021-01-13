@@ -367,15 +367,12 @@
               [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
 
 (defn error-snack []
-  (let [account-id @(rf/subscribe [::as/account])
-        accounts @(rf/subscribe [::as/accounts])
-        account (when account-id (account-id accounts))
-        error (when (:deleteToken account)
-                "Account deletion initiated, please check you email. You may cancel this in Account settings")]
+  (let [error @(rf/subscribe [::subs/snack-error])]
     [snackbar {:open (if error true false)
                :anchor-origin {:vertical :bottom
                                :horizontal :center}}
-     [alert {:severity :error} error]]))
+     [alert {:severity :error
+             :on-close #(rf/dispatch [::se/set-snack-error])} error]]))
 
 (defn main-panel []
   [:div
@@ -399,7 +396,8 @@
              [nav props]
              [main props]
              [bottom-nav]
-             [dialog/create-dialog]]))]]]]]])
+             [dialog/create-dialog]
+             [dialog/active-properties-dialog]]))]]]]]])
 
 
 

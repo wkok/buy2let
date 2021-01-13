@@ -10,9 +10,11 @@
 
 (defmulti packages dispatcher)
 
-(defmulti terms-of-service dispatcher)
+(defmulti terms-of-service-url dispatcher)
 
-(defmulti privacy-policy dispatcher)
+(defmulti privacy-policy-url dispatcher)
+
+(defmulti pricing-url dispatcher)
 
 (defmulti sign-out-fx dispatcher)
 
@@ -63,4 +65,14 @@
 (defmulti blob-url-fx dispatcher)
 
 (defmulti zip-invoices-fx dispatcher)
+
+(defmulti upgrade-subscription dispatcher)
+
+(defmulti upgrade-subscription-checkout dispatcher)
+
+(defmulti manage-subscription dispatcher)
+
+(defmulti downgrade-subscription dispatcher)
+
+(defmulti refresh-subscription dispatcher)
 
