@@ -38,10 +38,10 @@
         (when (= "cancelled" (get-in account [:subscription :status]))
           [grid {:item true}
            [typography
-            "Your subscription to the Multi Property Plan has been cancelled."]])
+            "Your subscription to the Multi Property License has been cancelled."]])
         [grid {:item true}
          [typography
-          "You are currently subscribed to the Single Property Plan which includes 1 property, free forever."]]
+          "You are currently subscribed to the free Single Property License."]]
         [grid {:item true}
          [text-field {:type        :number
                       :label       "Increase properties to"
@@ -77,12 +77,12 @@
         [grid {:item true}
          (if (= "cancelling" (get-in account [:subscription :status]))
            [typography
-            "Your subscription to the Multi Property Plan will be cancelled at the end of this billing period, 
-             after witch you will automatically revert to the free Single Property Plan."]
+            "Your subscription to the Multi Property License will be cancelled at the end of this billing period, 
+             after which you will automatically revert to the free Single Property License"]
            [typography
-            (str "You are currently subscribed to the Multi Property Plan for "
+            (str "You are currently subscribed to the Multi Property License for "
                  (get-in account [:subscription :properties])
-                 property-s " (includes one free property)")])]]]]
+                 property-s " (includes one free license)")])]]]]
      [card-actions
       [button {:color :primary
                :disabled @(rf/subscribe [::ss/show-progress])
@@ -109,9 +109,9 @@
           "Thank you!"]]
         [grid {:item true}
          [typography
-          (str "Your subscription has been successfully upgraded to the Multi Property Plan for "
+          (str "Your subscription has been successfully upgraded to the Multi Property License for "
                (get-in account [:subscription :properties])
-               property-s " (includes one free property)")]]]]]
+               property-s " (includes one free license)")]]]]]
      [card-actions
       [button {:color :primary
                :disabled @(rf/subscribe [::ss/show-progress])
@@ -132,10 +132,10 @@
             :spacing 2}
       [grid {:item true}
        [typography
-        "Your Multi Property Plan subscription has been successfully cancelled."]]
+        "Your Multi Property License subscription has been successfully cancelled."]]
       [grid {:item true}
        [typography
-        "You are now on the Single Property Plan which includes one free property."]]]]]
+        "You are now on the Single Property License which includes one free license"]]]]]
    [card-actions
     [button {:color :primary
              :disabled @(rf/subscribe [::ss/show-progress])

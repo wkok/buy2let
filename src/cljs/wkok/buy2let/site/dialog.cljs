@@ -76,8 +76,8 @@
         [typography
          "Please select the properties that should remain active on your account."]]
        [grid {:item true}
-        [typography
-         "IMPORTANT - Any unselected properties will be deleted, including all data related to them, and is not
+        [typography {:variant :body2}
+          "IMPORTANT - Any unselected properties will be deleted, including all data associated with them, and is not
           recoverable. Review your subscription settings if you're unsure."]]
        [grid {:item true}
         [box {:border 1
@@ -99,8 +99,9 @@
          [select
           {:multiple true
            :value active-properties
-           :render-value #(->> (map (fn [s] (-> (shared/by-id (keyword s) properties) :name)) %) 
-                               (str/join ", "))
+           :render-value #(str (count %) " selected")
+          ;;  :render-value #(->> (map (fn [s] (-> (shared/by-id (keyword s) properties) :name)) %) 
+          ;;                      (str/join ", "))
            :on-change #(rf/dispatch [::subse/set-active-subscription-properties (-> % .-target .-value js->clj)])}
           (for [property properties]
             ^{:key (:id property)}
@@ -119,9 +120,10 @@
                    "I understand that all unselected properties & their data will be deleted."])}]]]]
      [dialog-actions
       [button {:color :secondary
-               :disabled (or (> (count active-properties) subscribed-properties)
+               :disabled (or (zero? (count active-properties))
+                             (> (count active-properties) subscribed-properties)
                              (not acknowledged))
-               :on-click #(rf/dispatch [::subse/downgrade-subscription 
+               :on-click #(rf/dispatch [::subse/downgrade-subscription
                                         (set/difference (-> (map (fn [p] (:id p)) properties) set)
                                                         (-> (map (fn [p] (keyword p)) active-properties) set))])} "Apply"]
       [button {:color :primary
