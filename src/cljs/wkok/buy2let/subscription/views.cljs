@@ -1,5 +1,6 @@
 (ns wkok.buy2let.subscription.views
   (:require [re-frame.core :as rf]
+            [clojure.string :as str]
             [cemerick.url :as url]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.account.subs :as as]
@@ -22,7 +23,13 @@
   [:div])
 
 (defn subscription-single-card [account]
-  (let [pos-fn #(if (< % 2) 2 %)]
+  (let [min2-fn #(let [n (-> % js/parseInt Math/abs)]
+                   (if (< n 2) 2 n))
+        pos-fn #(-> % js/parseInt Math/abs)
+        change-fn #(if (str/blank? %)
+                     % (pos-fn %))
+        blur-fn #(if (str/blank? %)
+                   2 (min2-fn %))]
     [card
      [card-content
       [grid {:container true
@@ -46,8 +53,10 @@
          [text-field {:type        :number
                       :label       "Increase properties to"
                       :value       @(rf/subscribe [::subss/subscription-properties])
-                      :on-change   #(rf/dispatch [::subse/set-subscription-properties (-> % .-target .-value js/parseInt Math/abs pos-fn)])
-                      :step 1}]]]]]
+                      :on-change   #(rf/dispatch [::subse/set-subscription-properties (-> % .-target .-value change-fn)])
+                      :on-blur   #(rf/dispatch [::subse/set-subscription-properties (-> % .-target .-value blur-fn)])
+                      :step 1
+                      :InputProps {:input-props {:min 2}}}]]]]]
      [card-actions
       [button {:color :secondary
                :disabled @(rf/subscribe [::ss/show-progress])
