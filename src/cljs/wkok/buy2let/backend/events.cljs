@@ -187,14 +187,24 @@
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                       :message (str %)}])})))))
 
+(defn cleanup [cleanup-fns]
+  (-> (for [cleanup-fn cleanup-fns]
+        (cleanup-fn))
+      doall))
+
 (rf/reg-event-fx
  :sign-out
  (fn [cofx _]
-   (merge {:db            (-> (assoc-in (:db cofx) [:site :signing-out] true)
-                              (assoc-in [:site :dialog] {:heading "Signing out.." :closeable false}))}
-          (mm/sign-out-fx {:on-success #(js/window.location.reload)
-                           :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
-                                                                 :message (str %)}])}))))
+   (let [db (:db cofx)]
+     (-> (get-in db [:backend :cleanup-fns]) cleanup)
+     (merge {:db            (-> (assoc-in db [:site :signing-out] true)
+                                (assoc-in [:site :dialog] {:heading "Signing out.." :closeable false}))}
+            (mm/sign-out-fx {:on-success #(js/window.location.reload)
+                             :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                   :message (str %)}])})))))
 
-
+(rf/reg-event-db
+ ::register-cleanup-fn
+ (fn [db [_ cleanup-fn]]
+   (update-in db [:backend :cleanup-fns] #(conj % cleanup-fn))))
 
