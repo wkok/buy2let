@@ -7,8 +7,10 @@
             [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.report.views :as rv]
             [wkok.buy2let.report.events :as repe]
+            [wkok.buy2let.backend.demo]
             wkok.buy2let.db.events))
 
+(set! js/impl "demo")
 
 (deftest set-prop-from-dash-nav-to-report-test
   (testing "Test navigation to report"
