@@ -11,3 +11,4 @@
 /.lsp/
 karma
 resources/public/js/
+.vscode/tasks.json
