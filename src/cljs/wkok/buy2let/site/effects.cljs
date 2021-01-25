@@ -8,3 +8,11 @@
       (rf/dispatch [:set-active-page :dashboard "Dashboard"])
       (set! (.-hash js/location) hash))))                   ;used when deep linking
 
+(rf/reg-fx
+ ::remove-query-params
+ (fn [_ _]
+   (when (.-pushState js/history)
+     (let [url (str
+                (.. js/window -location -origin)
+                (.. js/window -location -pathname))]
+       (.pushState (.-history js/window) #js {:path url} "" url)))))

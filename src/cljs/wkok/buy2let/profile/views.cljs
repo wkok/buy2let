@@ -71,6 +71,10 @@
   (when (s/blank? (get values "name"))
     {"name" "Name is required"}))
 
+(defn validate-email [values]
+  (when (s/blank? (get values "email"))
+    {"email" "Email is required"}))
+
 (defn edit-profile [props]
   (let [user @(rf/subscribe [::bs/local-user])
         avatar-url-temp @(rf/subscribe [::ss/avatar-url-temp])]
@@ -78,7 +82,7 @@
                 :path               :form
                 :prevent-default?   true
                 :clean-on-unmount?  true
-                :validation         #(validate-name %)
+                :validation         #(merge (validate-name %) (validate-email %))
                 :on-submit-response {400 "client error"
                                      500 "server error"}
                 :on-submit          #(rf/dispatch [::pe/save-profile (w/keywordize-keys (:values %))])
@@ -90,6 +94,8 @@
                 :direction :column}
           [avatar-upload avatar-url-temp (:avatar-url user) props options]
           [build-input {:name :name} options]
+          [build-input {:name :email
+                        :type :email} options]
           [grid {:container true
                  :direction :row
                  :justify :flex-start
@@ -111,6 +117,7 @@
 (defn view-profile [{:keys [classes]}]
   (rf/dispatch [:set-fab-actions nil])
   (let [user @(rf/subscribe [::bs/user])
+        claims @(rf/subscribe [::bs/claims])
         local-user @(rf/subscribe [::bs/local-user])
         provider-data (-> user :provider-data js->clj w/keywordize-keys)]
     [grid {:container true
@@ -135,8 +142,15 @@
           [grid {:item true}
            [typography {:variant :h5} 
             (:name local-user)]]
-          [grid {:item true}
-           [typography (:email local-user)]]]]]
+          [grid {:item true
+                 :container true
+                 :justify :center
+                 :spacing 1}
+           [grid {:item true}
+            [typography (:email local-user)]]
+           (when (not= (:email claims) (:email local-user))
+             [grid {:item true}
+              [typography {:color :secondary} "(UNVERIFIED - Check your email)"]])]]]]
        [card-actions
         [button {:color :primary
                  :on-click #(js/window.location.assign "#/profile/edit")} "Edit"]]]]

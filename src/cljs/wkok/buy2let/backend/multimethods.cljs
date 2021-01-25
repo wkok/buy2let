@@ -42,6 +42,8 @@
 
 (defmulti send-email-verification-fx dispatcher)
 
+(defmulti send-email-changed-verification-fx dispatcher)
+
 (defmulti apply-action-code-fx dispatcher)
 
 (defmulti delete-account-fx dispatcher)
@@ -57,6 +59,8 @@
 (defmulti save-crud-fx dispatcher)
 
 (defmulti save-profile-fx dispatcher)
+
+(defmulti verify-email-changed-fx dispatcher)
 
 (defmulti upload-avatar-fx dispatcher)
 

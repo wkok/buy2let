@@ -3,6 +3,7 @@
             [wkok.buy2let.account.events :as ae]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.site.effects :as sfx]
             [wkok.buy2let.account.views :as av]
             [wkok.buy2let.backend.effects]
             [wkok.buy2let.backend.multimethods :as mm]
@@ -41,24 +42,9 @@
  (fn [_ [_ provider]]
    {:unlink-provider provider}))
 
-(defn accepting-invitation? []
-  (when-let [invitation (-> js/window .-location .-href
-                            url/url
-                            (get-in [:query "invitation"]))]
-    (-> invitation
-        b64/decodeString
-        cljs.reader/read-string)))
-
-(defn verifying-email? []
-  (-> js/window .-location .-href
-      url/url
-      (get-in [:query "oobCode"])))
-
-(defn delete-confirmation? []
-  (when-let [confirmation (-> js/window .-location .-href
-                              url/url
-                              (get-in [:query "delete-confirmation"]))]
-    (-> confirmation
+(defn decode-param [url param]
+  (when-let [p (get-in url [:query param])]
+    (-> p
         b64/decodeString
         cljs.reader/read-string)))
 
@@ -76,20 +62,58 @@
                                                                                      :on-click on-success}}}])})))
 
 (rf/reg-event-fx
+ ::verify-email-changed
+ (fn [_ [_ {:keys [user on-success]}]]
+   (merge {::sfx/remove-query-params {}}
+          (mm/verify-email-changed-fx {:user user
+                               :on-success on-success
+                               :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                                     :message (str %)
+                                                                     :closeable false
+                                                                     :buttons {:left  {:text     "Close"
+                                                                                       :on-click on-success
+                                                                                       :color :primary}}}])}))))
+
+(defn accept-invitation [user invitation]
+  (rf/dispatch [::accept-invitation {:invitation invitation
+                                     :on-success #(rf/dispatch [:refresh-token user])}]))
+
+(defn confirm-deletion [user confirmation]
+  (rf/dispatch [::ae/delete-account-confirm confirmation user]))
+
+(defn verify-email [user verification]
+  (rf/dispatch [::verify-email {:action-code verification
+                                :on-success #(rf/dispatch [:refresh-token user])}]))
+
+(defn verify-email-changed [user verification]
+  (if (= (:email-changed-token user) (:email-changed-token verification))
+    (rf/dispatch [::verify-email-changed {:user user
+                                          :on-success #(rf/dispatch [:refresh-token user])}])
+    (rf/dispatch [::se/dialog {:heading "Invalid token"
+                               :message "Invalid or expired token. New email could not be verified"
+                               :closeable false
+                               :buttons {:left  {:text     "Close"
+                                                 :on-click #(rf/dispatch [:refresh-token user])
+                                                 :color :primary}}}])))
+
+(rf/reg-event-fx
  :get-user
  (fn [_ [_ input]]
-   (let [auth (spec/conform ::spec/auth input)]
+   (let [auth (spec/conform ::spec/auth input)
+         url (-> js/window .-location .-href
+                 url/url)
+         invitation (decode-param url "invitation")
+         delete-confirmation (decode-param url "delete-confirmation")
+         email-verification (get-in url [:query "oobCode"])
+         email-changed-verification (decode-param url "email-changed-verification")]
      (mm/get-user-fx {:auth auth
                       :on-success #(if (registered? %)
-                                     (if-let [invitation (accepting-invitation?)]
-                                       (rf/dispatch [::accept-invitation {:invitation invitation
-                                                                          :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
-                                       (if-let [confirmation (delete-confirmation?)]
-                                         (rf/dispatch [::ae/delete-account-confirm confirmation %])
-                                         (if-let [action-code (verifying-email?)]
-                                           (rf/dispatch [::verify-email {:action-code action-code
-                                                                         :on-success (fn [] (rf/dispatch [:refresh-token %]))}])
-                                           (rf/dispatch [:refresh-token %]))))
+                                     (cond
+                                       invitation (accept-invitation % invitation)
+                                       delete-confirmation (confirm-deletion % delete-confirmation)
+                                       email-verification (verify-email % email-verification)
+                                       email-changed-verification (verify-email-changed % email-changed-verification)
+                                       :else (rf/dispatch [:refresh-token %]))
                                      (rf/dispatch [:create-user auth]))}))))
 
 (rf/reg-event-fx
@@ -149,8 +173,7 @@
  :send-email-verification
  (fn [_ [_ user]]
    (let [check-your-mail #(rf/dispatch [::se/dialog {:heading "Check your email"
-                                                     :message (str "Email verification link sent to: " (:email user))
-                                                     :closeable false}])]
+                                                     :message (str "Email verification link sent to: " (:email user))}])]
      (rf/dispatch [::se/dialog])
      (mm/send-email-verification-fx {:on-success check-your-mail
                                      :on-error #(if (str/includes? % "Try again later")
@@ -161,7 +184,8 @@
 (rf/reg-event-fx
  :refresh-token
  (fn [_ [_ user]]
-   (mm/refresh-token-fx {:user user})))
+   (merge {::sfx/remove-query-params {}}
+          (mm/refresh-token-fx {:user user}))))
 
 (rf/reg-event-fx
  ::accept-invitation
@@ -179,11 +203,14 @@
                              :email      (:email auth)
                              :avatar-url (:photo-url auth)})
          account {:id   (keyword (:id cofx))
-                  :name "My Account"}]
+                  :name "My Account"}
+         invitation (-> js/window .-location .-href
+                        url/url
+                        (decode-param "invitation"))]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
             (mm/create-user-fx {:user user
                                 :account account
-                                :invitation (accepting-invitation?)
+                                :invitation invitation
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                       :message (str %)}])})))))
 
