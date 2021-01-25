@@ -70,7 +70,8 @@
     (rf/dispatch [:load-claims {:claims {:roles {:viewer [:1234]
                                                  :editor [:1234]
                                                  :owner [:1234]}
-                                         :email_verified true}
+                                         :email_verified true
+                                         :email "demo@email.com"}
                                 :user user}])
     (rf/dispatch [:select-account :1234])
     (rf/dispatch [:load-user user]))
@@ -397,6 +398,25 @@
   (rf/dispatch [::se/show-progress false])
   {})
 
+(defmethod mm/refresh-subscription :demo [_]
+  {})
 
+(defmethod mm/send-email-changed-verification-fx :demo [_]
+  {})
+
+(defmethod mm/pricing-url :demo [_]
+  "https://github.com/wkok/buy2let/blob/master/LICENSE.txt")
+
+(defmethod mm/upgrade-subscription :demo [_]
+  (rf/dispatch [::se/dialog {:heading "Not implemented"
+                             :message (str "When implemented, this would redirect to a subscription provider")
+                             :buttons {:left  {:text     "Close"
+                                               :on-click #(rf/dispatch [::se/dialog])
+                                               :color :primary}}}])
+  (rf/dispatch [::se/show-progress false])
+  {})
+
+(defmethod mm/upgrade-subscription-checkout :demo [_]
+  {})
 
 
