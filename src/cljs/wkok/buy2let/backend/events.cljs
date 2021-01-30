@@ -243,11 +243,6 @@
    (update-in db [:backend :cleanup-fns] #(conj % cleanup-fn))))
 
 (rf/reg-event-db
- ::register-payment-instance
- (fn [db [_ instance]]
-   (assoc-in db [:backend :subscription :instance] instance)))
-
-(rf/reg-event-db
  ::register-backend-mode
  (fn [db [_ mode]]
    (assoc-in db [:backend :mode] mode)))

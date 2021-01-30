@@ -51,14 +51,13 @@
  ::upgrade-subscription
  (fn [cofx _]
    (let [db (:db cofx)
-         account-id (-> (get-in db [:security :account]) name)
-         payment-instance (get-in db [:backend :subscription :instance])]
+         account-id (-> (get-in db [:security :account]) name)]
      (merge {:db (assoc-in db [:site :show-progress] true)}
             (mm/upgrade-subscription {:mode (get-in db [:backend :mode])
                                       :account-id account-id
                                       :quantity (get-in db [:site :subscription :properties])
                                       :currency (get-in db [:site :location :currency] "USD")
-                                      :on-success (mm/upgrade-subscription-checkout {:payment-instance payment-instance})
+                                      :on-success (mm/upgrade-subscription-checkout)
                                       :on-error #(do (rf/dispatch [::se/show-progress false])
                                                      (rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                                 :message (str %)}]))})))))
