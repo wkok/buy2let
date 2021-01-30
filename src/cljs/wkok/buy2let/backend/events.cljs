@@ -96,16 +96,24 @@
                                                  :on-click #(rf/dispatch [:refresh-token user])
                                                  :color :primary}}}])))
 
+(rf/reg-event-db
+ ::set-subscription-action
+ (fn [db [_ action]]
+   (assoc-in db [:backend :subscription :action] action)))
+
 (rf/reg-event-fx
  :get-user
  (fn [_ [_ input]]
    (let [auth (spec/conform ::spec/auth input)
-         url (-> js/window .-location .-href
-                 url/url)
+         url (shared/url-full)
          invitation (decode-param url "invitation")
          delete-confirmation (decode-param url "delete-confirmation")
          email-verification (get-in url [:query "oobCode"])
          email-changed-verification (decode-param url "email-changed-verification")]
+     (rf/dispatch [::set-subscription-action (case (shared/url-param "subscription")
+                                               "activated" :activated
+                                               "cancelled" :cancelled
+                                               :unchanged)])
      (mm/get-user-fx {:auth auth
                       :on-success #(if (registered? %)
                                      (cond
@@ -204,8 +212,7 @@
                              :avatar-url (:photo-url auth)})
          account {:id   (keyword (:id cofx))
                   :name "My Account"}
-         invitation (-> js/window .-location .-href
-                        url/url
+         invitation (-> (shared/url-full)
                         (decode-param "invitation"))]
      (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
             (mm/create-user-fx {:user user
@@ -235,3 +242,12 @@
  (fn [db [_ cleanup-fn]]
    (update-in db [:backend :cleanup-fns] #(conj % cleanup-fn))))
 
+(rf/reg-event-db
+ ::register-payment-instance
+ (fn [db [_ instance]]
+   (assoc-in db [:backend :subscription :instance] instance)))
+
+(rf/reg-event-db
+ ::register-backend-mode
+ (fn [db [_ mode]]
+   (assoc-in db [:backend :mode] mode)))

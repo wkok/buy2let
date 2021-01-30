@@ -2,6 +2,7 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.backend.subs :as bs]
             [goog.crypt.base64 :as b64]
@@ -130,8 +131,7 @@
                                                 first
                                                 val
                                                 :name)
-                              :accept-url (str (.. js/window -location -protocol) "//"
-                                               (.. js/window -location -host)
+                              :accept-url (str (shared/url-host)
                                                "?invitation=" (b64/encodeString {:delegate-id (:id item)
                                                                                  :account-id account-id}))}}}))
     item))

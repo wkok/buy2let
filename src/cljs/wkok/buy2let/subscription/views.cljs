@@ -1,7 +1,7 @@
 (ns wkok.buy2let.subscription.views
   (:require [re-frame.core :as rf]
             [clojure.string :as str]
-            [cemerick.url :as url]
+            [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.subscription.events :as subse]
@@ -60,7 +60,8 @@
      [card-actions
       [button {:color :secondary
                :disabled @(rf/subscribe [::ss/show-progress])
-               :on-click #(rf/dispatch [::subse/upgrade-subscription])} "Upgrade"]
+               :on-click #(rf/dispatch [::subse/upgrade-subscription])} 
+       "Upgrade"]
       [button {:color :primary
                :disabled @(rf/subscribe [::ss/show-progress])
                :component "a"
@@ -150,14 +151,6 @@
              :disabled @(rf/subscribe [::ss/show-progress])
              :on-click #(rf/dispatch [::subse/manage-subscription])} "Resubscribe"]]])
 
-(defn subscription-actioned? []
-  (case (-> js/window .-location .-href
-            url/url
-            :anchor)
-    "/subscription?action=activated" :activated
-    "/subscription?action=cancelled" :cancelled
-    :unchanged))
-
 (defn save-subscription-status [account status]
   (rf/dispatch [::ae/save-account
                 {:account (assoc-in account [:subscription :status] status)
@@ -166,22 +159,23 @@
 (defn view-subscription []
   (let [account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
-        account (when account-id (account-id accounts))]
+        account (when account-id (account-id accounts))
+        subscription-action @(rf/subscribe [::bs/subscription-action])]
     [grid {:container true
            :direction :row
            :spacing 2}
      [grid {:item true
             :xs 12 :md 6}
-      (case (subscription-actioned?)
-        :activated (do (save-subscription-status account "active")
-                       [subscription-activated-card account])
+      (case subscription-action
+       :activated (do (save-subscription-status account "active")
+                      [subscription-activated-card account])
         ; :cancelled (do (save-subscription-status account "cancelled")
                       ;  [subscription-cancelled-card])
-        (case (get-in account [:subscription :status])
-          "active"    [subscription-multi-card account]
-          "cancelling" [subscription-multi-card account]
-          "cancelled" [subscription-single-card account]
-          [subscription-single-card account]))]]))
+       (case (get-in account [:subscription :status])
+         "active"    [subscription-multi-card account]
+         "cancelling" [subscription-multi-card account]
+         "cancelled" [subscription-single-card account]
+         [subscription-single-card account]))]]))
 
 (defn subscription []
   (rf/dispatch [:set-fab-actions nil])

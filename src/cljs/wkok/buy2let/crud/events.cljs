@@ -38,6 +38,8 @@
         subscribed-properties (get-in account [:subscription :properties] 1)
         property-s (if (> subscribed-properties 1)
                      " properties" " property")]
+    (when (not (get-in db [:site :location :currency]))
+      (rf/dispatch [::se/detect-location]))
     (if (subscription-allows? current-properties subscribed-properties)
       (-> (dissoc db :wizard)
           (assoc-in [:site :active-page] :wizard)

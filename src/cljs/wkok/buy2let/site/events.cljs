@@ -1,6 +1,7 @@
 (ns wkok.buy2let.site.events
-  (:require
-    [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [ajax.core :as ajax]
+            [day8.re-frame.http-fx]))
 
 (rf/reg-event-db
   ::set-active-property
@@ -53,3 +54,28 @@
  ::nothing
  (fn [_ _]
    {}))
+
+(rf/reg-event-db
+ ::load-location
+ (fn [db [_ location]]
+   (-> (assoc-in db [:site :location] location)
+       (assoc-in [:site :show-progress] false))))
+
+(rf/reg-event-db
+ ::location-failure
+ (fn [db [_ failure]]
+   (-> (assoc-in db [:site :location-failure] failure)
+       (assoc-in [:site :location :currency] "USD")
+       (assoc-in [:site :show-progress] false))))
+
+(rf/reg-event-fx
+ ::detect-location
+ (fn [{:keys [db]} _]
+   {:db   (assoc-in db [:site :show-progress] true)
+    :http-xhrio {:method          :get
+                 :uri             "https://ipapi.co/json/"
+                 :timeout         5000
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::load-location]
+                 :on-failure      [::location-failure]}}))
+

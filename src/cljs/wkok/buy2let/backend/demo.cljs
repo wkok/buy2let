@@ -1,6 +1,7 @@
 (ns wkok.buy2let.backend.demo
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.period :as period]
             [wkok.buy2let.backend.multimethods :as mm]
             [reagent.dom :as rd]
@@ -15,7 +16,7 @@
 
 (defmethod mm/init-auth :demo
   [{:keys [render-main-panel sign-in-panel]}]
-  (if (str/includes? (-> js/window .-location .-href) "auth=demo")
+  (if (str/includes? (shared/url-full-href) "auth=demo")
     (let [auth {:uid "1234" :display-name "Demo User" :email "demo@email.com"}]
       (rf/dispatch [:get-user auth])
       (render-main-panel))

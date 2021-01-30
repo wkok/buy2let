@@ -12,6 +12,7 @@
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.spec :as spec]
+            [cemerick.url :as url]
             [reagent-material-ui.core.link :refer [link]])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
@@ -215,3 +216,26 @@
                                      :closeable false}])
           false)
       true)))
+
+(defn url-location []
+  (-> js/window .-location))
+
+(defn url-host []
+  (let [location (url-location)]
+    (str (-> location .-protocol) "//"
+         (-> location .-host))))
+
+(defn url-full-href []
+  (-> (url-location) .-href))
+
+(defn url-full []
+  (-> (url-full-href) url/url))
+
+(defn url-hash []
+  (-> (url-location) .-hash))
+
+(defn url-param 
+  ([param]
+   (url-param param nil))
+  ([param default]
+   (get-in (url-full) [:query param] default)))

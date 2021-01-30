@@ -3,6 +3,7 @@
             [wkok.buy2let.site.effects :as sfx]
             [tick.alpha.api :as t]
             [wkok.buy2let.db.default :as ddb]
+            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.spec :as spec]
             [wkok.buy2let.subscription.events :as subse]))
@@ -11,7 +12,7 @@
   :initialize-db
   (fn [_ [_ seed]]
     {:db (-> (merge ddb/default-db seed)
-             (assoc-in [:site :location :hash] (-> js/window .-location .-hash)))})) ;used for deep linking
+             (assoc-in [:site :location :hash] (shared/url-hash)))})) ;used for deep linking
 
 (rf/reg-event-fx
   ::get-crud

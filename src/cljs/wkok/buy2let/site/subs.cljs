@@ -78,6 +78,11 @@
  (fn [db _]
    (get-in db [:site :snack :error])))
 
+(rf/reg-sub
+ ::location-currency
+ (fn [db _]
+   (get-in db [:site :location :currency])))
+
 
 
 

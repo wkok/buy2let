@@ -20,6 +20,7 @@
    [reagent-material-ui.core.radio-group :refer [radio-group]]
    [wkok.buy2let.wizard.subs :as ws]
    [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.site.subs :as ss]
    [wkok.buy2let.currencies :as currencies]
    [wkok.buy2let.shared :as shared]
    [wkok.buy2let.wizard.events :as we]))
@@ -292,8 +293,12 @@
         active-step @(rf/subscribe [::ws/wizard-active-step])
         property-name @(rf/subscribe [::ws/wizard-property-name])
         property-currency @(rf/subscribe [::ws/wizard-property-currency])
+        detected-currency @(rf/subscribe [::ss/location-currency])
         rental-agent? @(rf/subscribe [::ws/wizard-rental-agent?])
         mortgage-payment? @(rf/subscribe [::ws/wizard-mortgage-payment?])]
+    (when (and (not property-currency)
+               detected-currency)
+      (rf/dispatch-sync [::we/set-property-currency detected-currency]))
     [paper
      [grid {:container true
             :direction :column}

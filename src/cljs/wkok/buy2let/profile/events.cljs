@@ -27,8 +27,7 @@
   {:to (:email user)
    :template {:name "verify-email"
               :data {:user-name (:name user)
-                     :verify-url (str (.. js/window -location -protocol) "//"
-                                      (.. js/window -location -host)
+                     :verify-url (str (shared/url-host)
                                       "?email-changed-verification="
                                       (b64/encodeString {:email (:email user)
                                                          :email-changed-token email-changed-token}))}}})

@@ -21,3 +21,13 @@
  (fn [db _]
    (get-in db [:backend :error])))
 
+(rf/reg-sub
+ ::mode
+ (fn [db _]
+   (get-in db [:backend :mode])))
+
+(rf/reg-sub
+ ::subscription-action
+ (fn [db _]
+   (get-in db [:backend :subscription :action])))
+

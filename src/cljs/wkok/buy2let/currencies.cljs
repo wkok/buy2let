@@ -124,7 +124,6 @@
    {:code "EEK", :name "Estonian Kroon", :symbol "Ekr", :symbol_native "kr"} 
    {:code "XOF", :name "CFA Franc BCEAO", :symbol "CFA", :symbol_native "CFA"}])
 
-
 (defn select-currency
   [{:keys [value on-change error helper-text]}]
   (let [options (sort-by :code currencies)]

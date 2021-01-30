@@ -95,9 +95,6 @@
              :class (get-in props [:classes :splash])}
    [circular-progress]])
 
-(def custom-theme
-  {:palette {:primary   colors/blue}})
-
 (defn custom-styles [{:keys [spacing breakpoints z-index palette]}]
   (let [up (:up breakpoints)
         drawer-width 200]
@@ -346,7 +343,7 @@
 (defn sign-in-panel []
   [:div
    [css-baseline]
-   [styles/theme-provider (styles/create-mui-theme custom-theme)
+   [styles/theme-provider (styles/create-mui-theme {:palette {:primary colors/blue}})
     [(with-custom-styles
        (fn [{:keys [classes]}]
          [:div {:class (:root classes)}
@@ -375,29 +372,35 @@
              :on-close #(rf/dispatch [::se/set-snack-error])} error]]))
 
 (defn main-panel []
-  [:div
-   [css-baseline]
-   [mui-pickers-utils-provider {:utils  cljs-time-utils
-                                :locale DateTimeSymbols_en_US}
-    [styles/theme-provider (-> (styles/create-mui-theme custom-theme)
-                               (styles/responsive-font-sizes))
-     [grid {:container true
-            :direction :row
-            :justify   :flex-start}
-      [grid {:item true
-             :xs   12}
-       [(with-custom-styles
-          (fn [{:keys [classes] :as props}]
-            [:div {:class (:root classes)}
-             [error-snack]
-             [splash props]
-             [fab-button props]
-             [header props]
-             [nav props]
-             [main props]
-             [bottom-nav]
-             [dialog/create-dialog]
-             [dialog/active-properties-dialog]]))]]]]]])
+  (let [mode @(rf/subscribe [::bs/mode])]
+    [:div
+     [css-baseline]
+     [mui-pickers-utils-provider {:utils  cljs-time-utils
+                                  :locale DateTimeSymbols_en_US}
+      [styles/theme-provider (-> (styles/create-mui-theme {:palette {:primary (case mode
+                                                                                :live colors/blue
+                                                                                :test colors/pink)
+                                                                     :secondary (case mode
+                                                                                  :live colors/pink
+                                                                                  :test colors/blue)}})
+                                 (styles/responsive-font-sizes))
+       [grid {:container true
+              :direction :row
+              :justify   :flex-start}
+        [grid {:item true
+               :xs   12}
+         [(with-custom-styles
+            (fn [{:keys [classes] :as props}]
+              [:div {:class (:root classes)}
+               [error-snack]
+               [splash props]
+               [fab-button props]
+               [header props]
+               [nav props]
+               [main props]
+               [bottom-nav]
+               [dialog/create-dialog]
+               [dialog/active-properties-dialog]]))]]]]]]))
 
 
 

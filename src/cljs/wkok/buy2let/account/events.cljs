@@ -18,6 +18,7 @@
          (assoc-in [:site :account-selector] (get-in db [:site :account-selector]))
          (assoc-in [:site :location] (get-in db [:site :location]))
          (assoc :security (:security db))
+         (assoc :backend (:backend db))
          (assoc-in [:security :account] account-id)))))
 
 (rf/reg-event-db
@@ -80,14 +81,14 @@
   (not (empty? (->> (:delegates db)
                     (filter #(not= "REVOKED" (-> % val :status)))))))
 
-(defn create-delete-confirmation [user account delete-token]
+(defn create-delete-confirmation [mode user account delete-token]
   {:to (:email user)
    :template {:name "delete-account"
               :data {:user-name (:name user)
                      :account-name (:name account)
-                     :delete-url (str (.. js/window -location -protocol) "//"
-                                      (.. js/window -location -host)
-                                      "?delete-confirmation="
+                     :delete-url (str (shared/url-host)
+                                      "?mode=" (name mode)
+                                      "&delete-confirmation="
                                       (b64/encodeString {:user-id (:id user)
                                                          :account-id (:id account)
                                                          :delete-token delete-token}))}}})
@@ -100,7 +101,8 @@
          account-id (get-in db [:security :account])
          account (account-id accounts)
          user (get-in db [:security :user])
-         delete-token (nid/nano-id)]
+         delete-token (nid/nano-id)
+         mode (get-in db [:backend :mode])]
 
      (if (active-delegates? db)
        (rf/dispatch [::se/dialog {:heading "Delegated access"
@@ -114,7 +116,7 @@
                  {:user-id (:id user)
                   :account-id account-id
                   :delete-token delete-token
-                  :confirmation (create-delete-confirmation user account delete-token)
+                  :confirmation (create-delete-confirmation mode user account delete-token)
                   :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
                                                           :message   "Please check your email for an account deletion link.
                                                                                 Your account will remain active until you confirm deletion 
@@ -140,7 +142,8 @@
    (reset-query-params)
    (merge {:db                (assoc-in (:db cofx) [:site :splash] true)}
           (mm/delete-account-confirm-fx
-           {:user-id user-id
+           {:mode (get-in (:db cofx) [:backend :mode])
+            :user-id user-id
             :account-id account-id
             :delete-token delete-token
             :on-success #(do
