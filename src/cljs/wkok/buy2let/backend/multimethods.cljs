@@ -80,3 +80,5 @@
 
 (defmulti refresh-subscription dispatcher)
 
+(defmulti log-analytics dispatcher)
+

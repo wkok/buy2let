@@ -130,7 +130,8 @@
    (let [db (:db cofx)
          user (spec/conform ::spec/user input)
          accounts (-> db :security :claims :roles shared/accounts-from)
-         default-account-id (-> (:default-account-id user) keyword)]
+         default-account-id (-> (:default-account-id user) keyword)
+         sign-in-method (-> db :security :auth :provider-data js->clj first w/keywordize-keys :providerId)]
      (rf/dispatch [::se/splash false])
      (if (second accounts) ; User has access to more than one account
        (if-let [account-id (some #{default-account-id} accounts)]
@@ -140,7 +141,9 @@
      (merge
       {:db            (assoc-in db [:security :user] user)}
       (mm/get-accounts-fx {:account-ids accounts
-                           :on-success #(rf/dispatch [:load-account %])})))))
+                           :on-success #(rf/dispatch [:load-account %])})
+      (mm/log-analytics {:event :login
+                         :props {:method sign-in-method}})))))
 
 (defn verify-email-dialog [user]
   {:heading "Verify email"
