@@ -239,3 +239,8 @@
    (url-param param nil))
   ([param default]
    (get-in (url-full) [:query param] default)))
+
+(rf/reg-event-fx
+ ::log-analytics
+ (fn [_ [_ options]]
+   (mm/log-analytics options)))

@@ -420,4 +420,5 @@
 (defmethod mm/upgrade-subscription-checkout :demo [_]
   {})
 
-
+(defmethod mm/log-analytics :demo [_]
+  {})

@@ -207,7 +207,8 @@
  :create-user
  [(rf/inject-cofx ::shared/gen-id)]                        ; Generate account id
  (fn [cofx [_ input]]
-   (let [auth (spec/conform ::spec/auth input)
+   (let [db (:db cofx)
+         auth (spec/conform ::spec/auth input)
          user (spec/conform ::spec/user
                             {:id         (keyword (:uid auth))
                              :name       (:display-name auth)
@@ -216,11 +217,13 @@
          account {:id   (keyword (:id cofx))
                   :name "My Account"}
          invitation (-> (shared/url-full)
-                        (decode-param "invitation"))]
-     (merge {:db                (assoc-in (:db cofx) [:site :show-progress] true)}
+                        (decode-param "invitation"))
+         sign-in-method (-> db :security :auth :provider-data js->clj first w/keywordize-keys :providerId)]
+     (merge {:db                (assoc-in db [:site :show-progress] true)}
             (mm/create-user-fx {:user user
                                 :account account
                                 :invitation invitation
+                                :method sign-in-method
                                 :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                                       :message (str %)}])})))))
 
