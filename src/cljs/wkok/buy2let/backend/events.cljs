@@ -252,4 +252,6 @@
 (rf/reg-event-db
  ::register-backend-mode
  (fn [db [_ mode]]
-   (assoc-in db [:backend :mode] mode)))
+   (let [m (if (= :test mode)
+             :test :live)]
+     (assoc-in db [:backend :mode] m))))

@@ -24,7 +24,7 @@
 (rf/reg-sub
  ::mode
  (fn [db _]
-   (get-in db [:backend :mode])))
+   (get-in db [:backend :mode] :live)))
 
 (rf/reg-sub
  ::subscription-action
