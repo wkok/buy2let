@@ -422,3 +422,6 @@
 
 (defmethod mm/log-analytics :demo [_]
   {})
+
+(defmethod mm/sign-in-method :demo [_]
+  {})

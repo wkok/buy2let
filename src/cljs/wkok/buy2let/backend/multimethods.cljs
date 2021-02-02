@@ -82,3 +82,5 @@
 
 (defmulti log-analytics dispatcher)
 
+(defmulti sign-in-method dispatcher)
+

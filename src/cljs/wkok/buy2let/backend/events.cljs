@@ -131,7 +131,7 @@
          user (spec/conform ::spec/user input)
          accounts (-> db :security :claims :roles shared/accounts-from)
          default-account-id (-> (:default-account-id user) keyword)
-         sign-in-method (-> db :security :auth :provider-data js->clj first w/keywordize-keys :providerId)]
+         sign-in-method (mm/sign-in-method {:db db})]
      (rf/dispatch [::se/splash false])
      (if (second accounts) ; User has access to more than one account
        (if-let [account-id (some #{default-account-id} accounts)]
@@ -184,7 +184,8 @@
  :send-email-verification
  (fn [_ [_ user]]
    (let [check-your-mail #(rf/dispatch [::se/dialog {:heading "Check your email"
-                                                     :message (str "Email verification link sent to: " (:email user))}])]
+                                                     :message (str "Email verification link sent to: " (:email user))
+                                                     :closeable false}])]
      (rf/dispatch [::se/dialog])
      (mm/send-email-verification-fx {:on-success check-your-mail
                                      :on-error #(if (str/includes? % "Try again later")
@@ -218,7 +219,7 @@
                   :name "My Account"}
          invitation (-> (shared/url-full)
                         (decode-param "invitation"))
-         sign-in-method (-> db :security :auth :provider-data js->clj first w/keywordize-keys :providerId)]
+         sign-in-method (mm/sign-in-method {:db db})]
      (merge {:db                (assoc-in db [:site :show-progress] true)}
             (mm/create-user-fx {:user user
                                 :account account
