@@ -1,39 +1,42 @@
 (ns wkok.buy2let.report.views
+  (:require-macros [reagent-mui.util :refer [react-component]])
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
+            [wkok.buy2let.site.styles :refer [classes]]
             [wkok.buy2let.report.events :as re]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.report.subs :as rs]
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
-            [tick.alpha.api :as t]
+            [wkok.buy2let.period :as period]
+            [tick.core :as t]
             [clojure.string :as s]
-            [reagent-material-ui.icons.cloud-download :refer [cloud-download]]
-            [reagent-material-ui.icons.edit :refer [edit]]
-            [reagent-material-ui.icons.attach-file :refer [attach-file]]
-            [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
-            [reagent-material-ui.core.paper :refer [paper]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.icon-button :refer [icon-button]]
-            [reagent-material-ui.core.tooltip :refer [tooltip]]
-            [reagent-material-ui.core.table :refer [table]]
-            [reagent-material-ui.core.table-container :refer [table-container]]
-            [reagent-material-ui.core.table-head :refer [table-head]]
-            [reagent-material-ui.core.table-body :refer [table-body]]
-            [reagent-material-ui.core.table-row :refer [table-row]]
-            [reagent-material-ui.core.table-cell :refer [table-cell]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.switch-component :refer [switch]]
-            [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
+            [reagent-mui.icons.cloud-download :refer [cloud-download]]
+            [reagent-mui.icons.edit :refer [edit]]
+            [reagent-mui.icons.attach-file :refer [attach-file]]
+            [reagent-mui.icons.note-outlined :refer [note-outlined]]
+            [reagent-mui.material.paper :refer [paper]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.icon-button :refer [icon-button]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
+            [reagent-mui.material.table :refer [table]]
+            [reagent-mui.material.table-container :refer [table-container]]
+            [reagent-mui.material.table-head :refer [table-head]]
+            [reagent-mui.material.table-body :refer [table-body]]
+            [reagent-mui.material.table-row :refer [table-row]]
+            [reagent-mui.material.table-cell :refer [table-cell]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.lab.date-picker :refer [date-picker]]))
 
 (defn cell-class
-  ([m amount classes]
-   (cell-class m amount :none classes))
-  ([m amount type classes]
+  ([m amount]
+   (cell-class m amount :none))
+  ([m amount type]
    (let [odd (odd? (-> m :month name js/parseInt))
          class-key (if (neg? amount)
                      (if odd
@@ -63,25 +66,25 @@
 (defn format-amount [ledger path]
   (->> (get-in ledger path) shared/format-money))
 
-(defn report-header [months props]
-  (let [class (get-in props [:classes :table-header])]
+(defn report-header [months]
+  (let [class (:table-header classes)]
     [table-row
      [table-cell {:class class} "Charge"]
      (for [m months]
        ^{:key m}
-       [table-cell {:class (cell-class m 0 (:classes props))
+       [table-cell {:class (cell-class m 0)
                     :align :right} (str (shared/format-month (:date m)) " " (t/year (:date m)))])
      [table-cell {:class class
                   :align :right} "Total"]]))
 
 (defn report-charge-col
-  [m charge {:keys [ledger report property props]}]
+  [m charge {:keys [ledger report property]}]
   [table-cell {:align :right
                :class (when (odd? (-> m :month name js/parseInt))
-                        (get-in props [:classes :table-alternate]))}
+                        (:table-alternate classes))}
    [grid {:container true
           :direction :row
-          :justify :flex-end}
+          :justify-content :flex-end}
     (when (= true (:show-invoices report))
       (let [note (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :note])]
         (when (not (s/blank? note))
@@ -103,37 +106,37 @@
      (format-amount ledger [(:year m) (:month m) :breakdown (:id charge) :amount])]]])
 
 (defn report-profit-col
-  [m {:keys [ledger props]}]
+  [m {:keys [ledger]}]
   (let [profit (shared/calc-profit-property ledger m)
-        class (cell-class m profit :profit (:classes props))]
+        class (cell-class m profit :profit)]
     [table-cell {:align :right
                  :class class}
      (shared/format-money profit)]))
 
-(defn report-owed-col 
-  [m {:keys [ledger props]}]
+(defn report-owed-col
+  [m {:keys [ledger]}]
   (let [agent-bal (-> (get-in ledger [(:year m) (:month m) :totals :agent-current]) shared/to-money)
         tenant-bal (-> (get-in ledger [(:year m) (:month m) :totals :tenant]) shared/to-money)
         owed (if (not (zero? agent-bal))
                agent-bal tenant-bal)
-        class (cell-class m owed :owed (:classes props))]
+        class (cell-class m owed :owed)]
     [table-cell {:align :right
                  :class class}
      (shared/format-money owed)]))
 
 
-(defn report-cash-col 
-  [m {:keys [ledger props]}]
+(defn report-cash-col
+  [m {:keys [ledger]}]
   (let [cash (-> (get-in ledger [(:year m) (:month m) :totals :owner]) shared/to-money)
-        class (cell-class m cash (:classes props))]
+        class (cell-class m cash)]
     [table-cell {:align :right
                  :class class}
      (shared/format-money cash)]))
 
-(defn report-edit-col 
-  [m {:keys [property props]}]
+(defn report-edit-col
+  [m {:keys [property]}]
   [table-cell {:align :right
-               :class (cell-class m 0 (:classes props))}
+               :class (cell-class m 0)}
    [tooltip {:title "Edit"}
     [icon-button {:on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                                       "/" (-> (:month m) name)
@@ -141,43 +144,43 @@
                                                                       "/edit"))}
     [edit {:color :primary}]]]])
 
-(defn report-charge-row 
-  [charge months {:keys [report props] :as options}]
+(defn report-charge-row
+  [charge months {:keys [report] :as options}]
   [table-row
    [table-cell (:name charge)]
    (for [m months]
      ^{:key m}
      [report-charge-col m charge options])
    [table-cell {:align :right
-                :class (get-in props [:classes :table-header])}
+                :class (:table-header classes)}
     (-> (get-in report [:result :totals :breakdown (:id charge) :amount])
         shared/format-money)]])
 
-(defn report-profit-row-total 
-  [{:keys [report props]}]
+(defn report-profit-row-total
+  [{:keys [report]}]
   (let [profit (+ (get-in report [:result :totals :accounting :owner])
                   (get-in report [:result :totals :accounting :agent-current])
                   (get-in report [:result :totals :accounting :tenant]))
         class (if (neg? profit)
-                (get-in props [:classes :table-header-neg])
+                (:table-header-neg classes)
                 (if (pos? profit)
-                  (get-in props [:classes :table-header-pos])
-                  (get-in props [:classes :table-header])))]
+                  (:table-header-pos classes)
+                  (:table-header classes)))]
     [table-cell {:align :right
                  :class class}
      (shared/format-money profit)]))
 
-(defn report-profit-row 
-  [months {:keys [props] :as options}]
+(defn report-profit-row
+  [months options]
   [table-row
-   [table-cell {:class (get-in props [:classes :table-header])} 
+   [table-cell {:class (:table-header classes)}
     [:strong [:label.report-view-amount-pos "Profit"] " / " [:label.report-view-amount-neg "(Loss)"]]]
    (for [m months]
      ^{:key m}
      [report-profit-col m options])
    [report-profit-row-total options]])
 
-(defn report-owed-row 
+(defn report-owed-row
   [months options]
   [table-row
    [table-cell
@@ -187,7 +190,7 @@
      [report-owed-col m options])
    [table-cell {:align :right} "-"]])
 
-(defn report-cash-row 
+(defn report-cash-row
   [months options]
   [table-row
    [table-cell [:strong "Cash Flow"]]
@@ -196,7 +199,7 @@
      [report-cash-col m options])
    [table-cell {:align :right} "-"]])
 
-(defn report-edit-row 
+(defn report-edit-row
   [months options]
   [table-row
    [table-cell]
@@ -212,8 +215,8 @@
                                                :on-click #(rf/dispatch [::re/zip-invoices property-charges])}
                                        :right {:text     "Cancel"}}}]))
 
-(defn view-report 
-  [{:keys [property-charges report props] :as options}]
+(defn view-report
+  [{:keys [property-charges report] :as options}]
   (rf/dispatch [:set-fab-actions {:left-1 {:fn   #(zip-invoices-confirm property-charges)
                                            :icon [cloud-download]
                                            :title "Download"}}])
@@ -225,7 +228,7 @@
        [table-container
         [table {:size :small}
          [table-head
-          [report-header months props]]
+          [report-header months]]
          [table-body
           (for [charge property-charges]
             ^{:key (:id charge)}
@@ -237,8 +240,8 @@
             [report-edit-row months options])]]]]
       [grid {:container true
              :item true
-             :class (get-in props [:classes :paper])
-             :justify :flex-end}
+             :class (:paper classes)
+             :justify-content :flex-end}
        [form-control-label
         {:control (ra/as-element
                    [switch {:color :primary
@@ -246,20 +249,21 @@
                             :checked @(rf/subscribe [::rs/report-show-invoices])}])
          :label (ra/as-element
                  [typography {:variant :body2}
-                  "Invoices & notes"]) 
+                  "Invoices & notes"])
          :label-placement :start}]]]]))
 
 (defn criteria
-  [{:keys [properties props]}]
+  [{:keys [properties]}]
   (let [active-property @(rf/subscribe [::ss/active-property])]
     (shared/select-default-property active-property properties ::re/report-set-property)
-    [paper {:class (get-in props [:classes :paper])}
+    [paper {:class (:paper classes)}
      [grid {:container true
             :direction :row
             :spacing 2}
       [grid {:item true
              :xs 12 :sm 6}
        [text-field {:select true
+                    :variant :standard
                     :label "Property"
                     :field     :list
                     :on-change #(rf/dispatch [::re/report-set-property (.. % -target -value)])
@@ -275,30 +279,38 @@
               :spacing 3}
         [grid {:item true
                :xs 6}
-         [date-picker {:variant :inline
-                       :open-to :month
+         [date-picker {:open-to :month
                        :views [:year :month]
-                       :format "MMM YYYY"
+                       :render-input (react-component [props]
+                                                      [text-field (merge props
+                                                                         {:variant :standard})])
+                       :input-format "MMM YYYY"
                        :label "From"
-                       :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :from])) "/"
-                                                             (name @(rf/subscribe [::rs/report-month :from]))) "yyyy/MM")
-                       :on-change #(do (rf/dispatch [::re/report-set-month :from (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                       (rf/dispatch [::re/report-set-year :from (->> % (.getYear shared/date-utils) str keyword)]))
+                       :value (period/year-month->inst
+                               @(rf/subscribe [::rs/report-year :from])
+                               @(rf/subscribe [::rs/report-month :from]))
+                       :on-change #(when %
+                                     (rf/dispatch [::re/report-set-month :from (period/date->month %)])
+                                     (rf/dispatch [::re/report-set-year :from (period/date->year %)]))
                        :auto-ok true}]]
         [grid {:item true
                :xs 6}
-         [date-picker {:variant :inline
-                       :open-to :month
+         [date-picker {:open-to :month
                        :views [:year :month]
-                       :format "MMM YYYY"
+                       :render-input (react-component [props]
+                                                      [text-field (merge props
+                                                                         {:variant :standard})])
+                       :input-format "MMM YYYY"
                        :label "To"
-                       :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/report-year :to])) "/"
-                                                             (name @(rf/subscribe [::rs/report-month :to]))) "yyyy/MM")
-                       :on-change #(do (rf/dispatch [::re/report-set-month :to (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                       (rf/dispatch [::re/report-set-year :to (->> % (.getYear shared/date-utils) str keyword)]))
+                       :value (period/year-month->inst
+                               @(rf/subscribe [::rs/report-year :to])
+                               @(rf/subscribe [::rs/report-month :to]))
+                       :on-change #(when %
+                                     (rf/dispatch [::re/report-set-month :to (period/date->month %)])
+                                     (rf/dispatch [::re/report-set-year :to (period/date->year %)]))
                        :auto-ok true}]]]]]]))
 
-(defn view-panel 
+(defn view-panel
   [{:keys [property] :as options}]
   [grid {:container true
          :direction :column
@@ -311,7 +323,7 @@
       (rf/dispatch [:set-fab-actions nil]))]])
 
 
-(defn report [props]
+(defn report []
   (let [properties @(rf/subscribe [::cs/properties])
         charges @(rf/subscribe [::cs/charges])
         report @(rf/subscribe [::rs/report])
@@ -324,9 +336,8 @@
         ledger @(rf/subscribe [:ledger-property (:id property)])]
 
     (rf/dispatch [::re/report-set-property property-id])    ;Refresh as property might have been changed from another view
-    [view-panel {:property property 
-                 :report report 
-                 :ledger ledger 
-                 :properties properties 
-                 :property-charges property-charges
-                 :props props}]))
+    [view-panel {:property property
+                 :report report
+                 :ledger ledger
+                 :properties properties
+                 :property-charges property-charges}]))

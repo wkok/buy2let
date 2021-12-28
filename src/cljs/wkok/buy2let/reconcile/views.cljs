@@ -1,4 +1,5 @@
 (ns wkok.buy2let.reconcile.views
+  (:require-macros [reagent-mui.util :refer [react-component]])
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [wkok.buy2let.reconcile.events :as re]
@@ -7,74 +8,76 @@
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
-            [tick.alpha.api :as t]
+            [wkok.buy2let.site.styles :refer [classes]]
+            [tick.core :as t]
             [fork.re-frame :as fork]
             [clojure.string :as s]
-            [reagent-material-ui.icons.note-outlined :refer [note-outlined]]
-            [reagent-material-ui.icons.attach-file :refer [attach-file]]
-            [reagent-material-ui.icons.edit :refer [edit]]
-            [reagent-material-ui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
-            [reagent-material-ui.icons.cloud-done :refer [cloud-done]]
-            [reagent-material-ui.icons.cloud-done-outlined :refer [cloud-done-outlined]]
-            [reagent-material-ui.icons.delete-outlined :refer [delete-outlined]]
-            [reagent-material-ui.core.tooltip :refer [tooltip]]
-            [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.card-content :refer [card-content]]
-            [reagent-material-ui.core.paper :refer [paper]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.table :refer [table]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.button :refer [button]]
-            [reagent-material-ui.core.icon-button :refer [icon-button]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.table-container :refer [table-container]]
-            [reagent-material-ui.core.table-head :refer [table-head]]
-            [reagent-material-ui.core.table-body :refer [table-body]]
-            [reagent-material-ui.core.table-row :refer [table-row]]
-            [reagent-material-ui.core.table-cell :refer [table-cell]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.switch-component :refer [switch]]
-            [reagent-material-ui.pickers.date-picker :refer [date-picker]]))
+            [reagent-mui.icons.note-outlined :refer [note-outlined]]
+            [reagent-mui.icons.attach-file :refer [attach-file]]
+            [reagent-mui.icons.edit :refer [edit]]
+            [reagent-mui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
+            [reagent-mui.icons.cloud-done :refer [cloud-done]]
+            [reagent-mui.icons.cloud-done-outlined :refer [cloud-done-outlined]]
+            [reagent-mui.icons.delete-outlined :refer [delete-outlined]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
+            [reagent-mui.material.card :refer [card]]
+            [reagent-mui.material.card-content :refer [card-content]]
+            [reagent-mui.material.paper :refer [paper]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.table :refer [table]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.icon-button :refer [icon-button]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.table-container :refer [table-container]]
+            [reagent-mui.material.table-head :refer [table-head]]
+            [reagent-mui.material.table-body :refer [table-body]]
+            [reagent-mui.material.table-row :refer [table-row]]
+            [reagent-mui.material.table-cell :refer [table-cell]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.lab.date-picker :refer [date-picker]]
+            [wkok.buy2let.period :as period]))
 
 
 (defn format-amount [ledger path]
   (->> (get-in ledger path) shared/format-money))
 
 
-(defn view-accounting-row [charge ledger props]
+(defn view-accounting-row [charge ledger]
   [table-row
    [table-cell (:name charge)]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :tenant (:id charge)])]
    [table-cell {:align :right
-                :class (get-in props [:classes :table-alternate])}
+                :class (:table-alternate classes)}
     (format-amount ledger [:this-month :accounting :agent-current (:id charge)])]
    [table-cell {:align :right
-                :class (get-in props [:classes :table-alternate])}
+                :class (:table-alternate classes)}
     (format-amount ledger [:this-month :accounting :agent-commission (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :owner (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :owner-control (:id charge)])]
    [table-cell {:align :right
-                :class (get-in props [:classes :table-alternate])}
+                :class (:table-alternate classes)}
     (format-amount ledger [:this-month :accounting :bank-current (:id charge)])]
    [table-cell {:align :right
-                :class (get-in props [:classes :table-alternate])}
+                :class (:table-alternate classes)}
     (format-amount ledger [:this-month :accounting :bank-interest (:id charge)])]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :accounting :supplier (:id charge)])]])
 
-(defn view-accounting-detail [ledger property-charges props]
+(defn view-accounting-detail [ledger property-charges]
   (for [charge property-charges]
     ^{:key (:id charge)}
-    [view-accounting-row charge ledger props]))
+    [view-accounting-row charge ledger]))
 
 (defn view-accounting-total
-  [{:keys [ledger props]}]
-  (let [class-table-header (get-in props [:classes :table-header])
-        class-table-header-alternate (get-in props [:classes :table-header-alternate])
+  [{:keys [ledger]}]
+  (let [class-table-header (:table-header classes)
+        class-table-header-alternate (:table-header-alternate classes)
         agent-balance (get-in ledger [:this-month :totals :agent-current] 0)
         tenant-balance (get-in ledger [:this-month :totals :tenant] 0)
         owner-balance (get-in ledger [:this-month :totals :owner] 0)]
@@ -83,22 +86,22 @@
      [table-cell {:align :right
                   :class (if (and (zero? agent-balance)
                                   (not (zero? tenant-balance)))
-                           (get-in props [:classes :table-header-owe])
-                           (get-in props [:classes :table-header]))}
+                           (:table-header-owe classes)
+                           (:table-header classes))}
       (->> tenant-balance shared/format-money)]
      [table-cell {:align :right
                   :class (if (not (zero? agent-balance))
-                           (get-in props [:classes :table-header-alternate-owe])
-                           (get-in props [:classes :table-header-alternate]))}
+                           (:table-header-alternate-owe classes)
+                           (:table-header-alternate classes))}
       (->> agent-balance shared/format-money)]
      [table-cell {:align :right
                   :class class-table-header-alternate}
       (format-amount ledger [:this-month :totals :agent-commission])]
      [table-cell {:align :right
                   :class (if (neg? owner-balance)
-                           (get-in props [:classes :table-header-neg])
+                           (:table-header-neg classes)
                            (when (pos? owner-balance)
-                             (get-in props [:classes :table-header-pos])))}
+                             (:table-header-pos classes)))}
       (->> owner-balance shared/format-money)]
      [table-cell {:align :right
                   :class class-table-header}
@@ -114,8 +117,8 @@
       (format-amount ledger [:this-month :totals :supplier])]]))
 
 (defn view-accounting
-  [{:keys [ledger property-charges charges props] :as options}]
-  (let [class-table-header (get-in props [:classes :table-header])
+  [{:keys [ledger property-charges charges] :as options}]
+  (let [class-table-header (:table-header classes)
         agent-opening-balance (get-in ledger [:this-month :breakdown :agent-opening-balance :amount])
         tenant-opening-balance (get-in ledger [:this-month :breakdown :tenant-opening-balance :amount])]
     [paper
@@ -130,41 +133,41 @@
            [table-cell]
            [table-cell {:align :center
                         :col-span 2
-                        :class (get-in props [:classes :table-header-alternate])} "Agent"]
+                        :class (:table-header-alternate classes)} "Agent"]
            [table-cell {:align :center
                         :col-span 2
-                        :class (get-in props [:classes :table-header])} "Owner"]
+                        :class (:table-header classes)} "Owner"]
            [table-cell {:align :center
                         :col-span 2
-                        :class (get-in props [:classes :table-header-alternate])} "Bank"]
+                        :class (:table-header-alternate classes)} "Bank"]
            [table-cell]]
           [table-row
            [table-cell {:class class-table-header} "Charge"]
            [table-cell {:align :right
                         :class class-table-header} "Tenant"]
            [table-cell {:align :right
-                        :class (get-in props [:classes :table-header-alternate])} "Current"]
+                        :class (:table-header-alternate classes)} "Current"]
            [table-cell {:align :right
-                        :class (get-in props [:classes :table-header-alternate])} "Comm."]
+                        :class (:table-header-alternate classes)} "Comm."]
            [table-cell {:align :right
                         :class class-table-header} "Current"]
            [table-cell {:align :right
                         :class class-table-header} "Control"]
            [table-cell {:align :right
-                        :class (get-in props [:classes :table-header-alternate])} "Current"]
+                        :class (:table-header-alternate classes)} "Current"]
            [table-cell {:align :right
-                        :class (get-in props [:classes :table-header-alternate])} "Interest"]
+                        :class (:table-header-alternate classes)} "Interest"]
            [table-cell {:align :right
                         :class class-table-header} "Supplier"]]]
          [table-body
-          (when (pos? agent-opening-balance) [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger props])
-          (when (pos? tenant-opening-balance) [view-accounting-row (shared/by-id :tenant-opening-balance charges) ledger props])
-          (view-accounting-detail ledger property-charges props)
+          (when (pos? agent-opening-balance) [view-accounting-row (shared/by-id :agent-opening-balance charges) ledger])
+          (when (pos? tenant-opening-balance) [view-accounting-row (shared/by-id :tenant-opening-balance charges) ledger])
+          (view-accounting-detail ledger property-charges)
           [view-accounting-total options]]]]]
       [grid {:container true
              :item true
-             :class (get-in props [:classes :paper])
-             :justify :flex-end}
+             :class (:paper classes)
+             :justify-content :flex-end}
        [grid {:item true}
         [form-control-label
          {:control (ra/as-element
@@ -199,8 +202,8 @@
                     [note-outlined {:font-size :small}]]))]])
 
 (defn view-overview
-  [{:keys [property-charges props] :as options}]
-  (let [class-table-header (get-in props [:classes :table-header])]
+  [{:keys [property-charges] :as options}]
+  (let [class-table-header (:table-header classes)]
     [paper
      [grid {:container true
             :direction :column}
@@ -220,8 +223,8 @@
             [view-overview-row charge options])]]]]
       [grid {:container true
              :item true
-             :class (get-in props [:classes :paper])
-             :justify :flex-end}
+             :class (:paper classes)
+             :justify-content :flex-end}
        [grid {:item true}
         [form-control-label
          {:control (ra/as-element
@@ -243,17 +246,18 @@
 
 
 (defn criteria
-  [{:keys [properties props]}]
+  [{:keys [properties]}]
   (let [active-property @(rf/subscribe [::ss/active-property])]
     (shared/select-default-property active-property properties ::re/reconcile-set-property)
-    [paper {:class (get-in props [:classes :paper])}
+    [paper {:class (:paper classes)}
      [grid {:container true
             :direction :row
-            :justify :space-between
+            :justify-content :space-between
             :spacing 1}
       [grid {:item true
              :xs 8}
-       [text-field {:select true
+       [text-field {:variant :standard
+                    :select true
                     :label "Property"
                     :field     :list
                     :on-change #(rf/dispatch [::re/reconcile-set-property (.. % -target -value)])
@@ -264,19 +268,23 @@
                 (:name property)]) properties)]]
       [grid {:item true
              :xs 4}
-       [date-picker {:variant :inline
-                     :open-to :month
+       [date-picker {:open-to :month
                      :views [:year :month]
-                     :format "MMM YYYY"
+                     :render-input (react-component [props]
+                                     [text-field (merge props
+                                                   {:variant :standard})])
+                     :input-format "MMM YYYY"
                      :label "Period"
-                     :value (.parse shared/date-utils (str (name @(rf/subscribe [::rs/reconcile-year])) "/"
-                                                           (name @(rf/subscribe [::rs/reconcile-month]))) "yyyy/MM")
-                     :on-change #(do (rf/dispatch [::re/reconcile-set-month (->> % (.getMonth shared/date-utils) inc str keyword)])
-                                     (rf/dispatch [::re/reconcile-set-year (->> % (.getYear shared/date-utils) str keyword)]))
+                     :value (period/year-month->inst
+                              @(rf/subscribe [::rs/reconcile-year])
+                              @(rf/subscribe [::rs/reconcile-month]))
+                     :on-change #(when %
+                                   (rf/dispatch [::re/reconcile-set-month (period/date->month %)])
+                                   (rf/dispatch [::re/reconcile-set-year (period/date->year %)]))
                      :auto-ok true}]]]]))
 
 (defn cards
-  [{:keys [ledger props]}]
+  [{:keys [ledger]}]
   (let [agent-balance (get-in ledger [:this-month :totals :agent-current])
         tenant-balance (get-in ledger [:this-month :totals :tenant])
         owner-balance (get-in ledger [:this-month :totals :owner])
@@ -292,17 +300,17 @@
                (if (not (zero? agent-bal))
                  agent-bal tenant-bal))
         cash (-> (get-in ledger [:this-month :totals :owner]) shared/to-money)
-        card-class (get-in props [:classes :reconcile-card])
-        pos-class (get-in props [:classes :pos])
-        neg-class (get-in props [:classes :neg])
-        owe-class (get-in props [:classes :owe])]
+        card-class (:reconcile-card classes)
+        pos-class (:pos classes)
+        neg-class (:neg classes)
+        owe-class (:owe classes)]
     (if (shared/has-role :editor)
       (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
                                                :title "Edit"}}])
       (rf/dispatch [:set-fab-actions nil]))
     [grid {:container true
            :direction :row
-           :justify :space-between
+           :justify-content :space-between
            :spacing 2}
      [grid {:item true :xs 4}
       (if (neg? profit)
@@ -407,7 +415,8 @@
   [grid {:item true}
    [grid {:container true
           :direction :column}
-    [text-field {:name        "amount"
+    [text-field {:variant :standard
+                 :name        "amount"
                  :type        :number
                  :label       (:name charge)
                  :value       (get-in values [:this-month :breakdown (:id charge) :amount])
@@ -417,7 +426,7 @@
                  :placeholder "0.00"
                  :InputLabelProps {:shrink true}}]
     [grid {:container true
-           :justify :flex-end}
+           :justify-content :flex-end}
      [prev-month charge values state]]]])
 
 (defn edit-invoice-field-upload [charge state handle-blur icon]
@@ -474,11 +483,12 @@
 
 (defn edit-note-field
   [charge {:keys [values state handle-blur]}]
-  [text-field {:name        "note"
+  [text-field {:variant :standard
+               :name        "note"
                :type        :textarea
                :multiline   true
                :rows        1
-               :rows-max    4
+               :max-rows    4
                :label       "Note"
                :value       (get-in values [:this-month :breakdown (:id charge) :note])
                :on-change   #(swap! state assoc-in [:values :this-month :breakdown (:id charge) :note]
@@ -487,17 +497,17 @@
                :helper-text "Any additional information"}])
 
 (defn edit-panel
-  [{:keys [property year month ledger property-charges props] :as options}]
+  [{:keys [property year month ledger property-charges] :as options}]
   (rf/dispatch [:set-fab-actions nil])
   [grid {:container true
          :direction :column
          :spacing 2}
    [grid {:item true}
-    [paper {:class (get-in props [:classes :paper])}
+    [paper {:class (:paper classes)}
      [grid {:container true
             :item true
             :direction :row
-            :justify :space-between
+            :justify-content :space-between
             :spacing 1}
       [typography {:variant :h5} (:name property)]
       [typography {:variant :subtitle1} (s/capitalize (str (t/month (t/new-date 2010 (-> month name js/parseInt) 1)) " / " (name year)))]]]]
@@ -520,13 +530,13 @@
                 :item true
                 :direction :row
                 :spacing 2
-                :justify :space-between}
+                :justify-content :space-between}
           (doall
            (for [charge property-charges]
              ^{:key (:id charge)}
              [grid {:item true
                     :xs 12 :md 6 :lg 4}
-              [paper {:class (get-in props [:classes :paper])}
+              [paper {:class (:paper classes)}
                [grid {:container true
                       :item true
                       :direction :column}
@@ -534,7 +544,7 @@
                        :item true
                        :direction :row
                        :spacing 1
-                       :justify :space-between}
+                       :justify-content :space-between}
                  [edit-amount-field charge form]
                  [edit-invoice-field charge options form]]
                 [grid {:container true
@@ -544,9 +554,9 @@
          [grid {:container true
                 :item true
                 :direction :row
-                :justify :flex-start
+                :justify-content :flex-start
                 :spacing 1
-                :class (get-in props [:classes :buttons])}
+                :class (:buttons classes)}
           [grid {:item true}
            [button {:variant :contained
                     :color :primary
@@ -559,7 +569,7 @@
                     :on-click #(js/window.history.back)}
             "Cancel"]]]]])]]])
 
-(defn reconcile [props]
+(defn reconcile []
   (let [properties @(rf/subscribe [::cs/properties])
         charges @(rf/subscribe [::cs/charges])
         property (shared/by-id @(rf/subscribe [::ss/active-property]) properties)
@@ -575,13 +585,11 @@
                                    :year year
                                    :month month
                                    :ledger ledger
-                                   :property-charges property-charges
-                                   :props props}]
+                                   :property-charges property-charges}]
       [view-panel {:property property
                    :year year
                    :month month
                    :ledger ledger
                    :properties properties
                    :property-charges property-charges
-                   :charges charges
-                   :props props}])))
+                   :charges charges}])))

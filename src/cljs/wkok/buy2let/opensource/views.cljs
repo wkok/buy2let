@@ -6,17 +6,18 @@
             [wkok.buy2let.legal.opensource.bsd :as bsd]
             [wkok.buy2let.legal.opensource.mit :as mit]
             [wkok.buy2let.legal.opensource.epl :as epl]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.paper :refer [paper]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.link :refer [link]]
-            [reagent-material-ui.core.table-container :refer [table-container]]
-            [reagent-material-ui.core.table-head :refer [table-head]]
-            [reagent-material-ui.core.table-body :refer [table-body]]
-            [reagent-material-ui.core.table-row :refer [table-row]]
-            [reagent-material-ui.core.table-cell :refer [table-cell]]
-            [reagent-material-ui.core.table :refer [table]]
-            [reagent-material-ui.core.grid :refer [grid]]))
+            [wkok.buy2let.site.styles :refer [classes]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.paper :refer [paper]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.link :refer [link]]
+            [reagent-mui.material.table-container :refer [table-container]]
+            [reagent-mui.material.table-head :refer [table-head]]
+            [reagent-mui.material.table-body :refer [table-body]]
+            [reagent-mui.material.table-row :refer [table-row]]
+            [reagent-mui.material.table-cell :refer [table-cell]]
+            [reagent-mui.material.table :refer [table]]
+            [reagent-mui.material.grid :refer [grid]]))
 
 (def packages
   [{:name "reagent-project/reagent"
@@ -103,7 +104,7 @@
     :copyright ["Copyright (c) 2015 Juho Vepsalainen"]}])
 
 (defn opensource
-  [{:keys [classes]}]
+  []
   (rf/dispatch [:set-fab-actions nil])
   [paper {:class (:paper classes)}
    [grid {:container true
@@ -132,9 +133,9 @@
              #(rf/dispatch [::se/dialog {:panel [text-field {:multiline true
                                                              :value (-> package :license :text)
                                                              :disabled true
-                                                             :rows-max 1000
+                                                             :max-rows 1000
                                                              :style {:width "800px"}
-                                                             :InputProps {:classes 
+                                                             :InputProps {:classes
                                                                           {:input (:legal classes)}}}
                                                  ]
                                          :buttons   {:middle {:text     "Close"

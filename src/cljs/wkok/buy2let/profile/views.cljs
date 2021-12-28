@@ -6,30 +6,31 @@
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.profile.events :as pe]
+            [wkok.buy2let.site.styles :refer [classes]]
             [clojure.walk :as w]
             [clojure.string :as s]
             [fork.re-frame :as fork]
-            [reagent-material-ui.icons.account-circle :refer [account-circle]]
-            [reagent-material-ui.icons.link :refer [link]]
-            [reagent-material-ui.icons.link-off :refer [link-off]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.list :refer [list]]
-            [reagent-material-ui.core.tooltip :refer [tooltip]]
-            [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.button :refer [button]]
-            [reagent-material-ui.core.card-content :refer [card-content]]
-            [reagent-material-ui.core.card-actions :refer [card-actions]]
-            [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
-            [reagent-material-ui.core.avatar :refer [avatar]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.paper :refer [paper]]))
+            [reagent-mui.icons.account-circle :refer [account-circle]]
+            [reagent-mui.icons.link :refer [link]]
+            [reagent-mui.icons.link-off :refer [link-off]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.list :refer [list]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
+            [reagent-mui.material.card :refer [card]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.card-content :refer [card-content]]
+            [reagent-mui.material.card-actions :refer [card-actions]]
+            [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.list-item-icon :refer [list-item-icon]]
+            [reagent-mui.material.list-item-text :refer [list-item-text]]
+            [reagent-mui.material.list-subheader :refer [list-subheader]]
+            [reagent-mui.material.avatar :refer [avatar]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.paper :refer [paper]]))
 
-(defn avatar-upload 
-  [avatar-url-temp avatar-url {:keys [classes]} {:keys [handle-blur]}]
+(defn avatar-upload
+  [avatar-url-temp avatar-url {:keys [handle-blur]}]
   [:div
    [:input {:id        :avatar
             :name      "avatar"
@@ -56,7 +57,8 @@
                     (not (s/blank? (get errors field-name))))]
     ^{:key field-name}
     [grid {:item true}
-     [text-field {:name       field-name
+     [text-field {:variant :standard
+                  :name       field-name
                   :label      (-> field-name s/capitalize)
                   :margin      :normal
                   :type       (:type field)
@@ -75,7 +77,7 @@
   (when (s/blank? (get values "email"))
     {"email" "Email is required"}))
 
-(defn edit-profile [props]
+(defn edit-profile []
   (let [user @(rf/subscribe [::bs/local-user])
         avatar-url-temp @(rf/subscribe [::ss/avatar-url-temp])]
     [fork/form {:form-id            "id"
@@ -89,18 +91,18 @@
                 :initial-values     (w/stringify-keys (:profile @(rf/subscribe [:form-old])))}
      (fn [{:keys [form-id submitting? handle-submit] :as options}]
        [:form {:id form-id :on-submit handle-submit}
-        [paper {:class (get-in props [:classes :paper])}
+        [paper {:class (:paper classes)}
          [grid {:container true
                 :direction :column}
-          [avatar-upload avatar-url-temp (:avatar-url user) props options]
+          [avatar-upload avatar-url-temp (:avatar-url user) options]
           [build-input {:name :name} options]
           [build-input {:name :email
                         :type :email} options]
           [grid {:container true
                  :direction :row
-                 :justify :flex-start
+                 :justify-content :flex-start
                  :spacing 1
-                 :class (get-in props [:classes :buttons])}
+                 :class (:buttons classes)}
            [grid {:item true}
             [button {:variant :contained
                      :color :primary
@@ -114,7 +116,7 @@
                                     (js/window.history.back))}
              "Cancel"]]]]]])]))
 
-(defn view-profile [{:keys [classes]}]
+(defn view-profile []
   (rf/dispatch [:set-fab-actions nil])
   (let [user @(rf/subscribe [::bs/user])
         claims @(rf/subscribe [::bs/claims])
@@ -130,7 +132,7 @@
         [grid {:container true
                :direction :row
                :spacing 2
-               :justify :center}
+               :justify-content :center}
          [grid {:item true}
           (if (:avatar-url local-user)
             [avatar {:src (:avatar-url local-user) :class (:avatar-large classes)}]
@@ -140,11 +142,11 @@
                 :direction :column
                 :align-items :center}
           [grid {:item true}
-           [typography {:variant :h5} 
+           [typography {:variant :h5}
             (:name local-user)]]
           [grid {:item true
                  :container true
-                 :justify :center
+                 :justify-content :center
                  :spacing 1}
            [grid {:item true}
             [typography (:email local-user)]]
@@ -182,10 +184,8 @@
            [list-item-text {:primary "Link Facebook"}]])]]]]))
 
 
-(defn profile [props]
+(defn profile []
   (rf/dispatch [:set-fab-actions nil])
   (case @(rf/subscribe [::ss/active-panel])
-    :profile-edit [edit-profile props]
-    [view-profile props]))
-
-
+    :profile-edit [edit-profile]
+    [view-profile]))

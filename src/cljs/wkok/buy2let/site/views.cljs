@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [reagent.core :as ra]
    [clojure.string :as str]
+   [wkok.buy2let.site.styles :refer [classes custom-styles]]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -23,49 +24,48 @@
    [wkok.buy2let.backend.subs :as bs]
    [wkok.buy2let.account.subs :as as]
    [wkok.buy2let.backend.multimethods :as mm]
-   [reagent-material-ui.icons.account-circle :refer [account-circle]]
-   [reagent-material-ui.icons.dashboard :refer [dashboard]]
-   [reagent-material-ui.icons.receipt :refer [receipt]]
-   [reagent-material-ui.icons.menu :as icons-menu]
-   [reagent-material-ui.icons.category :refer [category]]
-   [reagent-material-ui.icons.info :refer [info]]
-   [reagent-material-ui.icons.assessment :refer [assessment]]
-   [reagent-material-ui.icons.apartment :refer [apartment]]
-   [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
-   [reagent-material-ui.colors :as colors]
-   [reagent-material-ui.core.css-baseline :refer [css-baseline]]
-   [reagent-material-ui.core.snackbar :refer [snackbar]]
-   [reagent-material-ui.lab.alert :refer [alert]]
-   [reagent-material-ui.core.menu :refer [menu]]
-   [reagent-material-ui.core.menu-item :refer [menu-item]]
-   [reagent-material-ui.core.grid :refer [grid]]
-   [reagent-material-ui.core.fab :refer [fab]]
-   [reagent-material-ui.core.avatar :refer [avatar]]
-   [reagent-material-ui.core.tooltip :refer [tooltip]]
-   [reagent-material-ui.core.button :refer [button]]
-   [reagent-material-ui.core.app-bar :refer [app-bar]]
-   [reagent-material-ui.core.divider :refer [divider]]
-   [reagent-material-ui.core.hidden :refer [hidden]]
-   [reagent-material-ui.core.text-field :refer [text-field]]
-   [reagent-material-ui.core.drawer :refer [drawer]]
-   [reagent-material-ui.core.backdrop :refer [backdrop]]
-   [reagent-material-ui.core.list :refer [list]]
-   [reagent-material-ui.core.linear-progress :refer [linear-progress]]
-   [reagent-material-ui.core.circular-progress :refer [circular-progress]]
-   [reagent-material-ui.core.list-item :refer [list-item]]
-   [reagent-material-ui.core.list-item-icon :refer [list-item-icon]]
-   [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-   [reagent-material-ui.core.typography :refer [typography]]
-   [reagent-material-ui.core.icon-button :refer [icon-button]]
-   [reagent-material-ui.core.box :refer [box]]
-   [reagent-material-ui.core.toolbar :refer [toolbar]]
-   [reagent-material-ui.core.bottom-navigation :refer [bottom-navigation]]
-   [reagent-material-ui.core.bottom-navigation-action :refer [bottom-navigation-action]]
-   [reagent-material-ui.pickers.mui-pickers-utils-provider :refer [mui-pickers-utils-provider]]
-   [reagent-material-ui.styles :as styles]
-   [reagent-material-ui.core.dialog :refer [dialog]]
-   [reagent-material-ui.core.dialog-title :refer [dialog-title]]
-   [reagent-material-ui.core.dialog-content :refer [dialog-content]])
+   [reagent-mui.icons.account-circle :refer [account-circle]]
+   [reagent-mui.icons.dashboard :refer [dashboard]]
+   [reagent-mui.icons.receipt :refer [receipt]]
+   [reagent-mui.icons.menu :as icons-menu]
+   [reagent-mui.icons.category :refer [category]]
+   [reagent-mui.icons.info :refer [info]]
+   [reagent-mui.icons.assessment :refer [assessment]]
+   [reagent-mui.icons.apartment :refer [apartment]]
+   [reagent-mui.cljs-time-adapter :refer [cljs-time-adapter]]
+   [reagent-mui.lab.localization-provider :refer [localization-provider]]
+   [reagent-mui.colors :as colors]
+   [reagent-mui.material.css-baseline :refer [css-baseline]]
+   [reagent-mui.material.snackbar :refer [snackbar]]
+   [reagent-mui.material.alert :refer [alert]]
+   [reagent-mui.material.menu :refer [menu]]
+   [reagent-mui.material.menu-item :refer [menu-item]]
+   [reagent-mui.material.grid :refer [grid]]
+   [reagent-mui.material.fab :refer [fab]]
+   [reagent-mui.material.avatar :refer [avatar]]
+   [reagent-mui.material.tooltip :refer [tooltip]]
+   [reagent-mui.material.button :refer [button]]
+   [reagent-mui.material.app-bar :refer [app-bar]]
+   [reagent-mui.material.divider :refer [divider]]
+   [reagent-mui.material.text-field :refer [text-field]]
+   [reagent-mui.material.drawer :refer [drawer]]
+   [reagent-mui.material.backdrop :refer [backdrop]]
+   [reagent-mui.material.list :refer [list]]
+   [reagent-mui.material.linear-progress :refer [linear-progress]]
+   [reagent-mui.material.circular-progress :refer [circular-progress]]
+   [reagent-mui.material.list-item :refer [list-item]]
+   [reagent-mui.material.list-item-icon :refer [list-item-icon]]
+   [reagent-mui.material.list-item-text :refer [list-item-text]]
+   [reagent-mui.material.typography :refer [typography]]
+   [reagent-mui.material.icon-button :refer [icon-button]]
+   [reagent-mui.material.box :refer [box]]
+   [reagent-mui.material.toolbar :refer [toolbar]]
+   [reagent-mui.material.bottom-navigation :refer [bottom-navigation]]
+   [reagent-mui.material.bottom-navigation-action :refer [bottom-navigation-action]]
+   [reagent-mui.styles :as styles]
+   [reagent-mui.material.dialog :refer [dialog]]
+   [reagent-mui.material.dialog-title :refer [dialog-title]]
+   [reagent-mui.material.dialog-content :refer [dialog-content]])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -82,83 +82,18 @@
          "/" (-> (:to-month options) name)
          "/" (-> (:to-year options) name))))
 
-(defn fab-button [props]
+(defn fab-button []
   (when-let [actions @(rf/subscribe [::subs/fab-actions])]
     [tooltip {:title (-> actions :left-1 :title)}
      [fab {:color :primary
-           :class (get-in props [:classes :fab])
+           :class (:fab classes)
            :on-click (-> actions :left-1 :fn)}
       (-> actions :left-1 :icon)]]))
 
-(defn splash [props]
+(defn splash []
   [backdrop {:open @(rf/subscribe [::subs/splash])
-             :class (get-in props [:classes :splash])}
+             :class (:splash classes)}
    [circular-progress]])
-
-(defn custom-styles [{:keys [spacing breakpoints z-index palette]}]
-  (let [up (:up breakpoints)
-        drawer-width 200]
-    {:root {:display :flex}
-     :drawer {(up "sm") {:width drawer-width, :flex-shrink 0}}
-     :app-bar {(up "sm") {:width (str "calc(100% - " drawer-width "px)") :margin-left drawer-width}}
-     :toolbar {:margin-top "-4px"}
-     :title {:flex-grow 1}
-     :avatar-small {:width (spacing 3)
-                    :height (spacing 3)}
-     :avatar-medium {:width (spacing 7)
-                     :height (spacing 7)}
-     :avatar-large {:width (spacing 10)
-                    :height (spacing 10)}
-     :pos {:color "blue"}
-     :neg {:color "red"}
-     :owe {:color "orange"}
-     :table-header {:font-weight 600}
-     :table-header-alternate {:font-weight 600
-                              :background-color (get-in palette [:action :hover])}
-     :table-header-pos {:color "blue"
-                        :font-weight 600}
-     :table-header-neg {:color "red"
-                        :font-weight 600}
-     :table-header-owe {:color "orange"
-                        :font-weight 600}
-     :table-header-alternate-pos {:color "blue"
-                                  :font-weight 600
-                                  :background-color (get-in palette [:action :hover])}
-     :table-header-alternate-neg {:color "red"
-                                  :font-weight 600
-                                  :background-color (get-in palette [:action :hover])}
-     :table-header-alternate-owe {:color "orange"
-                                  :font-weight 600
-                                  :background-color (get-in palette [:action :hover])}
-     :table-alternate {:background-color (get-in palette [:action :hover])}
-     :brand-logo {:padding "0.5em"}
-     :brand-name {:padding "0.5em"}
-     :menu-button {(up "sm") {:display :none}
-                   :margin-right (spacing 2)}
-     :drawer-paper {:width drawer-width}
-     :reconcile-card {:height :7em}
-     :content {:flex-grow 1
-               :padding (spacing 2)
-               :padding-top (spacing 8)
-               :padding-bottom (spacing 17)
-               :overflow-x :hidden}
-     :buttons {:padding-top (spacing 1)}
-     :fab {(up "xs") {:position :fixed
-                      :bottom (spacing 8)
-                      :right (spacing 1)
-                      :z-index (+ (:drawer z-index) 1)}
-           (up "sm") {:position :fixed
-                      :bottom (spacing 2)
-                      :right (spacing 2)
-                      :z-index (+ (:drawer z-index) 1)}}
-     :splash {:z-index (+ (:drawer z-index) 1)}
-     :wizard-actions {:margin-top (spacing 2)}
-     :who-pays-whom {:padding-left (spacing 4)}
-     :paper {:padding (spacing 2)}
-     :legal {:font-size :0.8em
-             :color (get-in palette [:text :primary])}}))
-
-(def with-custom-styles (styles/with-styles custom-styles))
 
 (defn handle-drawer-toggle []
   (let [mobile-open @(rf/subscribe [::subs/nav-menu-show])]
@@ -170,7 +105,7 @@
     [linear-progress {:variant :determinate
                       :value 100}]))
 
-(defn profile [classes]
+(defn profile []
   (let [target @(rf/subscribe [::subs/profile-menu-show])
         handle-close #(rf/dispatch [::se/toggle-profile-menu nil])
         profile-menu-fn #(rf/dispatch [::se/toggle-profile-menu (.-currentTarget %)])]
@@ -192,7 +127,7 @@
       [divider]
       [menu-item {:on-click #(rf/dispatch [:sign-out])} "Sign out"]]]))
 
-(defn header [{:keys [classes]}]
+(defn header []
   [app-bar {:position :fixed
             :class (:app-bar classes)}
    [progress-bar]
@@ -206,7 +141,7 @@
     [typography {:variant :h5
                  :no-wrap true
                  :class (:title classes)} @(rf/subscribe [::subs/heading])]
-    [profile classes]]])
+    [profile]]])
 
 (defn navigate [view]
   (let [properties @(rf/subscribe [::cs/properties])
@@ -222,10 +157,10 @@
     (js/window.location.assign hash)
     (rf/dispatch [::se/show-nav-menu false])))
 
-(defn brand [{:keys [classes]}]
+(defn brand []
   (let [account-id  @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
-        account (when (and account-id accounts) 
+        account (when (and account-id accounts)
                   (account-id accounts))]
     [grid {:container true
            :direction :row
@@ -233,8 +168,7 @@
            :align-items :center}
      [grid {:item true
             :xs 4
-            :class (:brand-logo classes)
-            }
+            :class (:brand-logo classes)}
       [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
                :variant :rounded
                :class (:avatar-medium classes)} ":)"]]
@@ -248,9 +182,9 @@
       [grid {:item true}
        [typography {:variant :caption} (:name account)]]]]))
 
-(defn nav [{:keys [classes] :as props}]
+(defn nav []
   (let [drawer_ [:div
-                 [brand props]
+                 [brand]
                  [divider]
                  [list
                   [list-item {:button true
@@ -279,20 +213,20 @@
                    [list-item-icon [info]]
                    [list-item-text {:primary "About"}]]]]]
     [:nav {:class (:drawer classes)}
-     [hidden {:sm-up true}
-      [drawer {:container (.. js/window -document -body)
-               :variant :temporary
-               :anchor :left
-               :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
-               :on-close handle-drawer-toggle
-               :classes {:paper (:drawer-paper classes)}
-               :Modal-props {:keep-mounted true}}
-       drawer_]]
-     [hidden {:xs-down true}
-      [drawer {:classes {:paper (:drawer-paper classes)}
-               :variant :permanent
-               :open true}
-       drawer_]]]))
+     [drawer {:container (.. js/window -document -body)
+              :variant :temporary
+              :anchor :left
+              :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
+              :on-close handle-drawer-toggle
+              :class (:drawer-paper classes)
+              :Modal-props {:keep-mounted true}
+              :sx {:display {:xs :block :sm :none}}}
+      drawer_]
+     [drawer {:class (:drawer-paper classes)
+              :variant :permanent
+              :open true
+              :sx {:display {:xs :none :sm :block}}}
+      drawer_]]))
 
 (defn bottom-nav []
   (let [active-page @(rf/subscribe [::subs/active-page])
@@ -323,45 +257,49 @@
                                  :icon (ra/as-element [assessment])
                                  :value :report}]]]))
 
-(defn main [{:keys [classes] :as props}]
+(defn main []
   [:main {:class (:content classes)}
    (when-let [active-page @(rf/subscribe [::subs/active-page])]
      (condp = active-page
        :wizard [wizard/wizard]
        :dashboard [dashboard/dashboard]
-       :reconcile [reconcile/reconcile props]
-       :report [report/report props]
-       :properties [crud-impl/properties props]
-       :charges [crud-impl/charges props]
-       :delegates [crud-impl/delegates props]
+       :reconcile [reconcile/reconcile]
+       :report [report/report]
+       :properties [crud-impl/properties]
+       :charges [crud-impl/charges]
+       :delegates [crud-impl/delegates]
        :subscription [subscription/subscription]
-       :profile [profile/profile props]
-       :account [account/account props]
-       :about [about/about props]
-       :opensource [opensource/opensource props]))])
+       :profile [profile/profile]
+       :account [account/account]
+       :about [about/about]
+       :opensource [opensource/opensource]))])
+
+(defn sign-in-form* [{:keys [class-name]}]
+  [:div {:class [class-name (:root classes)]}
+   [dialog {:open true
+            :on-close (fn [_event reason]
+                        (when (#{"backdropClick" "escapeKeyDown"} reason)
+                          #_"Do Nothing"))}
+    [dialog-title "Sign in"]
+    [dialog-content
+     [grid {:container true
+            :direction :column
+            :align-items :center
+            :spacing 2}
+      [grid {:item true}
+       [text-field {:variant :standard :label "Email" :type :email :value "demo@email.com" :on-change #()}]]
+      [grid {:item true}
+       [text-field {:variant :standard :label "Password" :type :password :value "***********" :on-change #()}]]
+      [grid {:item true}
+       [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]])
+
+(def sign-in-form (styles/styled sign-in-form* custom-styles))
 
 (defn sign-in-panel []
   [:div
    [css-baseline]
-   [styles/theme-provider (styles/create-mui-theme {:palette {:primary colors/blue}})
-    [(with-custom-styles
-       (fn [{:keys [classes]}]
-         [:div {:class (:root classes)}
-          [dialog {:open true
-                   :disable-backdrop-click true
-                   :disable-escape-key-down true}
-           [dialog-title "Sign in"]
-           [dialog-content 
-            [grid {:container true
-                   :direction :column
-                   :align-items :center
-                   :spacing 2}
-             [grid {:item true}
-              [text-field {:label "Email" :type :email :value "demo@email.com" :on-change #()}]]
-             [grid {:item true}
-              [text-field {:label "Password" :type :password :value "***********" :on-change #()}]]
-             [grid {:item true}
-              [button {:variant :contained :color :primary :on-click #(rf/dispatch [::be/sign-in :google])} "Sign in"]]]]]]))]]])
+   [styles/theme-provider (styles/create-theme {:palette {:primary colors/blue}})
+    [sign-in-form]]])
 
 (defn error-snack []
   (let [error @(rf/subscribe [::subs/snack-error])]
@@ -371,37 +309,36 @@
      [alert {:severity :error
              :on-close #(rf/dispatch [::se/set-snack-error])} error]]))
 
+(defn main-form* [{:keys [class-name]}]
+  [:div {:class [class-name (:root classes)]}
+   [error-snack]
+   [splash]
+   [fab-button]
+   [header]
+   [nav]
+   [main]
+   [bottom-nav]
+   [dialog/create-dialog]
+   [dialog/active-properties-dialog]])
+
+(def main-form (styles/styled main-form* custom-styles))
+
 (defn main-panel []
   (let [mode @(rf/subscribe [::bs/mode])]
     [:div
      [css-baseline]
-     [mui-pickers-utils-provider {:utils  cljs-time-utils
-                                  :locale DateTimeSymbols_en_US}
-      [styles/theme-provider (-> (styles/create-mui-theme {:palette {:primary (case mode
-                                                                                :live colors/blue
-                                                                                :test colors/pink)
-                                                                     :secondary (case mode
-                                                                                  :live colors/pink
-                                                                                  :test colors/blue)}})
-                                 (styles/responsive-font-sizes))
+     [localization-provider {:date-adapter cljs-time-adapter
+                             :locale DateTimeSymbols_en_US}
+      [styles/theme-provider (-> (styles/create-theme {:palette {:primary (case mode
+                                                                            :live colors/blue
+                                                                            :test colors/pink)
+                                                                 :secondary (case mode
+                                                                              :live colors/pink
+                                                                              :test colors/blue)}})
+                               (styles/responsive-font-sizes))
        [grid {:container true
               :direction :row
-              :justify   :flex-start}
+              :justify-content :flex-start}
         [grid {:item true
                :xs   12}
-         [(with-custom-styles
-            (fn [{:keys [classes] :as props}]
-              [:div {:class (:root classes)}
-               [error-snack]
-               [splash props]
-               [fab-button props]
-               [header props]
-               [nav props]
-               [main props]
-               [bottom-nav]
-               [dialog/create-dialog]
-               [dialog/active-properties-dialog]]))]]]]]]))
-
-
-
-
+         [main-form]]]]]]))

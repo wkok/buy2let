@@ -8,20 +8,20 @@
             [wkok.buy2let.dashboard.events :as de]
             [wkok.buy2let.dashboard.subs :as ds]
             [wkok.buy2let.db.subs :as dbs]
-            [tick.alpha.api :as t]
+            [tick.core :as t]
             [cljc.java-time.month :as tm]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.box :refer [box]]
-            [reagent-material-ui.core.switch-component :refer [switch]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.card-actions :refer [card-actions]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.card-content :refer [card-content]]))
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.card :refer [card]]
+            [reagent-mui.material.box :refer [box]]
+            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.card-actions :refer [card-actions]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.card-content :refer [card-content]]))
 
-(defn chart-data 
+(defn chart-data
   [{:keys [property-id months ledger properties this-month this-year]}]
   (->> months
        (map #(assoc % :profit (shared/calc-profit-total ledger % properties property-id)))
@@ -33,20 +33,21 @@
                        (shared/format-money (:profit m)))]))
        (concat [["Month" "Profit / loss" {:type :string :role :style} {:type :string :role :annotation}]])))
 
-(defn monthly-profit-card 
+(defn monthly-profit-card
   [{:keys [currency data properties incl-this-month today-month]}]
   [grid {:item true}
    [card
     [card-content
      [grid {:container true
             :direction :row
-            :justify :space-between}
+            :justify-content :space-between}
       [grid {:item true}
        [typography {:color :textSecondary} (if (= :none currency)
                                              "Monthly profit / loss"
                                              (str "Monthly profit / loss (" currency ")"))]]
       [grid {:item true}
        [text-field {:select true
+                    :variant :standard
                     :label ""
                     :field     :list
                     :on-change #(rf/dispatch [::de/set-active-property (keyword currency) (.. % -target -value)])
@@ -65,7 +66,7 @@
        :curveType :function}]]
     [card-actions
      [grid {:container true
-            :justify :flex-end}
+            :justify-content :flex-end}
       [grid {:item true}
        [box {:mr 1}
         [form-control-label
@@ -84,9 +85,9 @@
 (defn dashboard []
   (rf/dispatch [:set-fab-actions nil])
   (let [incl-this-month @(rf/subscribe [::ds/incl-this-month])
-        today (t/- (t/today) (t/new-period (if incl-this-month 0 1) :months))
+        today (t/<< (t/today) (t/new-period (if incl-this-month 0 1) :months))
         today-month (-> (t/today) t/month str (subs 0 3) s/capitalize)
-        last (t/- today (t/new-period 11 :months))
+        last (t/<< today (t/new-period 11 :months))
         this-year (-> today t/year str keyword)
         this-month (-> today t/month tm/ordinal inc str keyword)
         last-year (-> last t/year str keyword)
@@ -118,4 +119,3 @@
                               :properties (:properties data)
                               :incl-this-month incl-this-month
                               :today-month today-month}]])]))
-

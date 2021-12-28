@@ -10,22 +10,22 @@
             [wkok.buy2let.subscription.events :as subse]
             [wkok.buy2let.subscription.subs :as subss]
             [wkok.buy2let.account.subs :as as]
-            [reagent-material-ui.core.button :refer [button]]
-            [reagent-material-ui.core.dialog :refer [dialog]]
-            [reagent-material-ui.core.dialog-title :refer [dialog-title]]
-            [reagent-material-ui.core.dialog-content :refer [dialog-content]]
-            [reagent-material-ui.core.dialog-content-text :refer [dialog-content-text]]
-            [reagent-material-ui.core.dialog-actions :refer [dialog-actions]]
-            [reagent-material-ui.core.form-control :refer [form-control]]
-            [reagent-material-ui.core.input-label :refer [input-label]]
-            [reagent-material-ui.core.select :refer [select]]
-            [reagent-material-ui.core.checkbox :refer [checkbox]]
-            [reagent-material-ui.core.box :refer [box]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]))
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.dialog :refer [dialog]]
+            [reagent-mui.material.dialog-title :refer [dialog-title]]
+            [reagent-mui.material.dialog-content :refer [dialog-content]]
+            [reagent-mui.material.dialog-content-text :refer [dialog-content-text]]
+            [reagent-mui.material.dialog-actions :refer [dialog-actions]]
+            [reagent-mui.material.form-control :refer [form-control]]
+            [reagent-mui.material.input-label :refer [input-label]]
+            [reagent-mui.material.select :refer [select]]
+            [reagent-mui.material.checkbox :refer [checkbox]]
+            [reagent-mui.material.box :refer [box]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.list-item-text :refer [list-item-text]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]))
 
 (defn make-button [btn]
   [button {:color (or (:color btn) :primary)
@@ -35,9 +35,11 @@
 (defn create-dialog []
   (let [dlg @(rf/subscribe [::subs/dialog])]
     [dialog {:open (not (nil? dlg))
-             :disable-backdrop-click (not (:closeable dlg true))
-             :disable-escape-key-down (not (:closeable dlg true))
-             :on-close #(rf/dispatch [::se/dialog])}
+             :on-close (fn [_event reason]
+                         (if (#{"backdropClick" "escapeKeyDown"} reason)
+                           (when (:closeable dlg true)
+                             (rf/dispatch [::se/dialog]))
+                           (rf/dispatch [::se/dialog])))}
      (when-let [heading (:heading dlg)]
        [dialog-title heading])
      (when-let [message (:message dlg)]
@@ -55,7 +57,7 @@
 
 (defn active-properties-dialog []
   (let [properties @(rf/subscribe [::cs/all-properties])
-        active-properties (or @(rf/subscribe [::subss/subscription-active-properties]) 
+        active-properties (or @(rf/subscribe [::subss/subscription-active-properties])
                               (map #(-> % :id name) properties))
         acknowledged @(rf/subscribe [::subss/inactive-delete-ack])
         account-id @(rf/subscribe [::as/account])
@@ -64,9 +66,10 @@
         subscribed-properties (get-in account [:subscription :properties])
         a (map (fn [p] (-> p :id name)) properties)]
     [dialog {:open @(rf/subscribe [::subss/show-active-properties-dialog])
-             :disable-backdrop-click true
-             :disable-escape-key-down true
-             :on-close #()}
+             :on-close (fn [_event reason]
+                         (when (#{"backdropClick" "escapeKeyDown"} reason)
+                           "do nothing?"
+                           nil))}
      [dialog-title "Subscription changed"]
      [dialog-content
       [grid {:container true
@@ -100,7 +103,7 @@
           {:multiple true
            :value active-properties
            :render-value #(str (count %) " selected")
-          ;;  :render-value #(->> (map (fn [s] (-> (shared/by-id (keyword s) properties) :name)) %) 
+          ;;  :render-value #(->> (map (fn [s] (-> (shared/by-id (keyword s) properties) :name)) %)
           ;;                      (str/join ", "))
            :on-change #(rf/dispatch [::subse/set-active-subscription-properties (-> % .-target .-value js->clj)])}
           (for [property properties]

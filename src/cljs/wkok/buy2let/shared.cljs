@@ -4,22 +4,23 @@
             [clojure.string :as s]
             [goog.string :as gstring]
             goog.string.format   ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
-            [reagent-material-ui.cljs-time-utils :refer [cljs-time-utils]]
             [cljc.java-time.month :as tm]
-            [tick.alpha.api :as t]
+            [tick.core :as t]
+            [tick.alpha.interval :as t.i]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.spec :as spec]
             [cemerick.url :as url]
-            [reagent-material-ui.core.link :refer [link]])
+            [reagent-mui.colors :as colors]
+            [reagent-mui.material.link :refer [link]])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
 
 (def default-cal
   (let [today (t/today)
-        last (t/- today (t/new-period 2 :months))]
+        last (t/<< today (t/new-period 2 :months))]
 
     {:today today
      :last last
@@ -27,9 +28,6 @@
      :this-month (-> today t/month tm/ordinal inc str keyword)
      :last-year (-> last t/year str keyword)
      :last-month (-> last t/month tm/ordinal inc str keyword)}))
-
-
-(def date-utils (cljs-time-utils #js {:locale DateTimeSymbols_en_US}))
 
 (defn gen-id []
   (-> (nid/nano-id) keyword))
@@ -58,7 +56,7 @@
         to (t/new-date (-> (:year to) name js/parseInt)
                        (-> (:month to) name js/parseInt) 1)
         interval (when (>= to from)
-                   (t/new-interval from to))]
+                   (t.i/new-interval from to))]
     (when (not (nil? interval))
       (->> (t/range (t/beginning interval)
                     (t/end interval)
@@ -112,8 +110,8 @@
         downloaded? #(contains? (get-in db [:ledger property %1]) %2)
         m (filter #(not (downloaded? (:year %) (:month %))) months)]
     (when (seq m)
-      (mm/get-ledger-fx {   :property property 
-                         :account-id account-id 
+      (mm/get-ledger-fx {   :property property
+                         :account-id account-id
                          :months m
                          :on-success #(rf/dispatch [:load-ledger-month %])}))))
 
@@ -234,7 +232,7 @@
 (defn url-hash []
   (-> (url-location) .-hash))
 
-(defn url-param 
+(defn url-param
   ([param]
    (url-param param nil))
   ([param default]

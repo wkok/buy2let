@@ -12,3 +12,4 @@
 karma
 resources/public/js/
 .vscode/tasks.json
+/.dir-locals.el

@@ -9,33 +9,35 @@
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.account.events :as ae]
             [wkok.buy2let.account.subs :as as]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.list :refer [list]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.checkbox :refer [checkbox]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.card-actions :refer [card-actions]]
-            [reagent-material-ui.core.card-content :refer [card-content]]
-            [reagent-material-ui.core.button :refer [button]]
-            [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.list-item-secondary-action :refer [list-item-secondary-action]]
-            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.icon-button :refer [icon-button]]
-            [reagent-material-ui.core.tooltip :refer [tooltip]]
-            [reagent-material-ui.core.avatar :refer [avatar]]
-            [reagent-material-ui.icons.person-add :refer [person-add]]
-            [reagent-material-ui.icons.card-membership :refer [card-membership]]
-            [reagent-material-ui.icons.cancel :refer [cancel]]
-            [reagent-material-ui.icons.delete-icon :refer [delete]]
-            [reagent-material-ui.core.paper :refer [paper]]))
+            [wkok.buy2let.site.styles :refer [classes]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.list :refer [list]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.checkbox :refer [checkbox]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.card :refer [card]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.card-actions :refer [card-actions]]
+            [reagent-mui.material.card-content :refer [card-content]]
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.list-item-text :refer [list-item-text]]
+            [reagent-mui.material.list-item-secondary-action :refer [list-item-secondary-action]]
+            [reagent-mui.material.list-subheader :refer [list-subheader]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.icon-button :refer [icon-button]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
+            [reagent-mui.material.avatar :refer [avatar]]
+            [reagent-mui.icons.person-add :refer [person-add]]
+            [reagent-mui.icons.card-membership :refer [card-membership]]
+            [reagent-mui.icons.cancel :refer [cancel]]
+            [reagent-mui.icons.delete-icon :refer [delete]]
+            [reagent-mui.material.paper :refer [paper]]))
 
 (defn select-account []
   (let [accounts @(rf/subscribe [::as/accounts])]
-    [text-field {:select true
+    [text-field {:variant :standard
+                 :select true
                  :label "Account"
                  :field     :list
                  :on-change #(rf/dispatch [:select-account (-> % .-target .-value keyword)])
@@ -104,7 +106,8 @@
                     (not (s/blank? (get errors field-name))))]
     ^{:key field-name}
     [grid {:item true}
-     [text-field {:name       field-name
+     [text-field {:variant :standard
+                  :name       field-name
                   :label      (-> field-name s/capitalize)
                   :margin      :normal
                   :type       (:type field)
@@ -116,7 +119,7 @@
                   :helper-text (when error? (get errors field-name))}]]))
 
 (defn avatar-upload
-  [avatar-url-temp avatar-url {:keys [classes]} {:keys [handle-blur]}]
+  [avatar-url-temp avatar-url {:keys [handle-blur]}]
   [:div
    [:input {:id        :avatar
             :name      "avatar"
@@ -133,7 +136,7 @@
        [avatar {:src avatar-url-temp :variant :rounded :class (:avatar-large classes)} ":)"]
        [avatar {:src avatar-url :variant :rounded :class (:avatar-large classes)} ":)"])]]])
 
-(defn edit-account [props]
+(defn edit-account []
   (let [account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))
@@ -149,16 +152,16 @@
                 :initial-values     (w/stringify-keys (:account @(rf/subscribe [:form-old])))}
      (fn [{:keys [form-id submitting? handle-submit] :as options}]
        [:form {:id form-id :on-submit handle-submit}
-        [paper {:class (get-in props [:classes :paper])}
+        [paper {:class (:paper classes)}
          [grid {:container true
                 :direction :column}
-          [avatar-upload avatar-url-temp (or (:avatar-url account) "images/icon/icon-128.png") props options]
+          [avatar-upload avatar-url-temp (or (:avatar-url account) "images/icon/icon-128.png") options]
           [build-input {:name :name} options]
           [grid {:container true
                  :direction :row
-                 :justify :flex-start
+                 :justify-content :flex-start
                  :spacing 1
-                 :class (get-in props [:classes :buttons])}
+                 :class (:buttons classes)}
            [grid {:item true}
             [button {:variant :contained
                      :color :primary
@@ -178,7 +181,7 @@
     [grid {:container true
            :direction :row
            :spacing 2
-           :justify :center}
+           :justify-content :center}
      [grid {:item true}
       [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
                :variant :rounded
@@ -246,7 +249,7 @@
                         :on-click on-delete}
            [delete]]]])]]))
 
-(defn view-account [{:keys [classes]}]
+(defn view-account []
   (rf/dispatch [:set-fab-actions nil])
   (let [account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
@@ -267,8 +270,8 @@
           [account-settings account classes]]]])]))
 
 
-(defn account [props]
+(defn account []
   (rf/dispatch [:set-fab-actions nil])
   (case @(rf/subscribe [::ss/active-panel])
-    :account-edit [edit-account props]
-    [view-account props]))
+    :account-edit [edit-account]
+    [view-account]))

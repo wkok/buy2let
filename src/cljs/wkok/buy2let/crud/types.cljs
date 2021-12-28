@@ -5,17 +5,18 @@
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.backend.subs :as bs]
+            [wkok.buy2let.site.styles :refer [classes]]
             [goog.crypt.base64 :as b64]
             [clojure.string :as s]
-            [reagent-material-ui.icons.add :refer [add]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.checkbox :refer [checkbox]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
-            [reagent-material-ui.core.list :refer [list]]))
+            [reagent-mui.icons.add :refer [add]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.checkbox :refer [checkbox]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.list-subheader :refer [list-subheader]]
+            [reagent-mui.material.list :refer [list]]))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -67,11 +68,12 @@
                                  :label (:name charge)}]]
                               (when charge-selected
                                 [grid {:item true :xs 12 :sm 6
-                                       :class (get-in props [:classes :who-pays-whom])}
+                                       :class (:who-pays-whom classes)}
                                  (let [field-name (str charge-id "-wpw")
                                        error? (and (touched field-name)
                                                    (not (s/blank? (get errors field-name))))]
-                                   [text-field {:select true
+                                   [text-field {:variant :standard
+                                                :select true
                                                 :name      field-name
                                                 :label "Arrangement"
                                                 :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) "")
@@ -118,7 +120,7 @@
              "ACTIVE"))))
 
 (defn create-invite [item]
-  (if (:send-invite item) 
+  (if (:send-invite item)
     (assoc item :invitation
          (let [accounts @(rf/subscribe [::as/accounts])
                account-id @(rf/subscribe [::as/account])
@@ -140,7 +142,7 @@
   (let [weighted {1 "viewer"
                   2 "editor"
                   3 "owner"}]
-    
+
     (->> (map (fn [role]
                 (let [role-idx (->> (filter #(= role (val %)) weighted)
                                     first

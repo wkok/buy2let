@@ -1,7 +1,7 @@
 (ns wkok.buy2let.db.events
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.effects :as sfx]
-            [tick.alpha.api :as t]
+            [tick.core :as t]
             [wkok.buy2let.db.default :as ddb]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.backend.multimethods :as mm]
@@ -66,14 +66,14 @@
     (let [db (:db cofx)
           account-id (get-in db [:security :account])
           today (t/today)
-          last (t/- today (t/new-period 1 :years))
+          last (t/<< today (t/new-period 1 :years))
           this-year (-> today t/year str keyword)
           last-year (-> last t/year str keyword)]
       (if-not (empty? (:properties db))
         (merge {:db             (assoc-in db [:site :show-progress] true)}
-               (mm/get-ledger-year-fx {                 :properties (:properties db) 
-                                       :account-id account-id 
-                                       :this-year this-year 
+               (mm/get-ledger-year-fx {                 :properties (:properties db)
+                                       :account-id account-id
+                                       :this-year this-year
                                        :last-year last-year
                                        :on-success #(rf/dispatch [:load-ledger-year %])}))
         {:db db}))))

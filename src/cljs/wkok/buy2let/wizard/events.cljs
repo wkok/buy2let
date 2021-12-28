@@ -3,7 +3,7 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.reconcile.events :as re]
             [wkok.buy2let.shared :as shared]
-            [tick.alpha.api :as t]
+            [tick.core :as t]
             [cljc.java-time.month :as tm]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.crud.types :as types]))

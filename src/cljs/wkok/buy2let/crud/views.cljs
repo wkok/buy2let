@@ -6,33 +6,34 @@
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.currencies :as currencies]
+            [wkok.buy2let.site.styles :refer [classes]]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
-            [reagent-material-ui.core.list :refer [list]]
-            [reagent-material-ui.core.paper :refer [paper]]
-            [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-            [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.typography :refer [typography]]
-            [reagent-material-ui.core.switch-component :refer [switch]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.select :refer [select]]
-            [reagent-material-ui.core.menu-item :refer [menu-item]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.form-control :refer [form-control]]
-            [reagent-material-ui.core.input-label :refer [input-label]]
-            [reagent-material-ui.core.checkbox :refer [checkbox]]
-            [reagent-material-ui.core.button :refer [button]]))
+            [reagent-mui.material.list :refer [list]]
+            [reagent-mui.material.paper :refer [paper]]
+            [reagent-mui.material.form-control-label :refer [form-control-label]]
+            [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.typography :refer [typography]]
+            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.select :refer [select]]
+            [reagent-mui.material.menu-item :refer [menu-item]]
+            [reagent-mui.material.list-item-text :refer [list-item-text]]
+            [reagent-mui.material.form-control :refer [form-control]]
+            [reagent-mui.material.input-label :refer [input-label]]
+            [reagent-mui.material.checkbox :refer [checkbox]]
+            [reagent-mui.material.button :refer [button]]))
 
 
 (defn row [item type]
   (let [default-field (-> (filter #(:default %) (:fields type)) first)
-        props {:button true
+        options {:button true
                :on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}]
     (if-let [secondary-field (:secondary default-field)]
-      [list-item props
+      [list-item options
        [list-item-text {:primary ((:key default-field) item) :secondary (secondary-field item)}]]
-      [list-item props
+      [list-item options
        [list-item-text {:primary ((:key default-field) item)}]])))
 
 (defn show? [item show-hidden]
@@ -40,7 +41,7 @@
     show-hidden
     true))
 
-(defn list-panel [type props]
+(defn list-panel [type]
   (if (shared/has-role :editor)
     (rf/dispatch [:set-fab-actions (get-in type [:actions :list])])
     (rf/dispatch [:set-fab-actions nil]))
@@ -49,7 +50,7 @@
     (if (empty? cruds)
       [grid {:container true
              :direction :column
-             :justify :center
+             :justify-content :center
              :align-items :center
              :style {:min-height "60vh"}
              :spacing 2}
@@ -57,7 +58,7 @@
         [typography {:variant :h5} (str "No " (-> type :type name) " yet")]]
        [grid {:item true}
         [typography (:empty-message type)]]]
-      [paper {:class (get-in props [:classes :paper])}
+      [paper {:class (:paper classes)}
        [grid {:container true
               :direction :column}
         [grid {:item true}
@@ -68,7 +69,7 @@
             [row item type])]]
         (when ((:show-show-hidden? type))
           [grid {:container true
-                 :justify :flex-end}
+                 :justify-content :flex-end}
            [grid {:item true}
             [form-control-label
              {:control (ra/as-element
@@ -86,7 +87,7 @@
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [grid {:item true}
-     
+
      [form-control-label
       {:control (ra/as-element
                  [checkbox {:name      field-name
@@ -105,7 +106,8 @@
                     (not (s/blank? (get errors field-name))))]
     ^{:key field-name}
     [grid {:item true}
-     [text-field {:name       field-name
+     [text-field {:variant :standard
+                  :name       field-name
                   :label      (-> field-name s/capitalize)
                   :type       (:type field)
                   :margin     :normal
@@ -137,7 +139,8 @@
   (let [field-name (name (:key field))]
     ^{:key field-name}
     [grid {:item true}
-     [text-field {:select true
+     [text-field {:variant :standard
+                  :select true
                   :name  field-name
                   :label (get field :label (-> field-name s/capitalize))
                   :value (values field-name "")
@@ -157,6 +160,7 @@
       [select
        {:name field-name
         :multiple true
+        :variant :standard
         :value (values field-name [])
         :render-value #(->> (map (fn [s] (get (:options field) s)) %) (s/join ", "))
         :on-change (if-let [on-change (:on-change field)]
@@ -193,7 +197,7 @@
                   (-> type :defaults :edit k)
                   v)})))
 
-(defn edit-panel [type props]
+(defn edit-panel [type]
   (rf/dispatch [:set-fab-actions nil])
   [fork/form {:form-id            "id"
               :path               :form
@@ -208,7 +212,7 @@
                                     (w/stringify-keys (-> type :defaults :add)))}
    (fn [{:keys [form-id submitting? handle-submit] :as options}]
      [:form {:id form-id :on-submit handle-submit}
-      [paper {:class (get-in props [:classes :paper])}
+      [paper {:class (:paper classes)}
        [grid {:container true
               :direction :column
               :spacing 1}
@@ -221,16 +225,16 @@
              :select-currency (build-select-currency field options)
              (build-input type field options))))
         (if-let [extra-fn (:extra type)]
-          (extra-fn props options))
+          (extra-fn options))
         (if-let [allow-hidden? (:allow-hidden? type)]
           (when (allow-hidden?)
             (build-hidden type options))
           (build-hidden type options))
         [grid {:container true
                :direction :row
-               :justify :flex-start
+               :justify-content :flex-start
                :spacing 1
-               :class (get-in props [:classes :buttons])}
+               :class (:buttons classes)}
          [grid {:item true}
           [button {:variant :contained
                    :color :primary

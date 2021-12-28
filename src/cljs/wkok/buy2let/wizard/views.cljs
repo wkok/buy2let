@@ -3,21 +3,21 @@
    [clojure.string :as str]
    [re-frame.core :as rf]
    [reagent.core :as ra]
-   [reagent-material-ui.core.paper :refer [paper]]
-   [reagent-material-ui.core.stepper :refer [stepper]]
-   [reagent-material-ui.core.step :refer [step]]
-   [reagent-material-ui.core.button :refer [button]]
-   [reagent-material-ui.core.step-label :refer [step-label]]
-   [reagent-material-ui.core.step-content :refer [step-content]]
-   [reagent-material-ui.core.grid :refer [grid]]
-   [reagent-material-ui.core.box :refer [box]]
-   [reagent-material-ui.core.typography :refer [typography]]
-   [reagent-material-ui.core.text-field :refer [text-field]]
-   [reagent-material-ui.core.radio :refer [radio]]
-   [reagent-material-ui.core.checkbox :refer [checkbox]]
-   [reagent-material-ui.core.form-control :refer [form-control]]
-   [reagent-material-ui.core.form-control-label :refer [form-control-label]]
-   [reagent-material-ui.core.radio-group :refer [radio-group]]
+   [reagent-mui.material.paper :refer [paper]]
+   [reagent-mui.material.stepper :refer [stepper]]
+   [reagent-mui.material.step :refer [step]]
+   [reagent-mui.material.button :refer [button]]
+   [reagent-mui.material.step-label :refer [step-label]]
+   [reagent-mui.material.step-content :refer [step-content]]
+   [reagent-mui.material.grid :refer [grid]]
+   [reagent-mui.material.box :refer [box]]
+   [reagent-mui.material.typography :refer [typography]]
+   [reagent-mui.material.text-field :refer [text-field]]
+   [reagent-mui.material.radio :refer [radio]]
+   [reagent-mui.material.checkbox :refer [checkbox]]
+   [reagent-mui.material.form-control :refer [form-control]]
+   [reagent-mui.material.form-control-label :refer [form-control-label]]
+   [reagent-mui.material.radio-group :refer [radio-group]]
    [wkok.buy2let.wizard.subs :as ws]
    [wkok.buy2let.crud.subs :as cs]
    [wkok.buy2let.site.subs :as ss]
@@ -48,7 +48,8 @@
      [grid {:item true}
       [typography "Enter a short name for the property, for example, the first line of its address"]]
      [grid {:item true}
-      [text-field {:label "Name"
+      [text-field {:variant :standard
+                   :label "Name"
                    :margin :normal
                    :auto-focus true
                    :helper-text "For example: 123 Hill Street"
@@ -103,7 +104,8 @@
      [grid {:item true}
       [typography "What is the monthly rent amount charged to the tenant?"]]
      [grid {:item true}
-      [text-field {:type        :number
+      [text-field {:variant :standard
+                   :type        :number
                    :label       "Rent charged"
                    :value       @(rf/subscribe [::ws/wizard-rent-charged-amount])
                    :on-change   #(rf/dispatch-sync [::we/set-rent-charged-amount (-> % .-target .-value)])
@@ -151,7 +153,8 @@
                 :style {:margin-left "2em"}}
           [grid {:item true
                  :style {:display (when (not rental-agent?) :none)}}
-           [text-field {:type        :number
+           [text-field {:variant :standard
+                        :type        :number
                         :label       "Monthly commission"
                         :value       @(rf/subscribe [::ws/wizard-commission-amount])
                         :on-change   #(rf/dispatch-sync [::we/set-commission-amount (-> % .-target .-value)])
@@ -250,7 +253,8 @@
                 :style {:margin-left "2em"}}
           [grid {:item true
                  :style {:display (when (not mortgage-payment?) :none)}}
-           [text-field {:type        :number
+           [text-field {:variant :standard
+                        :type        :number
                         :label       "Mortgage repayment"
                         :value       @(rf/subscribe [::ws/wizard-mortgage-repayment-amount])
                         :on-change   #(rf/dispatch-sync [::we/set-mortgage-repayment-amount (-> % .-target .-value)])
@@ -260,7 +264,8 @@
                         :InputLabelProps {:shrink true}}]]
           [grid {:item true
                  :style {:display (when (not mortgage-payment?) :none)}}
-           [text-field {:type        :number
+           [text-field {:variant :standard
+                        :type        :number
                         :label       "Mortgage interest"
                         :value       @(rf/subscribe [::ws/wizard-mortgage-interest-amount])
                         :on-change   #(rf/dispatch-sync [::we/set-mortgage-interest-amount (-> % .-target .-value)])
@@ -315,7 +320,6 @@
             :visibility (if (empty? properties) :hidden :visible)}
        [grid {:container true
               :item true
-              :justify :flex-end}
+              :justify-content :flex-end}
         [button {:color :primary
                  :on-click #(rf/dispatch [::we/skip])} "Skip"]]]]]))
-

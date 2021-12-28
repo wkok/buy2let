@@ -8,15 +8,15 @@
             [wkok.buy2let.account.events :as ae]
             [wkok.buy2let.subscription.subs :as subss]
             [wkok.buy2let.backend.multimethods :as mm]
-            [reagent-material-ui.icons.thumb-up :refer [thumb-up]]
-            [reagent-material-ui.icons.card-membership :refer [card-membership]]
-            [reagent-material-ui.core.text-field :refer [text-field]]
-            [reagent-material-ui.core.card :refer [card]]
-            [reagent-material-ui.core.card-content :refer [card-content]]
-            [reagent-material-ui.core.card-actions :refer [card-actions]]
-            [reagent-material-ui.core.button :refer [button]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.typography :refer [typography]]))
+            [reagent-mui.icons.thumb-up :refer [thumb-up]]
+            [reagent-mui.icons.card-membership :refer [card-membership]]
+            [reagent-mui.material.text-field :refer [text-field]]
+            [reagent-mui.material.card :refer [card]]
+            [reagent-mui.material.card-content :refer [card-content]]
+            [reagent-mui.material.card-actions :refer [card-actions]]
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.typography :refer [typography]]))
 
 
 (defn edit-subscription []
@@ -35,7 +35,7 @@
       [grid {:container true
              :direction :row
              :spacing 2
-             :justify :center}
+             :justify-content :center}
        [grid {:item true}
         [card-membership {:font-size :large}]]
        [grid {:item true
@@ -50,7 +50,8 @@
          [typography
           "You are currently subscribed to the free Single Property License."]]
         [grid {:item true}
-         [text-field {:type        :number
+         [text-field {:variant :standard
+                      :type        :number
                       :label       "Increase properties to"
                       :value       @(rf/subscribe [::subss/subscription-properties])
                       :on-change   #(rf/dispatch [::subse/set-subscription-properties (-> % .-target .-value change-fn)])
@@ -60,7 +61,7 @@
      [card-actions
       [button {:color :secondary
                :disabled @(rf/subscribe [::ss/show-progress])
-               :on-click #(rf/dispatch [::subse/upgrade-subscription])} 
+               :on-click #(rf/dispatch [::subse/upgrade-subscription])}
        "Upgrade"]
       [button {:color :primary
                :disabled @(rf/subscribe [::ss/show-progress])
@@ -77,7 +78,7 @@
       [grid {:container true
              :direction :row
              :spacing 2
-             :justify :center}
+             :justify-content :center}
        [grid {:item true}
         [card-membership {:font-size :large}]]
        [grid {:item true
@@ -87,7 +88,7 @@
         [grid {:item true}
          (if (= "cancelling" (get-in account [:subscription :status]))
            [typography
-            "Your subscription to the Multi Property License will be cancelled at the end of this billing period, 
+            "Your subscription to the Multi Property License will be cancelled at the end of this billing period,
              after which you will automatically revert to the free Single Property License"]
            [typography
             (str "You are currently subscribed to the Multi Property License for "
@@ -107,7 +108,7 @@
       [grid {:container true
              :direction :row
              :spacing 2
-             :justify :center}
+             :justify-content :center}
        [grid {:item true}
         [thumb-up {:font-size :large}]]
        [grid {:item true
@@ -133,7 +134,7 @@
     [grid {:container true
            :direction :row
            :spacing 2
-           :justify :center}
+           :justify-content :center}
      [grid {:item true}
       [thumb-up {:font-size :large}]]
      [grid {:item true

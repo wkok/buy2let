@@ -6,7 +6,7 @@
             [wkok.buy2let.backend.multimethods :as mm]
             [reagent.dom :as rd]
             [clojure.string :as str]
-            [tick.alpha.api :as t]
+            [tick.core :as t]
             [cljc.java-time.month :as tm]))
 
 (defmethod mm/app-name :demo [_]

@@ -5,22 +5,22 @@
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.events :as se]
             [clojure.walk :as w]
-            [reagent-material-ui.core.list :refer [list]]
-            [reagent-material-ui.core.list-item :refer [list-item]]
-            [reagent-material-ui.core.list-item-text :refer [list-item-text]]
-            [reagent-material-ui.core.list-subheader :refer [list-subheader]]
-            [reagent-material-ui.core.grid :refer [grid]]
-            [reagent-material-ui.core.paper :refer [paper]]))
+            [reagent-mui.material.list :refer [list]]
+            [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.list-item-text :refer [list-item-text]]
+            [reagent-mui.material.list-subheader :refer [list-subheader]]
+            [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.paper :refer [paper]]))
 
 
-(defn settings [props]
+(defn settings []
   (rf/dispatch [:set-fab-actions nil])
   (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
     [grid {:container true
            :direction :column
            :spacing 2}
      [grid {:item true}
-      [paper {:class (get-in props [:classes :paper])}
+      [paper {:class (:paper classes)}
        [list {:subheader (ra/as-element [list-subheader "Profile settings"])}
         (if (some #(= (:providerId %) "google.com") auth)
           [list-item {:button true
@@ -40,7 +40,7 @@
                     :on-click #(rf/dispatch [:sign-out])}
          [list-item-text {:primary "Sign out"}]]]]]
      [grid {:item true}
-      [paper {:class (get-in props [:classes :paper])}
+      [paper {:class (:paper classes)}
        [list {:subheader (ra/as-element [list-subheader "Account settings"])}
         [list-item {:button true
                     :on-click #(js/window.location.assign "#/delegates")}
@@ -54,5 +54,3 @@
                                                                     :right {:text "Cancel"}}}])}
          [list-item-text {:primary "Delete account"
                           :primary-typography-props {:color :error}}]]]]]]))
-
-
