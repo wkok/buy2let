@@ -7,7 +7,7 @@ A [ClojureScript](https://clojurescript.org/), [re-frame](http://day8.github.io/
 - serve as a showcase of some of the ClojureScript / re-frame concepts I've learned
 - invite collaboration as to ClojureScript / re-frame usage & best practices
 - serve as an example of a real world ClojureScript / re-frame application
-- be potentially useful as a portfolio management tool for a [buy-to-let](https://en.wikipedia.org/wiki/Buy_to_let) property investor
+- be potentially useful as a portfolio management tool for a [buy-to-let](https://en.wikipedia.org/wiki/Buy_to_let) property investor (The [Buy2Let Portfolio Manager](https://www.buy2let.app/) online service & mobile app is built from this repository)
 
 ## Demo
 
@@ -59,7 +59,7 @@ Change this global variable to whatever your `defmethod` functions expect for ex
 let impl = "my-cool-app"
 ```
 
-Lastly, the namespace defining your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your backend's namespace. 
+Lastly, the namespace defining your `defmethod`'s should be listed in the `:entries` section of the module in shadow-cljs.edn. Replace `wkok.buy2let.backend.demo` with your backend's namespace.
 
 ### Effects
 
@@ -72,7 +72,7 @@ Basically, the [multimethods](https://clojure.org/reference/multimethods) you im
 For example, to implement the persistence of a CRUD item (eg. Property, Charge, etc.) you'll implement the [multimethod](https://clojure.org/reference/multimethods) `save-crud-fx` and return an effect like
 
 ```clojure
-(defmethod save-crud-fx :my-cool-app 
+(defmethod save-crud-fx :my-cool-app
   [{:keys [account-id crud-type id item on-error]}]
   {:my-backend/save {:account-id account-id
                      :crud-type crud-type
@@ -87,7 +87,7 @@ Then, register the effect (unless your backend library does this  for you)
 (re-frame/reg-fx
  :my-backend/save
  (fn [data _]
-   ;; Add code here to send the data to the server / database 
+   ;; Add code here to send the data to the server / database
     ))
 ```
 
