@@ -34,7 +34,8 @@
      :wizard-actions (str prefix "-wizard-actions")
      :who-pays-whom (str prefix "-who-pays-whom")
      :paper (str prefix "-paper")
-     :legal (str prefix "-legal")}))
+     :legal (str prefix "-legal")
+     :scroll-x (str prefix "-scroll-x")}))
 
 (defn custom-styles [{:keys [theme]}]
   (let [{:keys [spacing breakpoints z-index palette]} theme
@@ -98,4 +99,5 @@
      (str "& ." (:who-pays-whom classes)) {:padding-left (spacing 4)}
      (str "& ." (:paper classes)) {:padding (spacing 2)}
      (str "& ." (:legal classes)) {:font-size :0.8em
-                                  :color (get-in palette [:text :primary])}}))
+                                  :color (get-in palette [:text :primary])}
+     (str "& ." (:scroll-x classes)) {:overflow-x :auto}}))

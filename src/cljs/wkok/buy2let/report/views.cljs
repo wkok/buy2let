@@ -317,7 +317,9 @@
          :spacing 2}
    [grid {:item true}
     [criteria options]]
-   [grid {:item true :xs 12}
+   [grid {:container true
+          :item true :xs 12
+          :class (:scroll-x classes)}
     (if (not (nil? property))
       [view-report options]
       (rf/dispatch [:set-fab-actions nil]))]])
