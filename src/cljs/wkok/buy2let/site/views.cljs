@@ -3,7 +3,7 @@
    [re-frame.core :as rf]
    [reagent.core :as ra]
    [clojure.string :as str]
-   [wkok.buy2let.site.styles :refer [classes custom-styles]]
+   [wkok.buy2let.site.styles :refer [classes custom-styles from-theme]]
    [wkok.buy2let.site.subs :as subs]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.dialog :as dialog]
@@ -65,7 +65,8 @@
    [reagent-mui.styles :as styles]
    [reagent-mui.material.dialog :refer [dialog]]
    [reagent-mui.material.dialog-title :refer [dialog-title]]
-   [reagent-mui.material.dialog-content :refer [dialog-content]])
+   [reagent-mui.material.dialog-content :refer [dialog-content]]
+   [clojure.walk :as w])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
@@ -168,15 +169,19 @@
            :align-items :center}
      [grid {:item true
             :xs 4
-            :class (:brand-logo classes)}
+            :class (:brand-logo classes)
+            :sx {:padding #((from-theme % :spacing) 1)}}
       [avatar {:src (or (:avatar-url account) "images/icon/icon-128.png")
                :variant :rounded
-               :class (:avatar-medium classes)} ":)"]]
+               :class (:avatar-medium classes)
+               :sx {:width #((from-theme % :spacing) 7)
+                    :height #((from-theme % :spacing) 7)}} ":)"]]
      [grid {:item true
             :xs 8
             :container true
             :direction :column
-            :class (:brand-name classes)}
+            :class (:brand-name classes)
+            :sx {:padding #((from-theme % :spacing) 1)}}
       [grid {:item true}
        [typography {:variant :h4 :color :primary} (mm/app-name)]]
       [grid {:item true}
@@ -213,13 +218,11 @@
                    [list-item-icon [info]]
                    [list-item-text {:primary "About"}]]]]]
     [:nav {:class (:drawer classes)}
-     [drawer {:container (.. js/window -document -body)
-              :variant :temporary
+     [drawer {:variant :temporary
               :anchor :left
               :open (or @(rf/subscribe [::subs/nav-menu-show]) false)
               :on-close handle-drawer-toggle
               :class (:drawer-paper classes)
-              :Modal-props {:keep-mounted true}
               :sx {:display {:xs :block :sm :none}}}
       drawer_]
      [drawer {:class (:drawer-paper classes)

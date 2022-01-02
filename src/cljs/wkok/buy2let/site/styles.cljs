@@ -1,4 +1,5 @@
-(ns wkok.buy2let.site.styles)
+(ns wkok.buy2let.site.styles
+  (:require [clojure.walk :as w]))
 
 (def classes
   (let [prefix "buy2let"]
@@ -74,8 +75,8 @@
                                                        :font-weight 600
                                                        :background-color (get-in palette [:action :hover])}
      (str "& ." (:table-alternate classes)) {:background-color (get-in palette [:action :hover])}
-     (str "& ." (:brand-logo classes)) {:padding "0.5em"}
-     (str "& ." (:brand-name classes)) {:padding "0.5em"}
+     (str "& ." (:brand-logo classes)) {:padding (spacing 1)}
+     (str "& ." (:brand-name classes)) {:padding (spacing 1)}
      (str "& ." (:menu-button classes)) {(up "sm") {:display :none}
                                         :margin-right (spacing 2)}
      (str "& ." (:drawer-paper classes)) {:width drawer-width}
@@ -101,3 +102,7 @@
      (str "& ." (:legal classes)) {:font-size :0.8em
                                   :color (get-in palette [:text :primary])}
      (str "& ." (:scroll-x classes)) {:overflow-x :auto}}))
+
+(defn from-theme
+  [theme key]
+  (-> theme js->clj w/keywordize-keys key))
