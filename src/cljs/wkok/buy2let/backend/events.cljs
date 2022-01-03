@@ -185,7 +185,11 @@
  (fn [_ [_ user]]
    (let [check-your-mail #(rf/dispatch [::se/dialog {:heading "Check your email"
                                                      :message (str "Email verification link sent to: " (:email user))
-                                                     :closeable false}])]
+                                                     :closeable false
+                                                     :buttons {:right {:text     "Sign out"
+                                                                       :on-click (fn []
+                                                                                   (rf/dispatch [:sign-out]))
+                                                                       :color :primary}}}])]
      (rf/dispatch [::se/dialog])
      (mm/send-email-verification-fx {:on-success check-your-mail
                                      :on-error #(if (str/includes? % "Try again later")

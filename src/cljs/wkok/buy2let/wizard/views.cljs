@@ -85,7 +85,7 @@
       [grid {:item true}
        [currencies/select-currency {:value currency
                                     :on-change #(rf/dispatch-sync [::we/set-property-currency %])
-                                    :helper-text "The currency the rent is charged in"}]]]
+                                    :helper-text "Currency that rent is charged in"}]]]
      [grid {:container true
             :item true
             :direction :row
