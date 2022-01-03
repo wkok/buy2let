@@ -76,23 +76,29 @@
     [grid {:container true
            :direction :column
            :spacing 2}
-     [grid {:item true}
-      [typography "Which currency does this property operate in?"]]
-     [grid {:item true}
-      [currencies/select-currency {:value currency
-                                   :on-change #(rf/dispatch-sync [::we/set-property-currency %])}]]]
-    [grid {:container true
-           :direction :row
-           :spacing 2}
-     [grid {:item true}
-      [button {:variant :outlined
-               :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
-     [grid {:item true}
-      [button {:variant :contained
-               :color :primary
-               :disabled (str/blank? currency)
-               :on-click #(rf/dispatch [::we/navigate :next])}
-       "Next"]]]]])
+     [grid {:container true
+            :item true
+            :direction :column
+            :spacing 2}
+      [grid {:item true}
+       [typography "Which currency does this property operate in?"]]
+      [grid {:item true}
+       [currencies/select-currency {:value currency
+                                    :on-change #(rf/dispatch-sync [::we/set-property-currency %])
+                                    :helper-text "The currency the rent is charged in"}]]]
+     [grid {:container true
+            :item true
+            :direction :row
+            :spacing 2}
+      [grid {:item true}
+       [button {:variant :outlined
+                :on-click #(rf/dispatch [::we/navigate :back])} "Back"]]
+      [grid {:item true}
+       [button {:variant :contained
+                :color :primary
+                :disabled (str/blank? currency)
+                :on-click #(rf/dispatch [::we/navigate :next])}
+        "Next"]]]]]])
 
 (defn step-rent-charged []
   [step
