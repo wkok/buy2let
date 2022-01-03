@@ -133,22 +133,19 @@
       :class class
       :options options
       :render-input (react-component [props]
-                      [text-field (merge props
-                                    {:variant :standard
-                                     :label "Currency"})])
-
-      ;; :render-input (fn [^js params]
-                      ;; (set! (.-label params) "Currency")
-                      ;; (set! (.-error params) error)
-                      ;; (set! (.-helperText params) helper-text)
-                      ;; (ra/create-element mui/TextField params))
-      :render-option #(let [option (js->clj %)]
-                        (str (get option "code") " - " (get option "name")))
+                                     [text-field (merge props
+                                                        {:variant :standard
+                                                         :label "Currency"
+                                                         :error error
+                                                         :helper-text helper-text})])
+      :render-option (react-component [props option]
+                                      [:li props
+                                       (str (:code option) " - " (:name option))])
       :get-option-label #(let [option (js->clj %)]
                            (str (get option "code") " - " (get option "name")))
-      :get-option-selected #(let [option (js->clj %1)
-                                  value (js->clj %2)]
-                              (= (get option "code") (get value "code")))
+      :is-option-equal-to-value #(let [option (js->clj %1)
+                                       value (js->clj %2)]
+                                   (= (get option "code") (get value "code")))
       :value (->> options
                   (filter #(= (:code %) value))
                   first)
