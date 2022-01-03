@@ -121,7 +121,7 @@
   (let [class-table-header (:table-header classes)
         agent-opening-balance (get-in ledger [:this-month :breakdown :agent-opening-balance :amount])
         tenant-opening-balance (get-in ledger [:this-month :breakdown :tenant-opening-balance :amount])]
-    [paper
+    [paper {:sx {:width 1}}
      [grid {:container true
             :direction :column}
       [grid {:item true  :xs 12}
@@ -204,7 +204,7 @@
 (defn view-overview
   [{:keys [property-charges] :as options}]
   (let [class-table-header (:table-header classes)]
-    [paper
+    [paper {:sx {:width 1}}
      [grid {:container true
             :direction :column}
       [grid {:item true  :xs 12}
@@ -392,7 +392,9 @@
      [grid {:item true}
       [cards options]])
    (when (not-any? nil? [property year month])
-     [grid {:item true :xs 12}
+     [grid {:container true
+            :item true :xs 12
+            :class (:scroll-x classes)}
       (case @(rf/subscribe [::rs/reconcile-view-toggle])
         :accounting [view-accounting options]
         [view-overview options])])

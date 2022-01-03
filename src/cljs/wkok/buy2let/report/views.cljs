@@ -221,7 +221,7 @@
                                            :icon [cloud-download]
                                            :title "Download"}}])
   (let [months (-> (get-in report [:result :months]) reverse)]
-    [paper
+    [paper {:sx {:width 1}}
      [grid {:container true
             :direction :column}
       [grid {:item true :xs 12}
