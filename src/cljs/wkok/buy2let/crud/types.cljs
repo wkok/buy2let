@@ -43,7 +43,7 @@
    :validate-fn #(merge (validate-name %) (validate-who-pays %) (validate-currency %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
                                  :title "Add"}}}
-   :extra       (fn [props {:keys [values state errors touched _ handle-blur]}]
+   :extra       (fn [{:keys [values state errors touched _ handle-blur]}]
                   [grid {:item true}
                    [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
                     (-> (for [charge (filter #(not (:reserved %))
