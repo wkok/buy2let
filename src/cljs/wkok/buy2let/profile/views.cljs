@@ -121,7 +121,7 @@
   (let [user @(rf/subscribe [::bs/user])
         claims @(rf/subscribe [::bs/claims])
         local-user @(rf/subscribe [::bs/local-user])
-        provider-data (-> user :provider-data js->clj w/keywordize-keys)]
+        providers (set @(rf/subscribe [::bs/providers]))]
     [grid {:container true
            :direction :row
            :spacing 2}
@@ -160,25 +160,25 @@
             :xs 12 :md 6}
       [paper {:class (:paper classes)}
        [list {:subheader (ra/as-element [list-subheader "Sign in providers"])}
-        (if (some #(= (:providerId %) "google.com") provider-data)
+        (if (providers :google.com)
           [list-item {:button true
-                      :on-click #(rf/dispatch [::be/unlink :google])}
+                      :on-click #(rf/dispatch [::be/unlink :google.com])}
            [list-item-icon
             [link]]
            [list-item-text {:primary "Unlink Google"}]]
           [list-item {:button true
-                      :on-click #(rf/dispatch [::be/link :google])}
+                      :on-click #(rf/dispatch [::be/link :google.com])}
            [list-item-icon
             [link-off]]
            [list-item-text {:primary "Link Google"}]])
-        (if (some #(= (:providerId %) "facebook.com") provider-data)
+        (if (providers :facebook.com)
           [list-item {:button true
-                      :on-click #(rf/dispatch [::be/unlink :facebook])}
+                      :on-click #(rf/dispatch [::be/unlink :facebook.com])}
            [list-item-icon
             [link]]
            [list-item-text {:primary "Unlink Facebook"}]]
           [list-item {:button true
-                      :on-click #(rf/dispatch [::be/link :facebook])}
+                      :on-click #(rf/dispatch [::be/link :facebook.com])}
            [list-item-icon
             [link-off]]
            [list-item-text {:primary "Link Facebook"}]])]]]]))

@@ -24,10 +24,8 @@
 (rf/reg-event-db
  :unlink-succeeded
  (fn [db [_ provider]]
-   (-> (assoc-in db [:security :auth :provider-data] (->> (get-in db [:security :auth])
-                                                          :provider-data
-                                                          js->clj
-                                                          (remove #(= (get % "providerId") provider))))
+   (-> (update-in db [:security :providers] (fn [providers]
+                                              (remove #(= provider %) providers)))
        (assoc-in [:site :dialog] {:heading "Unlinked"
                                   :message (str "Successfully unlinked " provider)
                                   :buttons {:middle {:text     "Close"}}}))))
@@ -173,11 +171,13 @@
  :load-claims
  (fn [db [_ input]]
    (let [user (spec/conform ::spec/user (:user input))
-         claims (spec/conform ::spec/claims (:claims input))]
+         claims (spec/conform ::spec/claims (:claims input))
+         providers (spec/conform ::spec/providers (:providers input))]
      (if (email-verified? db claims)
        (do
          (rf/dispatch [:load-user user])
-         (assoc-in db [:security :claims] claims))
+         (-> (assoc-in db [:security :claims] claims)
+             (assoc-in [:security :providers] providers)))
        (assoc-in db [:site :dialog] (verify-email-dialog user))))))
 
 (rf/reg-event-fx

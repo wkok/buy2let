@@ -19,6 +19,7 @@
 (s/def ::bank-interest float?)
 (s/def ::role #{:viewer :editor :owner})
 (s/def ::default-account-id keyword?)
+(s/def ::provider keyword?)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,10 +47,11 @@
 (s/def ::charges (s/map-of keyword? ::property-charge))
 (s/def ::roles (s/map-of ::role ::role-accounts))
 (s/def ::role-accounts (s/coll-of ::id))
+(s/def ::providers (s/coll-of ::provider))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Ledger 
+;;; Ledger
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (s/def ::ledger-year (s/keys :req-un [::property-id ::year ::ledger-months]))
@@ -70,7 +72,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Wrapping clojure.spec.alpha for convenience 
+;;; Wrapping clojure.spec.alpha for convenience
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn conform [spec data]
@@ -78,4 +80,3 @@
     (if (= result ::s/invalid)
       (throw (ex-info "Invalid input" (s/explain-data spec data)))
       result)))
-

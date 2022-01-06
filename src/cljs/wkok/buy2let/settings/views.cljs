@@ -15,21 +15,21 @@
 
 (defn settings []
   (rf/dispatch [:set-fab-actions nil])
-  (let [auth (-> @(rf/subscribe [::bs/user]) :provider-data js->clj w/keywordize-keys)]
+  (let [providers (set @(rf/subscribe [::bs/providers]))]
     [grid {:container true
            :direction :column
            :spacing 2}
      [grid {:item true}
       [paper {:class (:paper classes)}
        [list {:subheader (ra/as-element [list-subheader "Profile settings"])}
-        (if (some #(= (:providerId %) "google.com") auth)
+        (if (providers :google.com)
           [list-item {:button true
                       :on-click #(rf/dispatch [::be/unlink :google])}
            [list-item-text {:primary "Unlink Google"}]]
           [list-item {:button true
                       :on-click #(rf/dispatch [::be/link :google])}
            [list-item-text {:primary "Link Google"}]])
-        (if (some #(= (:providerId %) "facebook.com") auth)
+        (if (providers :facebook.com)
           [list-item {:button true
                       :on-click #(rf/dispatch [::be/unlink :facebook])}
            [list-item-text {:primary "Unlink Facebook"}]]

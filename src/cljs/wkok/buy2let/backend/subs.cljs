@@ -17,6 +17,11 @@
    (get-in db [:security :claims])))
 
 (rf/reg-sub
+ ::providers
+ (fn [db _]
+   (get-in db [:security :providers])))
+
+(rf/reg-sub
  ::error
  (fn [db _]
    (get-in db [:backend :error])))
@@ -30,4 +35,3 @@
  ::subscription-action
  (fn [db _]
    (get-in db [:backend :subscription :action])))
-
