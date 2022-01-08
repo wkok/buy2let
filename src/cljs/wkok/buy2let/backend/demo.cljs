@@ -73,7 +73,8 @@
                                                  :owner [:1234]}
                                          :email_verified true
                                          :email "demo@email.com"}
-                                :user user}])
+                                :user user
+                                :providers [:email]}])
     (rf/dispatch [:select-account :1234])
     (rf/dispatch [:load-user user]))
   {})
