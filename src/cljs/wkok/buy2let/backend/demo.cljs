@@ -380,16 +380,10 @@
 (defmethod mm/get-ledger-fx :demo [_]
   {})
 
-(defmethod mm/get-invoices-year-fx :demo [_]
-  {})
-
-(defmethod mm/get-invoices-month-fx :demo [_]
-  {})
-
-(defmethod mm/get-invoices-fx :demo [_]
-  {})
-
 (defmethod mm/save-crud-fx :demo [_]
+  {})
+
+(defmethod mm/upload-attachments-fx :demo [_]
   {})
 
 (defmethod mm/save-profile-fx :demo [_]
