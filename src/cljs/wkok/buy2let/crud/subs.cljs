@@ -1,5 +1,6 @@
 (ns wkok.buy2let.crud.subs
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [wkok.buy2let.shared :as shared]))
 
 (rf/reg-sub
   ::show-hidden
@@ -53,6 +54,42 @@
         (sort-by :name))))
 
 (rf/reg-sub
+ ::all-invoices
+ (fn [db]
+   (->> (shared/filter-charge-invoices db {})
+        (into {})
+        vals
+        (sort-by :name))))
+
+(rf/reg-sub
+ ::hidden-invoices
+ (fn [db]
+   (->> (shared/filter-charge-invoices db {})
+        (into {})
+        vals
+        (filter :hidden)
+        (sort-by :name))))
+
+(rf/reg-sub
+ ::invoices
+ (fn [db]
+   (->> (shared/filter-charge-invoices db {})
+        (into {})
+        vals
+        (filter #(not (:hidden %)))
+        (sort-by :name))))
+
+(rf/reg-sub
+ ::invoices-for
+ (fn [db [_ options]]
+   (->> options
+        (shared/filter-charge-invoices db)
+        (into {})
+        vals
+        (filter #(not (:hidden %)))
+        (sort-by :name))))
+
+(rf/reg-sub
  ::all-delegates
  (fn [db]
    (->> (:delegates db)
@@ -74,4 +111,3 @@
          vals
          (filter #(not (:hidden %)))
          (sort-by :name))))
-

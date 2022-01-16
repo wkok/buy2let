@@ -58,6 +58,8 @@
 
 (defmulti save-crud-fx dispatcher)
 
+(defmulti upload-attachments-fx dispatcher)
+
 (defmulti save-profile-fx dispatcher)
 
 (defmulti verify-email-changed-fx dispatcher)

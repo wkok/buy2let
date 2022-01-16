@@ -220,7 +220,7 @@
 
 
 (defn calc-options
-  [{:keys [property-id year month]}]
+  [{:keys [property-id year month charge-id]}]
   (let [properties @(rf/subscribe [::cs/properties])
         active-property @(rf/subscribe [::ss/active-property])
         reconcile-year @(rf/subscribe [::rs/reconcile-year])
@@ -234,4 +234,5 @@
                (:this-year shared/default-cal))
      :month (or (-> month keyword)
                 reconcile-month
-                (:this-month shared/default-cal))}))
+                (:this-month shared/default-cal))
+     :charge-id (keyword charge-id)}))

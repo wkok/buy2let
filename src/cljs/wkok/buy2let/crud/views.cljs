@@ -2,10 +2,12 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.string :as s]
+            [wkok.buy2let.site.styles :refer [from-theme]]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.currencies :as currencies]
+            [wkok.buy2let.component.attachment :as attachment]
             [wkok.buy2let.site.styles :refer [classes]]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
@@ -13,6 +15,7 @@
             [reagent-mui.material.paper :refer [paper]]
             [reagent-mui.material.form-control-label :refer [form-control-label]]
             [reagent-mui.material.list-item :refer [list-item]]
+            [reagent-mui.material.list-item-button :refer [list-item-button]]
             [reagent-mui.material.grid :refer [grid]]
             [reagent-mui.material.typography :refer [typography]]
             [reagent-mui.material.switch-component :refer [switch]]
@@ -23,18 +26,20 @@
             [reagent-mui.material.form-control :refer [form-control]]
             [reagent-mui.material.input-label :refer [input-label]]
             [reagent-mui.material.checkbox :refer [checkbox]]
-            [reagent-mui.material.button :refer [button]]))
+            [reagent-mui.material.button :refer [button]]
+            [reagent-mui.material.list-subheader :refer [list-subheader]]))
 
 
 (defn row [item type]
   (let [default-field (-> (filter #(:default %) (:fields type)) first)
-        options {:button true
-               :on-click #(js/window.location.assign (str "#/" (-> type :type name) "/edit/" (-> item :id name)))}]
-    (if-let [secondary-field (:secondary default-field)]
-      [list-item options
-       [list-item-text {:primary ((:key default-field) item) :secondary (secondary-field item)}]]
-      [list-item options
-       [list-item-text {:primary ((:key default-field) item)}]])))
+        uri-path (if-let [uri-path-fn (:uri-path-fn type)]
+                   (str (uri-path-fn) "/edit/")
+                   (str "#/" (-> type :type name) "/edit/"))]
+    [list-item {:disable-padding true
+                :secondary-action (when-let [secondary-action (:secondary-action type)]
+                                    (secondary-action item))}
+     [list-item-button {:on-click #(js/window.location.assign (str uri-path (-> item :id name)))}
+      [list-item-text {:primary ((:key default-field) item)}]]]))
 
 (defn show? [item show-hidden]
   (if (get item :hidden false)
@@ -62,7 +67,8 @@
        [grid {:container true
               :direction :column}
         [grid {:item true}
-         [list
+         [list {:subheader (if-let [sub-header-fn (:sub-header-fn type)]
+                             (ra/as-element [list-subheader (sub-header-fn)]))}
           (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
                              cruds)]
             ^{:key item}
@@ -189,7 +195,8 @@
                          :on-blur   handle-blur}])
     :label (->> (get type :hidden-label "Hidden")
                 s/capitalize
-                (str " "))}])
+                (str " "))
+    :sx {:padding-top #((from-theme % :spacing) 1)}}])
 
 (defn apply-edit-defaults [old type]
   (into {} (for [[k v] old]
@@ -223,6 +230,7 @@
              :select (build-select field options)
              :select-multi (build-multi-select field options)
              :select-currency (build-select-currency field options)
+             :attachment (attachment/build-attachment field options)
              (build-input type field options))))
         (if-let [extra-fn (:extra type)]
           (extra-fn options))

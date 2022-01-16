@@ -270,6 +270,7 @@
        :report [report/report]
        :properties [crud-impl/properties]
        :charges [crud-impl/charges]
+       :invoices [crud-impl/invoices]
        :delegates [crud-impl/delegates]
        :subscription [subscription/subscription]
        :profile [profile/profile]

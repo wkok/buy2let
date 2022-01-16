@@ -51,9 +51,15 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Invoices
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(s/def ::invoices (s/map-of keyword? ::invoice))
+(s/def ::invoice (s/keys :req-un [::id ::name ::property-id ::charge-id ::year ::month]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ledger
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (s/def ::ledger-year (s/keys :req-un [::property-id ::year ::ledger-months]))
 (s/def ::ledger-months (s/map-of keyword? ::ledger))
 (s/def ::ledger-month (s/keys :req-un [::property-id ::year ::month ::ledger]))

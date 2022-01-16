@@ -15,6 +15,11 @@
     :charges-edit [crud/edit-panel type/charge]
     [crud/list-panel type/charge]))
 
+(defn invoices []
+  (case @(rf/subscribe [::subs/active-panel])
+    :invoices-edit [crud/edit-panel type/invoice]
+    [crud/list-panel type/invoice]))
+
 (defn delegates []
   (case @(rf/subscribe [::subs/active-panel])
     :delegates-edit [crud/edit-panel type/delegate]

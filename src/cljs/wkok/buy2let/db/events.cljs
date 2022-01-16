@@ -54,6 +54,12 @@
                                             :on-next #(rf/dispatch [::subse/validate-subscription %])})))))))
 
 (rf/reg-event-db
+  :load-invoices
+  (fn [db [_ input]]
+    (let [invoices (spec/conform ::spec/invoices input)]
+      (update db :invoices merge invoices))))
+
+(rf/reg-event-db
   :load-ledger-year
   (fn [db [_ input]]
     (let [{:keys [property-id year ledger-months]} (spec/conform ::spec/ledger-year input)]
@@ -71,7 +77,7 @@
           last-year (-> last t/year str keyword)]
       (if-not (empty? (:properties db))
         (merge {:db             (assoc-in db [:site :show-progress] true)}
-               (mm/get-ledger-year-fx {                 :properties (:properties db)
+               (mm/get-ledger-year-fx {:properties (:properties db)
                                        :account-id account-id
                                        :this-year this-year
                                        :last-year last-year

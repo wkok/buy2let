@@ -13,6 +13,11 @@
     (get-in db [:reconcile :month])))
 
 (rf/reg-sub
+  ::reconcile-charge-id
+  (fn [db _]
+    (get-in db [:reconcile :charge-id])))
+
+(rf/reg-sub
   ::reconcile-view-toggle
   (fn [db _]
     (get-in db [:reconcile :view])))

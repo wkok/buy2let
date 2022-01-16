@@ -13,7 +13,6 @@
             [fork.re-frame :as fork]
             [clojure.string :as s]
             [reagent-mui.icons.note-outlined :refer [note-outlined]]
-            [reagent-mui.icons.attach-file :refer [attach-file]]
             [reagent-mui.icons.edit :refer [edit]]
             [reagent-mui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
             [reagent-mui.icons.cloud-done :refer [cloud-done]]
@@ -180,26 +179,22 @@
           :label-placement :start}]]]]]))
 
 (defn view-overview-row
-  [charge {:keys [ledger property year month]}]
+  [charge {:keys [ledger] :as options}]
   [table-row
    [table-cell (:name charge)]
    [table-cell {:align :right}
     (format-amount ledger [:this-month :breakdown (:id charge) :amount])]
    [table-cell {:align :center}
-    (when (get-in ledger [:this-month :breakdown (:id charge) :invoiced])
-                 [icon-button {:size :small
-                               :on-click #(rf/dispatch [::shared/view-invoice
-                                                        (:id property)
-                                                        year
-                                                        month
-                                                        charge])}
-                  [attach-file {:font-size :small}]])]
+    (let [invoice-options (assoc options
+                                 :charge-id (:id charge))]
+      (when (not-empty @(rf/subscribe [::cs/invoices-for invoice-options]))
+        [shared/invoices-button charge invoice-options :small]))]
    [table-cell {:align :center}
     (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
-                 (when (not (s/blank? note))
-                   [icon-button {:size :small
-                                 :on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}
-                    [note-outlined {:font-size :small}]]))]])
+      (when (not (s/blank? note))
+        [icon-button {:size :small
+                      :on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}
+         [note-outlined {:font-size :small}]]))]])
 
 (defn view-overview
   [{:keys [property-charges] :as options}]
@@ -548,7 +543,8 @@
                        :spacing 1
                        :justify-content :space-between}
                  [edit-amount-field charge form]
-                 [edit-invoice-field charge options form]]
+                 [shared/invoices-button charge options]
+                 #_[edit-invoice-field charge options form]]
                 [grid {:container true
                        :item true
                        :direction :column}

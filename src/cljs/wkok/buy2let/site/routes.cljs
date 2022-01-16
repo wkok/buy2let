@@ -32,6 +32,12 @@
     (dispatch-role [::re/view-reconcile (re/calc-options {:property-id property-id :year year :month month})] :viewer))
   (defroute "/reconcile/:property-id/:month/:year/edit" [property-id month year]
     (dispatch-role [::re/edit-reconcile (re/calc-options {:property-id property-id :year year :month month})] :editor))
+  (defroute "/reconcile/:property-id/:month/:year/:charge-id/invoices" [property-id month year charge-id]
+    (dispatch-role [::ce/list-crud type/invoice (re/calc-options {:property-id property-id :year year :month month :charge-id charge-id})] :editor))
+  (defroute "/reconcile/:property-id/:month/:year/:charge-id/invoices/add" [property-id month year charge-id]
+    (dispatch-role [::ce/add-crud type/invoice (re/calc-options {:property-id property-id :year year :month month :charge-id charge-id})] :editor))
+  (defroute "/reconcile/:property-id/:month/:year/:charge-id/invoices/edit/:id" [property-id month year charge-id id]
+    (dispatch-role [::ce/edit-crud (keyword id) type/invoice (re/calc-options {:property-id property-id :year year :month month :charge-id charge-id :id id})] :editor))
   (defroute "/report" []
     (dispatch-role [::repe/view-report (repe/calc-options {})] :viewer))
   (defroute "/report/:property-id/:from-month/:from-year/:to-month/:to-year" [property-id

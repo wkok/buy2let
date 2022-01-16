@@ -13,8 +13,10 @@
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.spec :as spec]
             [cemerick.url :as url]
-            [reagent-mui.colors :as colors]
-            [reagent-mui.material.link :refer [link]])
+            [reagent-mui.material.link :refer [link]]
+            [reagent-mui.material.icon-button :refer [icon-button]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
+            [reagent-mui.icons.attach-file :refer [attach-file]])
   (:import (goog.i18n DateTimeSymbols_en_US)))
 
 
@@ -93,11 +95,11 @@
   (str "data/" (name account) "/ledger/" (name property) "/" (name year) "/" (name month) "/" charge-id))
 
 (rf/reg-event-fx
- ::view-invoice
- (fn [cofx [_ property-id year month charge]]
+ ::view-attachment
+ (fn [cofx [_ collection id]]
    (let [db (:db cofx)
          account-id (get-in db [:security :account])
-         path (blob-key account-id property-id year month (name (:id charge)))]
+         path (str "data/" (name account-id) "/" (name collection) "/" (name id))]
 
      (mm/blob-url-fx {:path path
                       :on-success #(js/window.open %)
@@ -110,7 +112,7 @@
         downloaded? #(contains? (get-in db [:ledger property %1]) %2)
         m (filter #(not (downloaded? (:year %) (:month %))) months)]
     (when (seq m)
-      (mm/get-ledger-fx {   :property property
+      (mm/get-ledger-fx {:property property
                          :account-id account-id
                          :months m
                          :on-success #(rf/dispatch [:load-ledger-month %])}))))
@@ -242,3 +244,28 @@
  ::log-analytics
  (fn [_ [_ options]]
    (mm/log-analytics options)))
+
+(defn invoices-button
+  [charge {:keys [property year month]} size]
+  [tooltip {:title "Invoices"}
+   [icon-button {:color :primary
+                 :size size
+                 :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
+                                                            "/" (-> month name)
+                                                            "/" (-> year name)
+                                                            "/" (-> charge :id name)
+                                                            "/invoices"))}
+    [attach-file {:font-size size}]]])
+
+(defn filter-charge-invoices
+  [db options]
+  (let [property-id (-> db :site :active-property)
+        year (or (:year options) (-> db :reconcile :year))
+        month (or (:month options) (-> db :reconcile :month))
+        charge-id (or (:charge-id options) (-> db :reconcile :charge-id))]
+    (->> (filter (fn [[k v]]
+                   (and (= property-id (:property-id v))
+                        (= year (:year v))
+                        (= month (:month v))
+                        (= charge-id (:charge-id v))))
+                 (:invoices db)))))

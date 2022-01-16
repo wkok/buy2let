@@ -2,6 +2,8 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [wkok.buy2let.crud.subs :as cs]
+            [wkok.buy2let.crud.events :as ce]
+            [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.backend.subs :as bs]
@@ -13,10 +15,16 @@
             [reagent-mui.material.text-field :refer [text-field]]
             [reagent-mui.material.checkbox :refer [checkbox]]
             [reagent-mui.material.grid :refer [grid]]
+            [reagent-mui.material.tooltip :refer [tooltip]]
             [reagent-mui.material.menu-item :refer [menu-item]]
             [reagent-mui.material.list-item :refer [list-item]]
             [reagent-mui.material.list-subheader :refer [list-subheader]]
-            [reagent-mui.material.list :refer [list]]))
+            [reagent-mui.material.list-item-secondary-action :refer [list-item-secondary-action]]
+            [reagent-mui.material.icon-button :refer [icon-button]]
+            [reagent-mui.material.list :refer [list]]
+            [reagent-mui.icons.visibility-outlined :refer [visibility-outlined]]
+            [wkok.buy2let.reconcile.subs :as rs]
+            [wkok.buy2let.site.subs :as ss]))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -110,6 +118,82 @@
    :singular "charge"
    :show-show-hidden? #(let [charges @(rf/subscribe [::cs/hidden-charges])]
                          (>= (count charges) 1))})
+
+(defn get-invoices-uri-path
+  []
+  (str "#/reconcile/" (name @(rf/subscribe [::ss/active-property]))
+       "/" (name @(rf/subscribe [::rs/reconcile-month]))
+       "/" (name @(rf/subscribe [::rs/reconcile-year]))
+       "/" (name @(rf/subscribe [::rs/reconcile-charge-id]))
+       "/invoices"))
+
+(defn get-invoice-keys
+  []
+  {:property-id @(rf/subscribe [::ss/active-property])
+   :charge-id @(rf/subscribe [::rs/reconcile-charge-id])
+   :year @(rf/subscribe [::rs/reconcile-year])
+   :month @(rf/subscribe [::rs/reconcile-month])})
+
+(defn get-invoices-charge-name
+  []
+  (-> @(rf/subscribe [::rs/reconcile-charge-id])
+      (shared/by-id @(rf/subscribe [::cs/charges]))
+      :name))
+
+(defn invoice-attachment->blobs
+  [invoice]
+  (let [account-id (name @(rf/subscribe [::as/account]))]
+    [{:path (str "data/" account-id "/invoices/" (-> invoice :id name))
+      :file       (:attachment invoice)
+      :action     (if (:attachment invoice)
+                    :put
+                    (when (:attachment-deleted invoice)
+                      :delete))
+      ;; :on-progress #(.log js/console (str "Upload is " % "%"))
+      ;; :on-success #()
+      :on-error   #(rf/dispatch [::se/dialog {:heading "Oops!"
+                                              :message (str "Error uploading invoice:\nDetail: " %)}])
+      :metadata {:customMetadata {"accountId" account-id}}}]))
+
+(defn upload-invoice-attachment
+  "Removes the attachment file blob as it is not stored in the database
+  Sets the attached flag to true, only if attached is currently false & file was uploaded"
+  [invoice]
+  (when (or (:attachment invoice)
+            (:attachment-deleted invoice))
+    (rf/dispatch [::ce/upload-attachments (invoice-attachment->blobs invoice)]))
+
+  (if (:attached invoice) ; already uploaded
+    (dissoc invoice :attachment :attachment-deleted)
+    (-> (dissoc invoice :attachment :attachment-deleted)
+        (assoc :attached (not (nil? (:attachment invoice))))))
+  )
+
+(def invoice
+  {:type        :invoices
+   :subs        ::cs/all-invoices
+   :fields      [{:key :name :type :text :default true}
+                 {:key :invoice :type :attachment}]
+   :sub-header-fn get-invoices-charge-name
+   :validate-fn validate-name
+   :key-fields-fn get-invoice-keys
+   :uri-path-fn get-invoices-uri-path
+   :actions     {:list {:left-1 {:fn #(js/window.location.assign (str (get-invoices-uri-path) "/add"))
+                                 :icon [add]
+                                 :title "Add"}}}
+   :singular "invoice"
+   :show-show-hidden? #(let [invoices @(rf/subscribe [::cs/hidden-invoices])]
+                         (>= (count invoices) 1))
+   :calculated-fn #(-> % upload-invoice-attachment)
+   :secondary-action  (fn [invoice]
+                        (when (:attached invoice)
+                          (ra/as-element
+                           [list-item-secondary-action
+                            [tooltip {:title "View"}
+                             [icon-button {:edge :end
+                                           :color :primary
+                                           :on-click #(rf/dispatch [::shared/view-attachment :invoices (:id invoice)])}
+                              [visibility-outlined]]]])))})
 
 (defn calc-status [item]
   (assoc item :status

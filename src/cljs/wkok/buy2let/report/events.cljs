@@ -105,10 +105,27 @@
 (rf/reg-event-db
   ::report-show-invoices-toggle
   (fn [db [_ _]]
-    (assoc-in db [:report :show-invoices] 
+    (assoc-in db [:report :show-invoices]
               (not (get-in db [:report :show-invoices])))))
 
 (defn calc-invoice-path [db property-charges month-year]
+  (let [year (-> (:year month-year) name)
+        month (-> (:month month-year) name)
+        account-id (-> (get-in db [:security :account]) name)]
+    (-> (for [charge property-charges]
+          (let [invoices (->> (shared/filter-charge-invoices db {:year (:year month-year)
+                                                                 :month (:month month-year)
+                                                                 :charge-id (:id charge)})
+                              (into {})
+                              vals)]
+            (->> (filter :attached invoices)
+                 (map (fn [invoice]
+                        {:storagePath (str "data/" account-id "/invoices/" (-> (:id invoice) name))
+                         :localPath   (:name charge)
+                         :localName   (str year "-" month "-" (-> (:id invoice) name))})))))
+        flatten)))
+
+(defn calc-invoice-path-legacy [db property-charges month-year]
   (let [year (-> (:year month-year) name)
         month (-> (:month month-year) name)
         account-id (-> (get-in db [:security :account]) name)
@@ -121,7 +138,9 @@
                  :localName   (str year "-" month)})))))
 
 (defn calc-invoice-paths [db property-charges]
-  (mapcat #(calc-invoice-path db property-charges %) (get-in db [:report :result :months])))
+  (mapcat #(concat (calc-invoice-path db property-charges %)
+                   (calc-invoice-path-legacy db property-charges %))
+          (get-in db [:report :result :months])))
 
 (defn calc-file-name [db]
   (let [property-id (get-in db [:site :active-property])
@@ -138,7 +157,7 @@
  (fn [cofx [_ property-charges]]
    (let [db (:db cofx)]
      (merge {:db                (assoc-in db [:site :show-progress] true)}
-            (mm/zip-invoices-fx {           :account-id (get-in db [:security :account])
+            (mm/zip-invoices-fx {:account-id (get-in db [:security :account])
                                  :uuid (-> (:id cofx) name)
                                  :file-name (calc-file-name db)
                                  :invoice-paths (calc-invoice-paths db property-charges)

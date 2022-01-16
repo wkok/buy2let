@@ -78,7 +78,7 @@
                   :align :right} "Total"]]))
 
 (defn report-charge-col
-  [m charge {:keys [ledger report property]}]
+  [m charge {:keys [ledger report] :as options}]
   [table-cell {:align :right
                :class (when (odd? (-> m :month name js/parseInt))
                         (:table-alternate classes))}
@@ -93,15 +93,13 @@
                          :on-click #(rf/dispatch [::se/dialog {:heading "Note" :message note}])}
             [note-outlined {:font-size :small}]]])))
     (when (= true (:show-invoices report))
-      (when (get-in ledger [(:year m) (:month m) :breakdown (:id charge) :invoiced])
-        [grid {:item true}
-         [icon-button {:size :small
-                       :on-click #(rf/dispatch [::shared/view-invoice
-                                                (:id property)
-                                                (:year m)
-                                                (:month m)
-                                                charge])}
-          [attach-file {:font-size :small}]]]))
+      (let [invoice-options (assoc options
+                                   :year (:year m)
+                                   :month (:month m)
+                                   :charge-id (:id charge))]
+        (when (not-empty @(rf/subscribe [::cs/invoices-for invoice-options]))
+          [grid {:item true}
+           [shared/invoices-button charge invoice-options :small]])))
     [grid {:item true}
      (format-amount ledger [(:year m) (:month m) :breakdown (:id charge) :amount])]]])
 

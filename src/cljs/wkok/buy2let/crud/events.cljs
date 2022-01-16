@@ -56,30 +56,61 @@
           (js/window.history.back)
           db))))
 
+(defn assoc-add-crud-keys
+  [db type]
+  (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
+      (assoc-in [:site :heading] (str "Add " (:singular type)))))
+
 (rf/reg-event-db
  ::add-crud
- (fn [db [_ type]]
-   (if (= :properties (:type type))
-     (add-property db)
-     (-> (assoc-in db [:site :active-panel] (panel ::add-crud type))
-         (assoc-in [:site :heading] (str "Add " (:singular type)))))))
+ (fn [db [_ type options]]
+   (case (:type type)
+       :properties (add-property db)
+       :invoices (-> (assoc-in db [:reconcile :charge-id] (:charge-id options))
+                     (assoc-add-crud-keys type))
+       (assoc-add-crud-keys db type))))
 
+(defn assoc-reconcile-keys
+  [db options]
+  (-> (assoc-in db [:site :active-property] (:property-id options))
+      (assoc :reconcile (select-keys options [:year :month :charge-id]))))
+
+(defn assoc-edit-crud-keys
+  [db id type]
+  (-> (assoc-in db [:form :old (:type type)] (get (get-in db [(:type type)]) id))
+      (assoc-in [:site :active-page] (:type type))
+      (assoc-in [:site :active-panel] (panel ::edit-crud type))
+      (assoc-in [:site :heading] (str "Edit " (:singular type)))))
 
 (rf/reg-event-db
   ::edit-crud
-  (fn [db [_ id type]]
-    (-> (assoc-in db [:form :old (:type type)] (get ((:type type) db) id))
-        (assoc-in [:site :active-page] (:type type))
-        (assoc-in [:site :active-panel] (panel ::edit-crud type))
-        (assoc-in [:site :heading] (str "Edit " (:singular type))))))
+  (fn [db [_ id type options]]
+    (case (:type type)
+      :invoices (-> (assoc-reconcile-keys db options)
+                    (assoc-edit-crud-keys id type))
+      (assoc-edit-crud-keys db id type))))
+
+(defn assoc-list-crud-keys
+  [db type]
+  (-> (dissoc db :form)
+      (assoc-in [:site :active-page] (:type type))
+      (assoc-in [:site :active-panel] (panel ::list-crud type))
+      (assoc-in [:site :heading] (heading type))))
 
 (rf/reg-event-db
   ::list-crud
-  (fn [db [_ type]]
-    (-> (dissoc db :form)
-        (assoc-in [:site :active-page] (:type type))
-        (assoc-in [:site :active-panel] (panel ::list-crud type))
-        (assoc-in [:site :heading] (heading type)))))
+  (fn [db [_ type options]]
+    (case (:type type)
+      :invoices (-> (assoc-reconcile-keys db options)
+                    (assoc-list-crud-keys type))
+      (assoc-list-crud-keys db type))))
+
+(rf/reg-event-fx
+ ::upload-attachments
+ (fn [cofx [_ blobs]]
+   (merge {:db (:db cofx)}
+          (mm/upload-attachments-fx {:blobs blobs
+                                    :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])}))))
 
 (rf/reg-event-fx
  ::save-crud
@@ -87,19 +118,20 @@
  (fn [cofx [_ type item]]
    (let [id (or (:id item) (:id cofx))
          calculated-fn (or (:calculated-fn type) identity)
-         item (-> (assoc item :id id) calculated-fn)
+         key-fields ((:key-fields-fn type))
+         item (merge (-> (assoc item :id id) calculated-fn)
+                     key-fields)
          account-id @(rf/subscribe [::as/account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}
-            (mm/save-crud-fx {:account-id account-id 
-                              :crud-type type 
-                              :id id 
+            (mm/save-crud-fx {:account-id account-id
+                              :crud-type type
+                              :id id
                               :item item
                               :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])})))))
+
 
 (rf/reg-event-db
   ::crud-set-show-hidden
   (fn [db [_ hidden]]
     (assoc-in db [:crud :show-hidden] hidden)))
-
-
