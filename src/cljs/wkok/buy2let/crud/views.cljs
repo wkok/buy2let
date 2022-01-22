@@ -114,7 +114,7 @@
     [grid {:item true}
      [text-field {:variant :standard
                   :name       field-name
-                  :label      (-> field-name s/capitalize)
+                  :label      (or (:label field) (-> field-name s/capitalize))
                   :type       (:type field)
                   :margin     :normal
                   :full-width true

@@ -47,7 +47,9 @@
   {:type        :properties
    :subs        ::cs/all-properties
    :fields      [{:key :name :type :text :default true}
-                 {:key :currency :type :select-currency}]
+                 {:key :currency :type :select-currency}
+                 {:key :purchase-price :type :number :label "Purchase Price"}
+                 {:key :cash-invested :type :number :label "Cash Invested"}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %) (validate-currency %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
                                  :title "Add"}}}
