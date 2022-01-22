@@ -17,7 +17,7 @@
     [grid {:item true}
      [list
       [list-item {:button true}
-       [list-item-text {:primary "Version" :secondary "0.2.1"}]]
+       [list-item-text {:primary "Version" :secondary "0.2.2"}]]
       [list-item {:button true
                   :component "a"
                   :href (mm/terms-of-service-url)
