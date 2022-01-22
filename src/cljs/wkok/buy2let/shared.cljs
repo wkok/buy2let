@@ -246,9 +246,9 @@
    (mm/log-analytics options)))
 
 (defn invoices-button
-  [charge {:keys [property year month]} size]
+  [charge {:keys [property year month]} size color]
   [tooltip {:title "Invoices"}
-   [icon-button {:color :primary
+   [icon-button {:color color
                  :size size
                  :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
                                                             "/" (-> month name)
@@ -269,3 +269,17 @@
                         (= month (:month v))
                         (= charge-id (:charge-id v))))
                  (:invoices db)))))
+
+
+;; Temporary to access legacy attachments, remove in 2023
+(rf/reg-event-fx
+ ::view-invoice
+ (fn [cofx [_ property-id year month charge]]
+   (let [db (:db cofx)
+         account-id (get-in db [:security :account])
+         path (blob-key account-id property-id year month (name (:id charge)))]
+
+     (mm/blob-url-fx {:path path
+                      :on-success #(js/window.open %)
+                      :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
+                                                            :message %}])}))))

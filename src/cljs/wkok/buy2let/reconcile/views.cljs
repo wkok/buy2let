@@ -543,8 +543,10 @@
                        :spacing 1
                        :justify-content :space-between}
                  [edit-amount-field charge form]
-                 [shared/invoices-button charge options]
-                 #_[edit-invoice-field charge options form]]
+                 [shared/invoices-button charge options :medium :primary]
+
+                 ;; Temporary to access legacy attachments, remove in 2023
+                 [edit-invoice-field charge options form]]
                 [grid {:container true
                        :item true
                        :direction :column}

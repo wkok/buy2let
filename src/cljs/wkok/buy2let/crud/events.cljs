@@ -118,7 +118,8 @@
  (fn [cofx [_ type item]]
    (let [id (or (:id item) (:id cofx))
          calculated-fn (or (:calculated-fn type) identity)
-         key-fields ((:key-fields-fn type))
+         key-fields (when-let [key-fields-fn (:key-fields-fn type)]
+                      (key-fields-fn))
          item (merge (-> (assoc item :id id) calculated-fn)
                      key-fields)
          account-id @(rf/subscribe [::as/account])]
