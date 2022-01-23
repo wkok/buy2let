@@ -134,6 +134,23 @@
                  :class class}
      (shared/format-money owed)]))
 
+(defn report-yield-col
+  [m {:keys [ledger]}]
+  (let [year (:year m)
+        month (:month m)
+        yield (-> ledger year month :yield :net)]
+    [table-cell {:align :right
+                 :class (cell-class m yield :profit)}
+     (shared/format-money yield)]))
+
+(defn report-roi-col
+  [m {:keys [ledger]}]
+  (let [year (:year m)
+        month (:month m)
+        roi(-> ledger year month :yield :roi)]
+    [table-cell {:align :right
+                 :class (cell-class m roi :profit)}
+     (shared/format-money roi)]))
 
 #_(defn report-cash-col
   [m {:keys [ledger]}]
@@ -215,24 +232,9 @@
      [report-cash-col m options])
    [table-cell {:align :right} "-"]])
 
-(defn calc-yield
-  [breakdown initial-amount]
-  (let [rental-income (get-in breakdown [:rent-charged-id :amount])
-        expense-keys (->> breakdown
-                          keys
-                          (remove #{:agent-opening-balance :mortgage-repayment-id :payment-received-id :rent-charged-id}))
-        expenses-total (->> (select-keys breakdown expense-keys)
-                            (map #(-> % val :amount))
-                            (reduce +))
-        net-income (- rental-income expenses-total)]
-    (if (pos? initial-amount)
-      (-> (/ net-income initial-amount)
-          (* 100))
-      0)))
-
 (defn report-yield-row-total
   [{:keys [report property] :as options}]
-  (let [yield (calc-yield (get-in report [:result :totals :breakdown]) (:purchase-price property))
+  (let [yield (shared/calc-yield (get-in report [:result :totals :breakdown]) (:purchase-price property))
         class (if (neg? yield)
                 (:table-header-neg classes)
                 (if (pos? yield)
@@ -240,20 +242,20 @@
                   (:table-header classes)))]
     [table-cell {:align :right
                  :class class}
-     (str (shared/format-money yield) " %")]))
+     (shared/format-money yield)]))
 
 (defn report-yield-row
   [months options]
   [table-row
-   [table-cell [:strong "Net Yield"]]
+   [table-cell [:strong "Net Yield %"]]
    (for [m months]
      ^{:key m}
-     [empty-col m options])
+     [report-yield-col m options])
    [report-yield-row-total options]])
 
 (defn report-roi-row-total
   [{:keys [report property]}]
-  (let [yield (calc-yield (get-in report [:result :totals :breakdown]) (:cash-invested property))
+  (let [yield (shared/calc-yield (get-in report [:result :totals :breakdown]) (:cash-invested property))
         class (if (neg? yield)
                 (:table-header-neg classes)
                 (if (pos? yield)
@@ -261,15 +263,15 @@
                   (:table-header classes)))]
     [table-cell {:align :right
                  :class class}
-     (str (shared/format-money yield) " %")]))
+     (shared/format-money yield)]))
 
 (defn report-roi-row
   [months options]
   [table-row
-   [table-cell [:strong "ROI"]]
+   [table-cell [:strong "ROI %"]]
    (for [m months]
      ^{:key m}
-     [empty-col m options])
+     [report-roi-col m options])
    [report-roi-row-total options]])
 
 (defn report-edit-row

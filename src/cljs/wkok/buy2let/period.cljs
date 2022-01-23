@@ -23,3 +23,16 @@
 (defn date->year
   [date]
   (-> date .getTime t/instant t/year str keyword))
+
+(defn last-12-months
+  [year month]
+  (let [end-date (-> (t/new-date (-> year name js/parseInt)
+                                 (-> month name js/parseInt) 15)
+                     (t/at "11:00")
+                     (t/>> (t/new-period 1 :months)))
+        start-date (t/<< end-date
+                         (t/new-period 12 :months))
+        range (t/range start-date end-date (t/new-period 1 :months))]
+    (map (fn [m]
+           {:month (-> (t/month m) t/fields :month-of-year str keyword)
+            :year (-> (t/year m) str keyword)}) range)))

@@ -56,9 +56,15 @@
                            :jill-id {:id :jill-id :name "Jill Johnson" :email "jill@email.com" :status "INVITED" :send-invite true :roles ["viewer"]}
                            :john-id {:id :john-id :name "John Doe" :email "john@email.com" :status "REVOKED" :hidden true :roles ["viewer"]}})
 
-    (on-success-properties {:property-one-id {:id :property-one-id :name "Property One"
+    (on-success-properties {:property-one-id {:id :property-one-id
+                                              :name "Property One"
+                                              :purchase-price 100000
+                                              :cash-invested 10000
                                               :charges property-charges}
-                            :property-two-id {:id :property-two-id :name "Property Two"
+                            :property-two-id {:id :property-two-id
+                                              :name "Property Two"
+                                              :purchase-price 100000
+                                              :cash-invested 10000
                                               :charges property-charges}
                             :property-three-id {:id :property-three-id :name "Property Three" :hidden true
                                                 :charges property-charges}}))
@@ -168,7 +174,8 @@
                                                                            :mortgage-repayment-id {:amount 1000 :invoiced false :note "This is a note"}
                                                                            :payment-received-id {:amount 1700 :invoiced false}
                                                                            :rates-taxes-id {:amount 150 :invoiced false}
-                                                                           :rent-charged-id {:amount 2000 :invoiced false}}}
+                                                                           :rent-charged-id {:amount 2000 :invoiced false}}
+                                                               :yield {:net 0.65 :roi 6.5}}
                                  (-> last-three second :month) {:accounting {:agent-commission {:agent-commission-id 100}
                                                                              :agent-current {:agent-commission-id -100
                                                                                              :agent-opening-balance 0
@@ -208,7 +215,8 @@
                                                                             :rates-taxes-id {:amount 150
                                                                                              :invoiced false}
                                                                             :rent-charged-id {:invoiced false
-                                                                                              :amount 1900}}}
+                                                                                              :amount 1900}}
+                                                                :yield {:net 0.55 :roi 5.5}}
                                  (-> last-three last :month) {:accounting {:agent-commission {:agent-commission-id 100}
                                                                            :agent-current {:agent-commission-id -100
                                                                                            :agent-opening-balance 0
@@ -248,7 +256,8 @@
                                                                           :rates-taxes-id {:amount 150
                                                                                            :invoiced false}
                                                                           :rent-charged-id {:invoiced false
-                                                                                            :amount 1800}}}}})
+                                                                                            :amount 1800}}
+                                                              :yield {:net 0.45 :roi 4.5}}}})
 
     (on-success {:property-id :property-two-id
                  :year (-> last-three first :year)
@@ -291,7 +300,8 @@
                                                                            :rates-taxes-id {:amount 150
                                                                                             :invoiced false}
                                                                            :rent-charged-id {:amount 1300
-                                                                                             :invoiced false}}}
+                                                                                             :invoiced false}}
+                                                               :yield {:net -0.05 :roi -0.5}}
                                  (-> last-three second :month) {:accounting {:agent-commission {:agent-commission-id 100}
                                                                              :agent-current {:agent-commission-id -100
                                                                                              :agent-opening-balance 0
@@ -331,7 +341,8 @@
                                                                                              :invoiced false
                                                                                              :note "This is a note"}
                                                                             :rent-charged-id {:invoiced false
-                                                                                              :amount 1300}}}
+                                                                                              :amount 1300}}
+                                                                :yield {:net -0.05 :roi -0.5}}
                                  (-> last-three last :month) {:accounting {:agent-commission {:agent-commission-id 100}
                                                                            :agent-current {:agent-commission-id -100
                                                                                            :agent-opening-balance 0
@@ -371,7 +382,8 @@
                                                                                            :invoiced false}
                                                                           :rent-charged-id {:invoiced false
                                                                                             :amount 1400
-                                                                                            :note "This is a note"}}}}}))
+                                                                                            :note "This is a note"}}
+                                                              :yield {:net 0.05 :roi 0.5}}}}))
   {})
 
 (defmethod mm/get-ledger-month-fx :demo [_]

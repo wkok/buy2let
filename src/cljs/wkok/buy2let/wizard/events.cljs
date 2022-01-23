@@ -140,7 +140,7 @@
                       vals
                       (filter #(not (:hidden %)))
                       (sort-by :name))
-         charges-this-month (re/by-storage-type account-id property this-year this-month this-ledger charges account-id)]
+         charges-this-month (re/by-storage-type db account-id property this-year this-month this-ledger charges account-id)]
      (rf/dispatch [::save-property {:account-id account-id
                                     :crud-type types/property
                                     :id (:id property)

@@ -133,13 +133,20 @@
   (-> (assoc-in breakdown [:agent-opening-balance :amount] (or (get-in prev-month [:totals :agent-current]) 0))
       (assoc-in [:tenant-opening-balance :amount] (or (get-in prev-month [:totals :tenant]) 0))))
 
-(defn as-data [property values]
+(defn calc-yield-to-date
+  [db property year month]
+  (let [breakdown-total (shared/calc-breakdown-total-last-12-months db (:id property) year month)]
+    {:net (shared/calc-yield breakdown-total (:purchase-price property))
+     :roi (shared/calc-yield breakdown-total (:cash-invested property))}))
+
+(defn as-data [db property year month values]
   (let [this-month-breakdown (-> (get-in values [:this-month :breakdown])
                                  (add-opening-balances (:prev-month values)))
         this-month-accounting (calc-accounting property this-month-breakdown)]
     {:accounting this-month-accounting
      :totals     (calc-totals this-month-accounting)
-     :breakdown  (calc-breakdown this-month-breakdown)}))
+     :breakdown  (calc-breakdown this-month-breakdown)
+     :yield (calc-yield-to-date db property year month)}))
 
 ; Transforms into a list of file blobs to upload to an object store (or delete from an object store)
 (defn as-blobs [account property year month this-month-breakdown charges account-id]
@@ -158,10 +165,10 @@
                           :metadata {:customMetadata {"accountId" account-id}}}) this-month-breakdown)
        (filter #(not (nil? (:action %))))))
 
-(defn by-storage-type [account property year month values charges account-id]
+(defn by-storage-type [db account property year month values charges account-id]
   (let [this-month (:this-month values)
         this-month-breakdown (:breakdown this-month)]
-    {:data (as-data property values)
+    {:data (as-data db property year month values)
      :blobs (as-blobs account property year month this-month-breakdown charges account-id)}))
 
 (rf/reg-event-db
@@ -192,8 +199,7 @@
 (rf/reg-event-fx
  ::save-reconcile
  (fn [cofx [_ ledger]]
-   (let [values (shared/apply-breakdown ledger js/parseFloat)
-         db (:db cofx)
+   (let [db (:db cofx)
          account-id (get-in db [:security :account])
          charges (->> (:charges db)
                       vals
@@ -206,7 +212,8 @@
          property (shared/by-id (get-in db [:site :active-property]) properties)
          year (-> (get-in db [:reconcile :year]) keyword)
          month (-> (get-in db [:reconcile :month]) keyword)
-         charges-this-month (by-storage-type account-id property year month values charges account-id)]
+         values (shared/apply-breakdown ledger js/parseFloat)
+         charges-this-month (by-storage-type db account-id property year month values charges account-id)]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
      (if (not-any? nil? [(:id property) year month charges-this-month])
        (merge {:db              (-> (assoc-in db [:ledger (:id property) year month] (:data charges-this-month))

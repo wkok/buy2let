@@ -12,6 +12,7 @@
             [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.account.subs :as as]
             [wkok.buy2let.spec :as spec]
+            [wkok.buy2let.period :as period]
             [cemerick.url :as url]
             [reagent-mui.material.link :refer [link]]
             [reagent-mui.material.icon-button :refer [icon-button]]
@@ -54,9 +55,9 @@
 
 (defn month-range [from to]
   (let [from (t/new-date (-> (:year from) name js/parseInt)
-                         (-> (:month from) name js/parseInt) 1)
+                         (-> (:month from) name js/parseInt) 15)
         to (t/new-date (-> (:year to) name js/parseInt)
-                       (-> (:month to) name js/parseInt) 1)
+                       (-> (:month to) name js/parseInt) 15)
         interval (when (>= to from)
                    (t.i/new-interval from to))]
     (when (not (nil? interval))
@@ -283,3 +284,25 @@
                       :on-success #(js/window.open %)
                       :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                             :message %}])}))))
+
+(defn calc-yield
+  [breakdown initial-amount]
+  (let [rental-income (or (get-in breakdown [:rent-charged-id :amount])
+                          (get-in breakdown [:tSRksQUGeo3LagAPtH7gg :amount]))
+        expense-keys (->> breakdown
+                          keys
+                          (remove #{:agent-opening-balance :mortgage-repayment-id :payment-received-id :rent-charged-id
+                                    :usN3mMFklaj3l8wV1_0kA :aBm7Q87rGIqccqmZfWTu8 :tSRksQUGeo3LagAPtH7gg}))
+        expenses-total (->> (select-keys breakdown expense-keys)
+                            (map #(-> % val :amount))
+                            (reduce +))
+        net-income (- rental-income expenses-total)]
+    (if (pos? initial-amount)
+      (-> (/ net-income initial-amount)
+          (* 100))
+      0)))
+
+(defn calc-breakdown-total-last-12-months
+  [db property-id end-year end-month]
+  (let [months-range (period/last-12-months end-year end-month)]
+    (calc-breakdown-totals db property-id months-range)))
