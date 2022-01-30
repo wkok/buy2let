@@ -303,6 +303,9 @@
       0)))
 
 (defn calc-breakdown-total-last-12-months
-  [db property-id end-year end-month]
-  (let [months-range (period/last-12-months end-year end-month)]
-    (calc-breakdown-totals db property-id months-range)))
+  [db property-id year month end-month-breakdown]
+  (let [prev (period/prev-month month year)
+        months-range (period/last-11-months (:year prev) (:month prev))]
+    (add-breakdown-charges
+     (calc-breakdown-totals db property-id months-range)
+     end-month-breakdown)))

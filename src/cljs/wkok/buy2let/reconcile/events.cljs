@@ -134,8 +134,8 @@
       (assoc-in [:tenant-opening-balance :amount] (or (get-in prev-month [:totals :tenant]) 0))))
 
 (defn calc-yield-to-date
-  [db property year month]
-  (let [breakdown-total (shared/calc-breakdown-total-last-12-months db (:id property) year month)]
+  [db property year month this-month-breakdown]
+  (let [breakdown-total (shared/calc-breakdown-total-last-12-months db (:id property) year month this-month-breakdown)]
     {:net (shared/calc-yield breakdown-total (:purchase-price property))
      :roi (shared/calc-yield breakdown-total (:cash-invested property))}))
 
@@ -146,7 +146,7 @@
     {:accounting this-month-accounting
      :totals     (calc-totals this-month-accounting)
      :breakdown  (calc-breakdown this-month-breakdown)
-     :yield (calc-yield-to-date db property year month)}))
+     :yield (calc-yield-to-date db property year month this-month-breakdown)}))
 
 ; Transforms into a list of file blobs to upload to an object store (or delete from an object store)
 (defn as-blobs [account property year month this-month-breakdown charges account-id]
