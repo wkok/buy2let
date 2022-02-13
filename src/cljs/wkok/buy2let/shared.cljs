@@ -291,8 +291,8 @@
                           (get-in breakdown [:tSRksQUGeo3LagAPtH7gg :amount]))
         expense-keys (->> breakdown
                           keys
-                          (remove #{:agent-opening-balance :mortgage-repayment-id :payment-received-id :rent-charged-id
-                                    :usN3mMFklaj3l8wV1_0kA :aBm7Q87rGIqccqmZfWTu8 :tSRksQUGeo3LagAPtH7gg}))
+                          (remove #{:agent-opening-balance :mortgage-interest-id :payment-received-id :rent-charged-id
+                                    :ngOTXdFnbN2HBaryJUSTR :aBm7Q87rGIqccqmZfWTu8 :tSRksQUGeo3LagAPtH7gg}))
         expenses-total (->> (select-keys breakdown expense-keys)
                             (map #(-> % val :amount))
                             (reduce +))
