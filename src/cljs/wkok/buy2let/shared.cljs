@@ -54,19 +54,20 @@
       js/parseFloat))
 
 (defn month-range [from to]
-  (let [from (t/new-date (-> (:year from) name js/parseInt)
-                         (-> (:month from) name js/parseInt) 15)
-        to (t/new-date (-> (:year to) name js/parseInt)
-                       (-> (:month to) name js/parseInt) 15)
-        interval (when (>= to from)
-                   (t.i/new-interval from to))]
-    (when (not (nil? interval))
-      (->> (t/range (t/beginning interval)
-                    (t/end interval)
-                    (t/new-period 1 :months))
-           (map (fn [d] {:month (-> (t/month d) tm/ordinal inc str keyword)
-                         :year  (-> (t/year d) str keyword)
-                         :date  d}))))))
+  (when (and (:year from) (:month from))
+    (let [from (t/new-date (-> (:year from) name js/parseInt)
+                           (-> (:month from) name js/parseInt) 15)
+          to (t/new-date (-> (:year to) name js/parseInt)
+                         (-> (:month to) name js/parseInt) 15)
+          interval (when (>= to from)
+                     (t.i/new-interval from to))]
+      (when (not (nil? interval))
+        (->> (t/range (t/beginning interval)
+                      (t/end interval)
+                      (t/new-period 1 :months))
+             (map (fn [d] {:month (-> (t/month d) tm/ordinal inc str keyword)
+                           :year  (-> (t/year d) str keyword)
+                           :date  d})))))))
 
 (defn format-month [date]
   (-> date

@@ -25,12 +25,12 @@
  ::reconcile-nav
  (fn [cofx [_ _]]
    (let [db (:db cofx)
-         property (-> (get-in db [:site :active-property]) name)
-         from-year (-> (get-in db [:report :from :year]) name)
-         from-month (-> (get-in db [:report :from :month]) name)
-         to-year (-> (get-in db [:report :to :year]) name)
-         to-month (-> (get-in db [:report :to :month]) name)]
-     
+         property (some-> (get-in db [:site :active-property]) name)
+         from-year (some-> (get-in db [:report :from :year]) name)
+         from-month (some-> (get-in db [:report :from :month]) name)
+         to-year (some-> (get-in db [:report :to :year]) name)
+         to-month (some-> (get-in db [:report :to :month]) name)]
+
      (js/window.location.assign (str "#/report/" property "/" from-month "/" from-year "/" to-month "/" to-year)))))
 
 (rf/reg-event-fx
