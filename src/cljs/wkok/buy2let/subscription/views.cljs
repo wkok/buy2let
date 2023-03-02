@@ -128,30 +128,6 @@
                :disabled @(rf/subscribe [::ss/show-progress])
                :on-click #(rf/dispatch [::subse/manage-subscription])} "Manage subscription"]]]))
 
-(defn subscription-cancelled-card []
-  [card
-   [card-content
-    [grid {:container true
-           :direction :row
-           :spacing 2
-           :justify-content :center}
-     [grid {:item true}
-      [thumb-up {:font-size :large}]]
-     [grid {:item true
-            :container true
-            :direction :column
-            :spacing 2}
-      [grid {:item true}
-       [typography
-        "Your Multi Property License subscription has been successfully cancelled."]]
-      [grid {:item true}
-       [typography
-        "You are now on the Single Property License which includes one free license"]]]]]
-   [card-actions
-    [button {:color :primary
-             :disabled @(rf/subscribe [::ss/show-progress])
-             :on-click #(rf/dispatch [::subse/manage-subscription])} "Resubscribe"]]])
-
 (defn save-subscription-status [account status]
   (rf/dispatch [::ae/save-account
                 {:account (assoc-in account [:subscription :status] status)
@@ -170,8 +146,6 @@
       (case subscription-action
        :activated (do (save-subscription-status account "active")
                       [subscription-activated-card account])
-        ; :cancelled (do (save-subscription-status account "cancelled")
-                      ;  [subscription-cancelled-card])
        (case (get-in account [:subscription :status])
          "active"    [subscription-multi-card account]
          "cancelling" [subscription-multi-card account]

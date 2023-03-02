@@ -15,7 +15,7 @@
             [reagent-mui.material.text-field :refer [text-field]]
             [reagent-mui.material.card :refer [card]]
             [reagent-mui.material.box :refer [box]]
-            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.material.switch :refer [switch]]
             [reagent-mui.material.form-control-label :refer [form-control-label]]
             [reagent-mui.material.card-actions :refer [card-actions]]
             [reagent-mui.material.menu-item :refer [menu-item]]

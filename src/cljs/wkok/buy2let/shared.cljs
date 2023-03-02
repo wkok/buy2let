@@ -1,25 +1,28 @@
 (ns wkok.buy2let.shared
-  (:require [nano-id.core :as nid]
-            [re-frame.core :as rf]
-            [clojure.string :as s]
-            [goog.string :as gstring]
-            goog.string.format   ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
-            [cljc.java-time.month :as tm]
-            [tick.core :as t]
-            [tick.alpha.interval :as t.i]
-            [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.backend.multimethods :as mm]
-            [wkok.buy2let.backend.subs :as bs]
-            [wkok.buy2let.account.subs :as as]
-            [wkok.buy2let.spec :as spec]
-            [wkok.buy2let.period :as period]
-            [cemerick.url :as url]
-            [reagent-mui.material.link :refer [link]]
-            [reagent-mui.material.icon-button :refer [icon-button]]
-            [reagent-mui.material.tooltip :refer [tooltip]]
-            [reagent-mui.icons.attach-file :refer [attach-file]])
-  (:import (goog.i18n DateTimeSymbols_en_US)))
+  (:require
+   [cemerick.url :as url]
+   [cljc.java-time.month :as tm]
+   [clojure.string :as s]
+   [goog.string :as gstring]
+   goog.string.format ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
+   [nano-id.core :as nid]
+   [re-frame.core :as rf]
+   [reagent-mui.icons.attach-file :refer [attach-file]]
+   [reagent-mui.material.icon-button :refer [icon-button]]
+   [reagent-mui.material.link :refer [link]]
+   [reagent-mui.material.tooltip :refer [tooltip]]
+   [tick.alpha.interval :as t.i]
+   [tick.core :as t]
+   [wkok.buy2let.account.subs :as as]
+   [wkok.buy2let.security :as sec]
+   [wkok.buy2let.backend.multimethods :as mm]
+   [wkok.buy2let.backend.subs :as bs]
+   [wkok.buy2let.period :as period]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.spec :as spec]))
 
+(def dev-mode?
+  ^boolean goog.DEBUG)
 
 (def default-cal
   (let [today (t/today)
@@ -59,7 +62,7 @@
                            (-> (:month from) name js/parseInt) 15)
           to (t/new-date (-> (:year to) name js/parseInt)
                          (-> (:month to) name js/parseInt) 15)
-          interval (when (>= to from)
+          interval (when (t/>= to from)
                      (t.i/new-interval from to))]
       (when (not (nil? interval))
         (->> (t/range (t/beginning interval)
@@ -171,7 +174,7 @@
 (defn has-role [role]
   (let [claims @(rf/subscribe [::bs/claims])
         account-id @(rf/subscribe [::as/account])]
-    (some #{account-id} (get-in claims [:roles role]))))
+    (sec/has-role role claims account-id)))
 
 (defn accounts-from [roles]
   (->> (map #(val %) roles)
@@ -199,7 +202,7 @@
   (when (and (or (= :all active-property)
                  (not active-property)
                  (empty? (filter #(= active-property (:id %)) properties)))
-             (not (empty? properties)))
+             (seq properties))
     (rf/dispatch [event (-> properties first :id)])))
 
 (defn validate-file-size [file max-bytes]
@@ -265,7 +268,7 @@
         year (or (:year options) (-> db :reconcile :year))
         month (or (:month options) (-> db :reconcile :month))
         charge-id (or (:charge-id options) (-> db :reconcile :charge-id))]
-    (->> (filter (fn [[k v]]
+    (->> (filter (fn [[_k v]]
                    (and (= property-id (:property-id v))
                         (= year (:year v))
                         (= month (:month v))

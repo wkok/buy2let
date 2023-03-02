@@ -1,43 +1,45 @@
 (ns wkok.buy2let.reconcile.views
   (:require-macros [reagent-mui.util :refer [react-component]])
-  (:require [re-frame.core :as rf]
-            [reagent.core :as ra]
-            [wkok.buy2let.reconcile.events :as re]
-            [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.reconcile.subs :as rs]
-            [wkok.buy2let.site.subs :as ss]
-            [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.shared :as shared]
-            [wkok.buy2let.site.styles :refer [classes]]
-            [tick.core :as t]
-            [fork.re-frame :as fork]
-            [clojure.string :as s]
-            [reagent-mui.icons.note-outlined :refer [note-outlined]]
-            [reagent-mui.icons.edit :refer [edit]]
-            [reagent-mui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
-            [reagent-mui.icons.cloud-done :refer [cloud-done]]
-            [reagent-mui.icons.cloud-done-outlined :refer [cloud-done-outlined]]
-            [reagent-mui.icons.delete-outlined :refer [delete-outlined]]
-            [reagent-mui.material.tooltip :refer [tooltip]]
-            [reagent-mui.material.card :refer [card]]
-            [reagent-mui.material.card-content :refer [card-content]]
-            [reagent-mui.material.paper :refer [paper]]
-            [reagent-mui.material.typography :refer [typography]]
-            [reagent-mui.material.grid :refer [grid]]
-            [reagent-mui.material.table :refer [table]]
-            [reagent-mui.material.menu-item :refer [menu-item]]
-            [reagent-mui.material.button :refer [button]]
-            [reagent-mui.material.icon-button :refer [icon-button]]
-            [reagent-mui.material.text-field :refer [text-field]]
-            [reagent-mui.material.table-container :refer [table-container]]
-            [reagent-mui.material.table-head :refer [table-head]]
-            [reagent-mui.material.table-body :refer [table-body]]
-            [reagent-mui.material.table-row :refer [table-row]]
-            [reagent-mui.material.table-cell :refer [table-cell]]
-            [reagent-mui.material.form-control-label :refer [form-control-label]]
-            [reagent-mui.material.switch-component :refer [switch]]
-            [reagent-mui.lab.date-picker :refer [date-picker]]
-            [wkok.buy2let.period :as period]))
+  (:require
+   [clojure.string :as s]
+   [fork.re-frame :as fork]
+   [re-frame.core :as rf]
+   [reagent-mui.icons.cloud-done :refer [cloud-done]]
+   [reagent-mui.icons.cloud-done-outlined :refer [cloud-done-outlined]]
+   [reagent-mui.icons.cloud-upload-outlined :refer [cloud-upload-outlined]]
+   [reagent-mui.icons.delete-outlined :refer [delete-outlined]]
+   [reagent-mui.icons.edit :refer [edit]]
+   [reagent-mui.icons.note-outlined :refer [note-outlined]]
+   [reagent-mui.material.button :refer [button]]
+   [reagent-mui.material.card :refer [card]]
+   [reagent-mui.material.card-content :refer [card-content]]
+   [reagent-mui.material.form-control-label :refer [form-control-label]]
+   [reagent-mui.material.grid :refer [grid]]
+   [reagent-mui.material.icon-button :refer [icon-button]]
+   [reagent-mui.material.menu-item :refer [menu-item]]
+   [reagent-mui.material.paper :refer [paper]]
+   [reagent-mui.material.switch :refer [switch]]
+   [reagent-mui.material.table :refer [table]]
+   [reagent-mui.material.table-body :refer [table-body]]
+   [reagent-mui.material.table-cell :refer [table-cell]]
+   [reagent-mui.material.table-container :refer [table-container]]
+   [reagent-mui.material.table-head :refer [table-head]]
+   [reagent-mui.material.table-row :refer [table-row]]
+   [reagent-mui.material.text-field :refer [text-field]]
+   [reagent-mui.material.tooltip :refer [tooltip]]
+   [reagent-mui.material.typography :refer [typography]]
+   [reagent-mui.x.date-picker :refer [date-picker]]
+   [reagent.core :as ra]
+   [tick.core :as t]
+   [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.db.default :as ddb]
+   [wkok.buy2let.period :as period]
+   [wkok.buy2let.reconcile.events :as re]
+   [wkok.buy2let.reconcile.subs :as rs]
+   [wkok.buy2let.shared :as shared]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.site.styles :refer [classes]]
+   [wkok.buy2let.site.subs :as ss]))
 
 
 (defn format-amount [ledger path]
@@ -232,7 +234,7 @@
           :label-placement :start}]]]]]))
 
 (defn build-edit-url []
-  (let [options (re/calc-options {})]
+  (let [options (ddb/calc-options {})]
     (str "#/reconcile/" (-> (:property-id options) name)
          "/" (-> (:month options) name)
          "/" (-> (:year options) name)
@@ -298,9 +300,10 @@
         card-class (:reconcile-card classes)
         pos-class (:pos classes)
         neg-class (:neg classes)
-        owe-class (:owe classes)]
+        owe-class (:owe classes)
+        edit-url (build-edit-url)]
     (if (shared/has-role :editor)
-      (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign (build-edit-url)) :icon [edit]
+      (rf/dispatch [:set-fab-actions {:left-1 {:fn #(js/window.location.assign edit-url) :icon [edit]
                                                :title "Edit"}}])
       (rf/dispatch [:set-fab-actions nil]))
     [grid {:container true

@@ -6,9 +6,7 @@
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.account.subs :as as]
-            [wkok.buy2let.backend.subs :as bs]
             [wkok.buy2let.site.styles :refer [classes]]
-            [goog.crypt.base64 :as b64]
             [clojure.string :as s]
             [reagent-mui.icons.add :refer [add]]
             [reagent-mui.material.form-control-label :refer [form-control-label]]
@@ -129,13 +127,6 @@
        "/" (name @(rf/subscribe [::rs/reconcile-charge-id]))
        "/invoices"))
 
-(defn get-invoice-keys
-  []
-  {:property-id @(rf/subscribe [::ss/active-property])
-   :charge-id @(rf/subscribe [::rs/reconcile-charge-id])
-   :year @(rf/subscribe [::rs/reconcile-year])
-   :month @(rf/subscribe [::rs/reconcile-month])})
-
 (defn get-invoices-charge-name
   []
   (-> @(rf/subscribe [::rs/reconcile-charge-id])
@@ -168,8 +159,7 @@
   (if (:attached invoice) ; already uploaded
     (dissoc invoice :attachment :attachment-deleted)
     (-> (dissoc invoice :attachment :attachment-deleted)
-        (assoc :attached (not (nil? (:attachment invoice))))))
-  )
+        (assoc :attached (not (nil? (:attachment invoice)))))))
 
 (def invoice
   {:type        :invoices
@@ -178,9 +168,8 @@
                  {:key :invoice :type :attachment}]
    :sub-header-fn get-invoices-charge-name
    :validate-fn validate-name
-   :key-fields-fn get-invoice-keys
    :uri-path-fn get-invoices-uri-path
-   :actions     {:list {:left-1 {:fn #(js/window.location.assign (str (get-invoices-uri-path) "/add"))
+   :actions     {:list {:left-1 {:fn #(rf/dispatch [::ce/invoice-add])
                                  :icon [add]
                                  :title "Add"}}}
    :singular "invoice"
@@ -196,33 +185,6 @@
                                            :color :primary
                                            :on-click #(rf/dispatch [::shared/view-attachment :invoices (:id invoice)])}
                               [visibility-outlined]]]])))})
-
-(defn calc-status [item]
-  (assoc item :status
-         (if (:hidden item)
-           "REVOKED"
-           (if (:send-invite item)
-             "INVITED"
-             "ACTIVE"))))
-
-(defn create-invite [item]
-  (if (:send-invite item)
-    (assoc item :invitation
-         (let [accounts @(rf/subscribe [::as/accounts])
-               account-id @(rf/subscribe [::as/account])
-               local-user @(rf/subscribe [::bs/local-user])]
-           {:to (:email item)
-            :template {:name "invitation"
-                       :data {:delegate-name (:name item)
-                              :user-name (:name local-user)
-                              :account-name (-> (filter #(= account-id (key %)) accounts)
-                                                first
-                                                val
-                                                :name)
-                              :accept-url (str (shared/url-host)
-                                               "?invitation=" (b64/encodeString {:delegate-id (:id item)
-                                                                                 :account-id account-id}))}}}))
-    item))
 
 (defn select-lower-weighted [roles]
   (let [weighted {1 "viewer"
@@ -265,7 +227,6 @@
    :defaults {:add {:send-invite true
                     :roles ["viewer"]}
               :edit {:send-invite false}}
-   :calculated-fn #(-> % calc-status create-invite)
    :validate-fn #(merge (validate-name %) (validate-email %))
    :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
                                  :title "Add"}}}

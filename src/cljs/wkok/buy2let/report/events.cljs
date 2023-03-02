@@ -3,23 +3,23 @@
             [clojure.string :as s]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.site.subs :as ss]
-            [wkok.buy2let.report.subs :as rs]
-            [wkok.buy2let.backend.multimethods :as mm]))
+            [wkok.buy2let.backend.multimethods :as mm]
+            [wkok.buy2let.db.default :as dbb]
+            [wkok.buy2let.security :as sec]))
 
 (rf/reg-event-db
  ::view-report
- (fn [db [_ options]]
-   (let [{:keys [property-id from-month from-year to-month to-year]} options]
-     (-> (assoc-in db [:report :from :month] from-month)
-         (assoc-in [:report :from :year] from-year)
-         (assoc-in [:report :to :month] to-month)
-         (assoc-in [:report :to :year] to-year)
-         (assoc-in [:site :active-property] property-id)
-         (assoc-in [:site :active-page] :report)
-         (assoc-in [:site :heading] "Report")
-         (update-in [:site] dissoc :active-panel)))))
+ (fn [db [_ role  options]]
+   (sec/with-authorisation role db
+     #(let [{:keys [property-id from-month from-year to-month to-year]} (dbb/calc-report-options-db db options)]
+        (-> (assoc-in db [:report :from :month] from-month)
+            (assoc-in [:report :from :year] from-year)
+            (assoc-in [:report :to :month] to-month)
+            (assoc-in [:report :to :year] to-year)
+            (assoc-in [:site :active-property] property-id)
+            (assoc-in [:site :active-page] :report)
+            (assoc-in [:site :heading] "Report")
+            (update-in [:site] dissoc :active-panel))))))
 
 (rf/reg-event-fx
  ::reconcile-nav
@@ -47,7 +47,7 @@
                          shared/calc-totals)
          remote-db-fx (when (not (or (= :all p) (not p)))
                         (shared/get-ledger-fx db property months))]
-     
+
      (rf/dispatch [::reconcile-nav])
      (if (empty? (vals remote-db-fx))
        {:db local-db-fx}
@@ -177,33 +177,3 @@
                     :on-success #(js/window.open %)
                     :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!"
                                                           :message %}])})))
-
-
-
-(defn calc-options
-  [{:keys [property-id from-month from-year to-month to-year]}]
-  (let [properties @(rf/subscribe [::cs/properties])
-        active-property @(rf/subscribe [::ss/active-property])
-        report-from-year @(rf/subscribe [::rs/report-year :from])
-        report-from-month @(rf/subscribe [::rs/report-month :from])
-        report-to-year @(rf/subscribe [::rs/report-year :to])
-        report-to-month @(rf/subscribe [::rs/report-month :to])]
-    {:property-id (or (-> property-id keyword)
-                      active-property
-                      (->> properties first :id)
-                      "")
-     :from-year (or (-> from-year keyword)
-                    report-from-year
-                    (:last-year shared/default-cal))
-     :from-month (or (-> from-month keyword)
-                     report-from-month
-                     (:last-month shared/default-cal))
-     :to-year (or (-> to-year keyword)
-                  report-to-year
-                  (:this-year shared/default-cal))
-     :to-month (or (-> to-month keyword)
-                   report-to-month
-                   (:this-month shared/default-cal))}))
-
-
-

@@ -7,14 +7,15 @@
             [wkok.buy2let.db.events :as dbe]
             [wkok.buy2let.spec :as spec]
             [goog.crypt.base64 :as b64]
-            [wkok.buy2let.site.events :as se]))
+            [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.security :as sec]))
 
 (rf/reg-event-db
  :set-active-account
  (fn [db [_ input]]
    (let [account-id (spec/conform ::spec/id input)]
      (rf/dispatch [::dbe/get-crud account-id])
-     (-> ddb/default-db
+     (-> (if shared/dev-mode? db ddb/default-db)
          (assoc-in [:site :account-selector] (get-in db [:site :account-selector]))
          (assoc-in [:site :location] (get-in db [:site :location]))
          (assoc :security (:security db))
@@ -39,21 +40,23 @@
 
 (rf/reg-event-db
  ::view-account
- (fn [db [_ _]]
-   (-> (assoc-in db [:site :active-page] :account)
-       (assoc-in [:site :active-panel] :account-view)
-       (assoc-in [:site :heading] "Account"))))
+ (fn [db [_ role]]
+   (sec/with-authorisation role db
+     #(-> (assoc-in db [:site :active-page] :account)
+          (assoc-in [:site :active-panel] :account-view)
+          (assoc-in [:site :heading] "Account")))))
 
 (rf/reg-event-db
  ::edit-account
- (fn [db [_ _]]
-   (let [accounts (get-in db [:security :accounts])
-         account-id (get-in db [:security :account])
-         account (account-id accounts)]
-     (-> (assoc-in db [:form :old :account] account)
-         (assoc-in [:site :active-page] :account)
-         (assoc-in [:site :active-panel] :account-edit)
-         (assoc-in [:site :heading] "Edit account")))))
+ (fn [db [_ role]]
+   (sec/with-authorisation role db
+     #(let [accounts (get-in db [:security :accounts])
+            account-id (get-in db [:security :account])
+            account (account-id accounts)]
+        (-> (assoc-in db [:form :old :account] account)
+            (assoc-in [:site :active-page] :account)
+            (assoc-in [:site :active-panel] :account-edit)
+            (assoc-in [:site :heading] "Edit account"))))))
 
 
 (rf/reg-event-fx
@@ -64,7 +67,7 @@
          account (if-let [avatar-url-temp (get-in db [:site :account-avatar-url-temp])]
                    (assoc conformed :avatar-url avatar-url-temp)
                    conformed)]
-     (when (:back input true) 
+     (when (:back input true)
        (js/window.history.back))                              ;opportunistic.. assume success 99% of the time..
      (merge {:db            (-> (assoc-in db [:security :accounts (:id account)] account)
                                 (assoc-in [:site :account-avatar-url-temp] nil))}
@@ -78,8 +81,8 @@
    (assoc-in db [:security :accounts account-id :deleteToken] delete-token)))
 
 (defn active-delegates? [db]
-  (not (empty? (->> (:delegates db)
-                    (filter #(not= "REVOKED" (-> % val :status)))))))
+  (seq (->> (:delegates db)
+            (filter #(not= "REVOKED" (-> % val :status))))))
 
 (defn create-delete-confirmation [mode user account delete-token]
   {:to (:email user)
@@ -119,7 +122,7 @@
                   :confirmation (create-delete-confirmation mode user account delete-token)
                   :on-success #(rf/dispatch [::se/dialog {:heading   "Email confirmation"
                                                           :message   "Please check your email for an account deletion link.
-                                                                                Your account will remain active until you confirm deletion 
+                                                                                Your account will remain active until you confirm deletion
                                                                                 by clicking the link in the email."
                                                           :buttons   {:middle {:text     "Understood"
                                                                                :on-click (fn [] (rf/dispatch [::delete-account-understood delete-token account-id]))}}
@@ -188,7 +191,7 @@
    (let [db (:db cofx)]
      (merge {:db            db}
             (mm/blob-url-fx
-             {:path (str "data/" 
+             {:path (str "data/"
                          (-> (get-in db [:security :account]) name)
                          "/avatars/" avatar-id)
               :on-success #(rf/dispatch [::load-avatar-url %])

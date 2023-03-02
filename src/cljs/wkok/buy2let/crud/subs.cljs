@@ -22,13 +22,16 @@
         (filter #(:hidden %))
         (sort-by :name))))
 
+(defn get-properties
+  [db]
+  (->> (:properties db)
+       vals
+       (filter #(not (:hidden %)))
+       (sort-by :name)))
+
 (rf/reg-sub
   ::properties
-  (fn [db]
-    (->> (:properties db)
-         vals
-         (filter #(not (:hidden %)))
-         (sort-by :name))))
+  #(get-properties %))
 
 (rf/reg-sub
   ::all-charges

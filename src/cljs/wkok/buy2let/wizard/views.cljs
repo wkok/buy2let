@@ -2,42 +2,28 @@
   (:require
    [clojure.string :as str]
    [re-frame.core :as rf]
-   [reagent.core :as ra]
-   [reagent-mui.material.paper :refer [paper]]
-   [reagent-mui.material.stepper :refer [stepper]]
-   [reagent-mui.material.step :refer [step]]
-   [reagent-mui.material.button :refer [button]]
-   [reagent-mui.material.step-label :refer [step-label]]
-   [reagent-mui.material.step-content :refer [step-content]]
-   [reagent-mui.material.grid :refer [grid]]
    [reagent-mui.material.box :refer [box]]
-   [reagent-mui.material.typography :refer [typography]]
-   [reagent-mui.material.text-field :refer [text-field]]
-   [reagent-mui.material.radio :refer [radio]]
+   [reagent-mui.material.button :refer [button]]
    [reagent-mui.material.checkbox :refer [checkbox]]
    [reagent-mui.material.form-control :refer [form-control]]
    [reagent-mui.material.form-control-label :refer [form-control-label]]
+   [reagent-mui.material.grid :refer [grid]]
+   [reagent-mui.material.paper :refer [paper]]
+   [reagent-mui.material.radio :refer [radio]]
    [reagent-mui.material.radio-group :refer [radio-group]]
-   [wkok.buy2let.wizard.subs :as ws]
+   [reagent-mui.material.step :refer [step]]
+   [reagent-mui.material.step-content :refer [step-content]]
+   [reagent-mui.material.step-label :refer [step-label]]
+   [reagent-mui.material.stepper :refer [stepper]]
+   [reagent-mui.material.text-field :refer [text-field]]
+   [reagent-mui.material.typography :refer [typography]]
+   [reagent.core :as ra]
    [wkok.buy2let.crud.subs :as cs]
-   [wkok.buy2let.site.subs :as ss]
    [wkok.buy2let.currencies :as currencies]
    [wkok.buy2let.shared :as shared]
-   [wkok.buy2let.wizard.events :as we]))
-
-(defn yes-no [event answer]
-  [form-control
-   [radio-group
-    [form-control-label {:value :yes? :label "Yes" :control (ra/as-element [radio {:color :primary}])
-                         :on-change #(rf/dispatch [event :yes? (-> % .-target .-checked)])
-                         :checked (if (nil? answer)
-                                    false
-                                    answer)}]
-    [form-control-label {:value :no? :label "No" :control (ra/as-element [radio {:color :primary}])
-                         :on-change #(rf/dispatch [event :no? (-> % .-target .-checked)])
-                         :checked (if (nil? answer)
-                                    false
-                                    (not answer))}]]])
+   [wkok.buy2let.site.subs :as ss]
+   [wkok.buy2let.wizard.events :as we]
+   [wkok.buy2let.wizard.subs :as ws]))
 
 (defn step-property-name [property-name]
   [step
