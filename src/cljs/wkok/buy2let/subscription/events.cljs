@@ -2,21 +2,24 @@
   (:require [re-frame.core :as rf]
             [wkok.buy2let.spec :as spec]
             [wkok.buy2let.backend.multimethods :as mm]
-            [wkok.buy2let.site.events :as se]))
+            [wkok.buy2let.site.events :as se]
+            [wkok.buy2let.security :as sec]))
 
 (rf/reg-event-db
  ::view-subscription
- (fn [db _]
-   (when (not (get-in db [:site :location :currency]))
-     (rf/dispatch [::se/detect-location]))
-   (let [account-id (get-in db [:security :account])
-         accounts (get-in db [:security :accounts])
-         account (when account-id (account-id accounts))
-         subscribed-properties (get-in account [:subscription :properties] 1)]
-     (-> (assoc-in db [:site :active-page] :subscription)
-         (assoc-in [:site :active-panel] :subscription-view)
-         (assoc-in [:site :heading] "Subscription")
-         (assoc-in [:site :subscription :properties] (inc subscribed-properties))))))
+ (fn [db role]
+   (sec/with-authorisation role db
+     (do
+       (when (not (get-in db [:site :location :currency]))
+         (rf/dispatch [::se/detect-location]))
+       (let [account-id (get-in db [:security :account])
+             accounts (get-in db [:security :accounts])
+             account (when account-id (account-id accounts))
+             subscribed-properties (get-in account [:subscription :properties] 1)]
+         (-> (assoc-in db [:site :active-page] :subscription)
+             (assoc-in [:site :active-panel] :subscription-view)
+             (assoc-in [:site :heading] "Subscription")
+             (assoc-in [:site :subscription :properties] (inc subscribed-properties))))))))
 
 (rf/reg-event-fx
  ::manage-subscription

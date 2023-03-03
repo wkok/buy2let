@@ -5,23 +5,26 @@
    [goog.crypt.base64 :as b64]
    [wkok.buy2let.shared :as shared]
    [wkok.buy2let.backend.multimethods :as mm]
-   [wkok.buy2let.site.events :as se]))
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.security :as sec]))
 
 
 (rf/reg-event-db
-  ::view-profile
-  (fn [db [_ _]]
-    (-> (assoc-in db [:site :active-page] :profile)
-        (assoc-in [:site :active-panel] :profile-view)
-        (assoc-in [:site :heading] "Profile"))))
+ ::view-profile
+ (fn [db [_ role]]
+   (sec/with-authorisation role db
+     #(-> (assoc-in db [:site :active-page] :profile)
+          (assoc-in [:site :active-panel] :profile-view)
+          (assoc-in [:site :heading] "Profile")))))
 
 (rf/reg-event-db
-  ::edit-profile
-  (fn [db [_ _]]
-    (-> (assoc-in db [:form :old :profile] (get-in db [:security :user]))
-        (assoc-in [:site :active-page] :profile)
-        (assoc-in [:site :active-panel] :profile-edit)
-        (assoc-in [:site :heading] "Edit profile"))))
+ ::edit-profile
+ (fn [db [_ role]]
+   (sec/with-authorisation role db
+     #(-> (assoc-in db [:form :old :profile] (get-in db [:security :user]))
+          (assoc-in [:site :active-page] :profile)
+          (assoc-in [:site :active-panel] :profile-edit)
+          (assoc-in [:site :heading] "Edit profile")))))
 
 (defn create-verification [user email-changed-token]
   {:to (:email user)

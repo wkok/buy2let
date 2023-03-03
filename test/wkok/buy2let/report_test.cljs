@@ -24,7 +24,7 @@
          (rf/dispatch [::se/set-active-property "property-one-id"])
          (is (= :property-one-id @active-property)))
        (testing "after navigating to Report"
-         (rf/dispatch [::repe/view-report (repe/calc-options {:property-id :1234
+         (rf/dispatch [::repe/view-report (repe/calc-report-options {:property-id :1234
                                                               :from-month :7
                                                               :from-year :2020
                                                               :to-month :9
@@ -37,5 +37,5 @@
          (is (contains? @report :result)))))))
 
 
-(comment 
+(comment
   (cljs.test/run-tests 'wkok.buy2let.report-test))

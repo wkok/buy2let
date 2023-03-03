@@ -4,12 +4,12 @@
 (defonce ready?
          (ra/atom false))
 
-(defonce initialize
-         (do
-           (js/google.charts.load (clj->js {:packages ["corechart"]}))
-           (js/google.charts.setOnLoadCallback
-             (fn google-visualization-loaded []
-               (reset! ready? true)))))
+(defn init
+  []
+  (js/google.charts.load (clj->js {:packages ["corechart"]}))
+  (js/google.charts.setOnLoadCallback
+   (fn google-visualization-loaded []
+     (reset! ready? true))))
 
 (defn data-table [data]
   (cond

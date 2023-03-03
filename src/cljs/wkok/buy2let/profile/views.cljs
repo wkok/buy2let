@@ -118,8 +118,7 @@
 
 (defn view-profile []
   (rf/dispatch [:set-fab-actions nil])
-  (let [user @(rf/subscribe [::bs/user])
-        claims @(rf/subscribe [::bs/claims])
+  (let [claims @(rf/subscribe [::bs/claims])
         local-user @(rf/subscribe [::bs/local-user])
         providers (set @(rf/subscribe [::bs/providers]))]
     [grid {:container true

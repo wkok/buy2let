@@ -5,7 +5,9 @@
    [wkok.buy2let.shared :as shared]
    [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.site.events :as se]
-   [wkok.buy2let.account.subs :as as]))
+   [wkok.buy2let.db.default :as ddb]
+   [wkok.buy2let.security :as sec]
+   [goog.crypt.base64 :as b64]))
 
 
 
@@ -63,12 +65,13 @@
 
 (rf/reg-event-db
  ::add-crud
- (fn [db [_ type options]]
-   (case (:type type)
-       :properties (add-property db)
-       :invoices (-> (assoc-in db [:reconcile :charge-id] (:charge-id options))
-                     (assoc-add-crud-keys type))
-       (assoc-add-crud-keys db type))))
+ (fn [db [_ role type options]]
+   (sec/with-authorisation role db
+     #(case (:type type)
+        :properties (add-property db)
+        :invoices (-> (assoc-in db [:reconcile :charge-id] (:charge-id (ddb/calc-options-db db options)))
+                      (assoc-add-crud-keys type))
+        (assoc-add-crud-keys db type)))))
 
 (defn assoc-reconcile-keys
   [db options]
@@ -83,12 +86,13 @@
       (assoc-in [:site :heading] (str "Edit " (:singular type)))))
 
 (rf/reg-event-db
-  ::edit-crud
-  (fn [db [_ id type options]]
-    (case (:type type)
-      :invoices (-> (assoc-reconcile-keys db options)
-                    (assoc-edit-crud-keys id type))
-      (assoc-edit-crud-keys db id type))))
+ ::edit-crud
+ (fn [db [_ role id type options]]
+   (sec/with-authorisation role db
+     #(case (:type type)
+        :invoices (-> (assoc-reconcile-keys db (ddb/calc-options-db db options))
+                      (assoc-edit-crud-keys id type))
+        (assoc-edit-crud-keys db id type)))))
 
 (defn assoc-list-crud-keys
   [db type]
@@ -98,12 +102,13 @@
       (assoc-in [:site :heading] (heading type))))
 
 (rf/reg-event-db
-  ::list-crud
-  (fn [db [_ type options]]
-    (case (:type type)
-      :invoices (-> (assoc-reconcile-keys db options)
-                    (assoc-list-crud-keys type))
-      (assoc-list-crud-keys db type))))
+ ::list-crud
+ (fn [db [_ role type options]]
+   (sec/with-authorisation role db
+     #(case (:type type)
+        :invoices (-> (assoc-reconcile-keys db (ddb/calc-options-db db options))
+                      (assoc-list-crud-keys type))
+        (assoc-list-crud-keys db type)))))
 
 (rf/reg-event-fx
  ::upload-attachments
@@ -112,19 +117,61 @@
           (mm/upload-attachments-fx {:blobs blobs
                                     :on-error #(rf/dispatch [::se/dialog {:heading "Oops, an error!" :message %}])}))))
 
+(defn get-key-fields
+  [db type]
+  (case (:type type)
+    :invoices {:property-id (get-in db [:site :active-property])
+               :charge-id (get-in db [:reconcile :charge-id])
+               :year (get-in db [:reconcile :year])
+               :month (get-in db [:reconcile :month])}
+    {}))
+
+(defn calc-status [item]
+  (assoc item :status
+         (if (:hidden item)
+           "REVOKED"
+           (if (:send-invite item)
+             "INVITED"
+             "ACTIVE"))))
+
+(defn create-invite
+  [item db]
+  (if (:send-invite item)
+    (assoc item :invitation
+           (let [accounts (get-in db [:security :accounts])
+                 account-id (get-in db [:security :account])
+                 local-user (get-in db [:security :user])]
+           {:to (:email item)
+            :template {:name "invitation"
+                       :data {:delegate-name (:name item)
+                              :user-name (:name local-user)
+                              :account-name (-> (filter #(= account-id (key %)) accounts)
+                                                first
+                                                val
+                                                :name)
+                              :accept-url (str (shared/url-host)
+                                               "?invitation=" (b64/encodeString {:delegate-id (:id item)
+                                                                                 :account-id account-id}))}}}))
+    item))
+
+(defn get-calculated-fn
+  [db type]
+  (case (:type type)
+    :invoices #(-> % calc-status (create-invite db))
+    (:calculated-fn type)))
+
 (rf/reg-event-fx
  ::save-crud
  [(rf/inject-cofx ::shared/gen-id)]
- (fn [cofx [_ type item]]
-   (let [id (or (:id item) (:id cofx))
-         calculated-fn (or (:calculated-fn type) identity)
-         key-fields (when-let [key-fields-fn (:key-fields-fn type)]
-                      (key-fields-fn))
+ (fn [{:keys [id db]} [_ type item]]
+   (let [id (or (:id item) id)
+         calculated-fn (or (get-calculated-fn db type) identity)
+         key-fields (get-key-fields db type)
          item (merge (-> (assoc item :id id) calculated-fn)
                      key-fields)
-         account-id @(rf/subscribe [::as/account])]
+         account-id (get-in db [:security :account])]
      (js/window.history.back)                              ;opportunistic.. assume success 99% of the time..
-     (merge {:db            (assoc-in (:db cofx) [(:type type) id] item)}
+     (merge {:db            (assoc-in db [(:type type) id] item)}
             (mm/save-crud-fx {:account-id account-id
                               :crud-type type
                               :id id
@@ -136,3 +183,13 @@
   ::crud-set-show-hidden
   (fn [db [_ hidden]]
     (assoc-in db [:crud :show-hidden] hidden)))
+
+(rf/reg-event-fx
+ ::invoice-add
+ (fn [{:keys [db]} [_ _]]
+   (let [uri-path (str "#/reconcile/" (name (get-in db [:site :active-property]))
+                       "/" (name (get-in db [:reconcile :month]))
+                       "/" (name (get-in db [:reconcile :year]))
+                       "/" (name (get-in db [:reconcile :charge-id]))
+                       "/invoices")]
+     (js/window.location.assign (str uri-path "/add")))))

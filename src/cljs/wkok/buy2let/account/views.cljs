@@ -31,7 +31,7 @@
             [reagent-mui.icons.person-add :refer [person-add]]
             [reagent-mui.icons.card-membership :refer [card-membership]]
             [reagent-mui.icons.cancel :refer [cancel]]
-            [reagent-mui.icons.delete-icon :refer [delete]]
+            [reagent-mui.icons.delete :refer [delete]]
             [reagent-mui.material.paper :refer [paper]]))
 
 (defn select-account []
@@ -85,7 +85,7 @@
          selected-account-id (get-in db [:site :account-selector :account-id])
          default-value (or selected-account-id
                            account-id
-                           (when (not (empty? accounts))
+                           (when (seq accounts)
                              (-> accounts first key))
                            (first role-accounts))]
      (rf/dispatch [::se/dialog (account-dialog user)])

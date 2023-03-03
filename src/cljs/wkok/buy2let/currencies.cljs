@@ -1,7 +1,6 @@
 (ns wkok.buy2let.currencies
   (:require-macros [reagent-mui.util :refer [react-component]])
-  (:require [reagent.core :as ra]
-            [reagent-mui.material.autocomplete :refer [autocomplete] :rename {autocomplete mui-autocomplete}]
+  (:require [reagent-mui.material.autocomplete :refer [autocomplete] :rename {autocomplete mui-autocomplete}]
             [reagent-mui.material.text-field :refer [text-field]]))
 
 (def currencies

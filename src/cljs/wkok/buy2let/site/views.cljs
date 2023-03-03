@@ -1,82 +1,81 @@
 (ns wkok.buy2let.site.views
   (:require
-   [re-frame.core :as rf]
-   [reagent.core :as ra]
    [clojure.string :as str]
-   [wkok.buy2let.site.styles :refer [classes custom-styles from-theme]]
-   [wkok.buy2let.site.subs :as subs]
-   [wkok.buy2let.site.events :as se]
-   [wkok.buy2let.site.dialog :as dialog]
-   [wkok.buy2let.reconcile.views :as reconcile]
-   [wkok.buy2let.reconcile.events :as re]
-   [wkok.buy2let.report.views :as report]
-   [wkok.buy2let.report.events :as repe]
-   [wkok.buy2let.dashboard.views :as dashboard]
-   [wkok.buy2let.about.views :as about]
-   [wkok.buy2let.opensource.views :as opensource]
-   [wkok.buy2let.subscription.views :as subscription]
-   [wkok.buy2let.profile.views :as profile]
-   [wkok.buy2let.account.views :as account]
-   [wkok.buy2let.wizard.views :as wizard]
-   [wkok.buy2let.crud.impl :as crud-impl]
-   [wkok.buy2let.crud.subs :as cs]
-   [wkok.buy2let.backend.events :as be]
-   [wkok.buy2let.backend.subs :as bs]
-   [wkok.buy2let.account.subs :as as]
-   [wkok.buy2let.backend.multimethods :as mm]
-   [reagent-mui.icons.account-circle :refer [account-circle]]
-   [reagent-mui.icons.dashboard :refer [dashboard]]
-   [reagent-mui.icons.receipt :refer [receipt]]
-   [reagent-mui.icons.menu :as icons-menu]
-   [reagent-mui.icons.category :refer [category]]
-   [reagent-mui.icons.info :refer [info]]
-   [reagent-mui.icons.assessment :refer [assessment]]
-   [reagent-mui.icons.apartment :refer [apartment]]
+   [re-frame.core :as rf]
    [reagent-mui.cljs-time-adapter :refer [cljs-time-adapter]]
-   [reagent-mui.lab.localization-provider :refer [localization-provider]]
    [reagent-mui.colors :as colors]
-   [reagent-mui.material.css-baseline :refer [css-baseline]]
-   [reagent-mui.material.snackbar :refer [snackbar]]
+   [reagent-mui.icons.account-circle :refer [account-circle]]
+   [reagent-mui.icons.apartment :refer [apartment]]
+   [reagent-mui.icons.assessment :refer [assessment]]
+   [reagent-mui.icons.category :refer [category]]
+   [reagent-mui.icons.dashboard :refer [dashboard]]
+   [reagent-mui.icons.info :refer [info]]
+   [reagent-mui.icons.menu :as icons-menu]
+   [reagent-mui.icons.receipt :refer [receipt]]
    [reagent-mui.material.alert :refer [alert]]
-   [reagent-mui.material.menu :refer [menu]]
-   [reagent-mui.material.menu-item :refer [menu-item]]
-   [reagent-mui.material.grid :refer [grid]]
-   [reagent-mui.material.fab :refer [fab]]
-   [reagent-mui.material.avatar :refer [avatar]]
-   [reagent-mui.material.tooltip :refer [tooltip]]
-   [reagent-mui.material.button :refer [button]]
    [reagent-mui.material.app-bar :refer [app-bar]]
-   [reagent-mui.material.divider :refer [divider]]
-   [reagent-mui.material.text-field :refer [text-field]]
-   [reagent-mui.material.drawer :refer [drawer]]
+   [reagent-mui.material.avatar :refer [avatar]]
    [reagent-mui.material.backdrop :refer [backdrop]]
-   [reagent-mui.material.list :refer [list]]
-   [reagent-mui.material.linear-progress :refer [linear-progress]]
+   [reagent-mui.material.bottom-navigation :refer [bottom-navigation]]
+   [reagent-mui.material.bottom-navigation-action :refer [bottom-navigation-action]]
+   [reagent-mui.material.box :refer [box]]
+   [reagent-mui.material.button :refer [button]]
    [reagent-mui.material.circular-progress :refer [circular-progress]]
+   [reagent-mui.material.css-baseline :refer [css-baseline]]
+   [reagent-mui.material.dialog :refer [dialog]]
+   [reagent-mui.material.dialog-content :refer [dialog-content]]
+   [reagent-mui.material.dialog-title :refer [dialog-title]]
+   [reagent-mui.material.divider :refer [divider]]
+   [reagent-mui.material.drawer :refer [drawer]]
+   [reagent-mui.material.fab :refer [fab]]
+   [reagent-mui.material.grid :refer [grid]]
+   [reagent-mui.material.icon-button :refer [icon-button]]
+   [reagent-mui.material.linear-progress :refer [linear-progress]]
+   [reagent-mui.material.list :refer [list]]
    [reagent-mui.material.list-item :refer [list-item]]
    [reagent-mui.material.list-item-icon :refer [list-item-icon]]
    [reagent-mui.material.list-item-text :refer [list-item-text]]
-   [reagent-mui.material.typography :refer [typography]]
-   [reagent-mui.material.icon-button :refer [icon-button]]
-   [reagent-mui.material.box :refer [box]]
+   [reagent-mui.material.menu :refer [menu]]
+   [reagent-mui.material.menu-item :refer [menu-item]]
+   [reagent-mui.material.snackbar :refer [snackbar]]
+   [reagent-mui.material.text-field :refer [text-field]]
    [reagent-mui.material.toolbar :refer [toolbar]]
-   [reagent-mui.material.bottom-navigation :refer [bottom-navigation]]
-   [reagent-mui.material.bottom-navigation-action :refer [bottom-navigation-action]]
+   [reagent-mui.material.tooltip :refer [tooltip]]
+   [reagent-mui.material.typography :refer [typography]]
    [reagent-mui.styles :as styles]
-   [reagent-mui.material.dialog :refer [dialog]]
-   [reagent-mui.material.dialog-title :refer [dialog-title]]
-   [reagent-mui.material.dialog-content :refer [dialog-content]]
-   [clojure.walk :as w])
-  (:import (goog.i18n DateTimeSymbols_en_US)))
+   [reagent-mui.x.localization-provider :refer [localization-provider]]
+   [reagent.core :as ra]
+   [wkok.buy2let.about.views :as about]
+   [wkok.buy2let.account.subs :as as]
+   [wkok.buy2let.account.views :as account]
+   [wkok.buy2let.backend.events :as be]
+   [wkok.buy2let.backend.multimethods :as mm]
+   [wkok.buy2let.backend.subs :as bs]
+   [wkok.buy2let.crud.impl :as crud-impl]
+   [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.dashboard.views :as dashboard]
+   [wkok.buy2let.db.default :as ddb]
+   [wkok.buy2let.opensource.views :as opensource]
+   [wkok.buy2let.profile.views :as profile]
+   [wkok.buy2let.reconcile.views :as reconcile]
+   [wkok.buy2let.report.views :as report]
+   [wkok.buy2let.site.dialog :as dialog]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.site.styles :refer [classes custom-styles from-theme]]
+   [wkok.buy2let.site.subs :as subs]
+   [wkok.buy2let.subscription.views :as subscription]
+   [wkok.buy2let.wizard.views :as wizard])
+  (:import
+   (goog.i18n DateTimeSymbols_en_US)))
 
 (defn build-reconcile-url []
-  (let [options (re/calc-options {})]
+  (let [options (ddb/calc-options {})]
     (str "#/reconcile/" (-> (:property-id options) name)
          "/" (-> (:month options) name)
          "/" (-> (:year options) name))))
 
 (defn build-report-url []
-  (let [options (repe/calc-options {})]
+  (let [options (ddb/calc-report-options {})]
     (str "#/report/" (-> (:property-id options) name)
          "/" (-> (:from-month options) name)
          "/" (-> (:from-year options) name)
@@ -144,14 +143,14 @@
                  :class (:title classes)} @(rf/subscribe [::subs/heading])]
     [profile]]])
 
-(defn navigate [view]
-  (let [properties @(rf/subscribe [::cs/properties])
-        hash (if (empty? properties)
+(defn navigate
+  [view properties reconcile-url report-url]
+  (let [hash (if (empty? properties)
                "#/properties/add"
                (case view
                  :dashboard "#/"
-                 :reconcile (build-reconcile-url)
-                 :report (build-report-url)
+                 :reconcile reconcile-url
+                 :report report-url
                  :properties "#/properties"
                  :charges "#/charges"
                  :about "#/about"))]
@@ -188,33 +187,36 @@
        [typography {:variant :caption} (:name account)]]]]))
 
 (defn nav []
-  (let [drawer_ [:div
+  (let [properties @(rf/subscribe [::cs/properties])
+        reconcile-url (build-reconcile-url)
+        report-url (build-report-url)
+        drawer_ [:div
                  [brand]
                  [divider]
                  [list
                   [list-item {:button true
-                              :on-click #(navigate :dashboard)}
+                              :on-click #(navigate :dashboard properties reconcile-url report-url)}
                    [list-item-icon [dashboard]]
                    [list-item-text {:primary "Dashboard"}]]
                   [list-item {:button true
-                              :on-click #(navigate :reconcile)}
+                              :on-click #(navigate :reconcile properties reconcile-url report-url)}
                    [list-item-icon [receipt]]
                    [list-item-text {:primary "Reconcile"}]]
                   [list-item {:button true
-                              :on-click #(navigate :report)}
+                              :on-click #(navigate :report properties reconcile-url report-url)}
                    [list-item-icon [assessment]]
                    [list-item-text {:primary "Report"}]]
                   [list-item {:button true
-                              :on-click #(navigate :properties)}
+                              :on-click #(navigate :properties properties reconcile-url report-url)}
                    [list-item-icon [apartment]]
                    [list-item-text {:primary "Properties"}]]
                   [list-item {:button true
-                              :on-click #(navigate :charges)}
+                              :on-click #(navigate :charges properties reconcile-url report-url)}
                    [list-item-icon [category]]
                    [list-item-text {:primary "Charges"}]]
                   [divider]
                   [list-item {:button true
-                              :on-click #(navigate :about)}
+                              :on-click #(navigate :about properties reconcile-url report-url)}
                    [list-item-icon [info]]
                    [list-item-text {:primary "About"}]]]]]
     [:nav {:class (:drawer classes)}
@@ -233,7 +235,10 @@
 
 (defn bottom-nav []
   (let [active-page @(rf/subscribe [::subs/active-page])
-        active-panel @(rf/subscribe [::subs/active-panel])]
+        active-panel @(rf/subscribe [::subs/active-panel])
+        properties @(rf/subscribe [::cs/properties])
+        reconcile-url (build-reconcile-url)
+        report-url (build-report-url)]
     [box {:position :fixed
           :bottom 0
           :width "100%"
@@ -247,9 +252,9 @@
                          :value active-page
                          :on-change (fn [_ val]
                                       (case (keyword val)
-                                        :reconcile (navigate :reconcile)
-                                        :report (navigate :report)
-                                        (navigate :dashboard)))}
+                                        :reconcile (navigate :reconcile properties reconcile-url report-url)
+                                        :report (navigate :report properties reconcile-url report-url)
+                                        (navigate :dashboard properties reconcile-url report-url)))}
       [bottom-navigation-action {:label "Dashboard"
                                  :icon (ra/as-element [dashboard])
                                  :value :dashboard}]
@@ -280,10 +285,7 @@
 
 (defn sign-in-form* [{:keys [class-name]}]
   [:div {:class [class-name (:root classes)]}
-   [dialog {:open true
-            :on-close (fn [_event reason]
-                        (when (#{"backdropClick" "escapeKeyDown"} reason)
-                          #_"Do Nothing"))}
+   [dialog {:open true}
     [dialog-title "Sign in"]
     [dialog-content
      [grid {:container true
@@ -332,7 +334,7 @@
     [:div
      [css-baseline]
      [localization-provider {:date-adapter cljs-time-adapter
-                             :locale DateTimeSymbols_en_US}
+                             :adapter-locale DateTimeSymbols_en_US}
       [styles/theme-provider (-> (styles/create-theme {:palette {:primary (case mode
                                                                             :live colors/blue
                                                                             :test colors/pink)

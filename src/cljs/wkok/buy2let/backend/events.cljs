@@ -9,7 +9,6 @@
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.spec :as spec]
             [goog.crypt.base64 :as b64]
-            [cemerick.url :as url]
             [clojure.string :as str]
             [clojure.walk :as w]
             [cljs.reader]))

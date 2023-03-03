@@ -1,7 +1,9 @@
 (ns wkok.buy2let.site.events
-  (:require [re-frame.core :as rf]
-            [ajax.core :as ajax]
-            [day8.re-frame.http-fx]))
+  (:require
+   [ajax.core :as ajax]
+   [day8.re-frame.http-fx]
+   [re-frame.core :as rf]
+   [wkok.buy2let.security :as sec]))
 
 (rf/reg-event-db
   ::set-active-property
@@ -10,10 +12,11 @@
 
 (rf/reg-event-db
   :set-active-page
-  (fn [db [_ page heading]]
-    (-> (assoc-in db [:site :active-page] page)
-        (assoc-in [:site :heading] heading)
-        (update-in [:site] dissoc :active-panel))))
+  (fn [db [_ role page heading]]
+    (sec/with-authorisation role db
+      #(-> (assoc-in db [:site :active-page] page)
+           (assoc-in [:site :heading] heading)
+           (update-in [:site] dissoc :active-panel)))))
 
 (rf/reg-event-db
   :set-fab-actions
@@ -78,4 +81,3 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [::load-location]
                  :on-failure      [::location-failure]}}))
-

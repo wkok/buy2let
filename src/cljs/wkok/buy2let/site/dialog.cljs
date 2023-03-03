@@ -1,12 +1,10 @@
 (ns wkok.buy2let.site.dialog
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
-            [clojure.string :as str]
             [clojure.set :as set]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.site.subs :as subs]
             [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.shared :as shared]
             [wkok.buy2let.subscription.events :as subse]
             [wkok.buy2let.subscription.subs :as subss]
             [wkok.buy2let.account.subs :as as]
@@ -63,11 +61,10 @@
         account-id @(rf/subscribe [::as/account])
         accounts @(rf/subscribe [::as/accounts])
         account (when account-id (account-id accounts))
-        subscribed-properties (get-in account [:subscription :properties])
-        a (map (fn [p] (-> p :id name)) properties)]
+        subscribed-properties (get-in account [:subscription :properties])]
     [dialog {:open @(rf/subscribe [::subss/show-active-properties-dialog])
              :on-close (fn [_event reason]
-                         (when (#{"backdropClick" "escapeKeyDown"} reason)
+                         (if (#{"backdropClick" "escapeKeyDown"} reason)
                            "do nothing?"
                            nil))}
      [dialog-title "Subscription changed"]

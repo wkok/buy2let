@@ -30,8 +30,8 @@
             [reagent-mui.material.table-row :refer [table-row]]
             [reagent-mui.material.table-cell :refer [table-cell]]
             [reagent-mui.material.form-control-label :refer [form-control-label]]
-            [reagent-mui.material.switch-component :refer [switch]]
-            [reagent-mui.lab.date-picker :refer [date-picker]]))
+            [reagent-mui.material.switch :refer [switch]]
+            [reagent-mui.x.date-picker :refer [date-picker]]))
 
 (defn cell-class
   ([m amount]
@@ -152,20 +152,6 @@
                  :class (cell-class m roi :profit)}
      (shared/format-money roi)]))
 
-#_(defn report-cash-col
-  [m {:keys [ledger]}]
-  (let [cash (-> (get-in ledger [(:year m) (:month m) :totals :owner]) shared/to-money)
-        class (cell-class m cash)]
-    [table-cell {:align :right
-                 :class class}
-     (shared/format-money cash)]))
-
-(defn empty-col
-  [m _]
-  [table-cell {:align :right
-               :class (cell-class m 0)}
-   "-"])
-
 (defn report-edit-col
   [m {:keys [property]}]
   [table-cell {:align :right
@@ -223,17 +209,8 @@
      [report-owed-col m options])
    [table-cell {:align :right} "-"]])
 
-#_(defn report-cash-row
-  [months options]
-  [table-row
-   [table-cell [:strong "Cash Flow"]]
-   (for [m months]
-     ^{:key m}
-     [report-cash-col m options])
-   [table-cell {:align :right} "-"]])
-
 (defn report-yield-row-total
-  [{:keys [report property] :as options}]
+  [{:keys [report property]}]
   (let [yield (shared/calc-yield (get-in report [:result :totals :breakdown]) (:purchase-price property))
         class (if (neg? yield)
                 (:table-header-neg classes)

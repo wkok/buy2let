@@ -2,13 +2,12 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.string :as s]
-            [wkok.buy2let.site.styles :refer [from-theme]]
+            [wkok.buy2let.site.styles :refer [from-theme classes]]
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.currencies :as currencies]
             [wkok.buy2let.component.attachment :as attachment]
-            [wkok.buy2let.site.styles :refer [classes]]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-mui.material.list :refer [list]]
@@ -18,7 +17,7 @@
             [reagent-mui.material.list-item-button :refer [list-item-button]]
             [reagent-mui.material.grid :refer [grid]]
             [reagent-mui.material.typography :refer [typography]]
-            [reagent-mui.material.switch-component :refer [switch]]
+            [reagent-mui.material.switch :refer [switch]]
             [reagent-mui.material.text-field :refer [text-field]]
             [reagent-mui.material.select :refer [select]]
             [reagent-mui.material.menu-item :refer [menu-item]]
@@ -67,7 +66,7 @@
        [grid {:container true
               :direction :column}
         [grid {:item true}
-         [list {:subheader (if-let [sub-header-fn (:sub-header-fn type)]
+         [list {:subheader (when-let [sub-header-fn (:sub-header-fn type)]
                              (ra/as-element [list-subheader (sub-header-fn)]))}
           (for [item (filter #(and (not (:reserved %)) (show? % show-hidden))
                              cruds)]
@@ -232,7 +231,7 @@
              :select-currency (build-select-currency field options)
              :attachment (attachment/build-attachment field options)
              (build-input type field options))))
-        (if-let [extra-fn (:extra type)]
+        (when-let [extra-fn (:extra type)]
           (extra-fn options))
         (if-let [allow-hidden? (:allow-hidden? type)]
           (when (allow-hidden?)
