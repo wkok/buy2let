@@ -41,7 +41,7 @@ jobs:
         version: '2023.02.17'
 
     - name: Lint
-      run: clj-kondo --lint src
+      run: clj-kondo --lint src --config .github/clj-kondo.edn
 
     - name: Test
       run: |

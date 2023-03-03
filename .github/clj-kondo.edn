@@ -1,0 +1,4 @@
+{:linters
+ {:unresolved-symbol
+  {:exclude [(reagent-mui.util/react-component)
+             (secretary.core/defroute)]}}}
