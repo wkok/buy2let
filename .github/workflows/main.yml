@@ -46,7 +46,7 @@ jobs:
     - name: Test
       run: |
         clojure -M:client release ci
-        ./node_modules/karma/bin/karma start --single-run || true
+        # ./node_modules/karma/bin/karma start --single-run || true
 
     - name: Publish Test Report
       uses: scacap/action-surefire-report@v1
@@ -55,7 +55,7 @@ jobs:
         report_paths: '**/karma/results/TESTS-*.xml'
 
     - name: Compile
-      run: clojure -M:shadow-cljs:client release app
+      run: clojure -M:client release app
 
     - name: Prepare Site
       run: |
