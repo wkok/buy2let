@@ -157,7 +157,7 @@
 (defn get-calculated-fn
   [db type]
   (case (:type type)
-    :invoices #(-> % calc-status (create-invite db))
+    :delegates #(-> % calc-status (create-invite db))
     (:calculated-fn type)))
 
 (rf/reg-event-fx

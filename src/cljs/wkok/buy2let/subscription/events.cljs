@@ -7,19 +7,21 @@
 
 (rf/reg-event-db
  ::view-subscription
- (fn [db role]
+ (fn [db [_ role]]
+   (js/console.log "hi")
    (sec/with-authorisation role db
-     (do
-       (when (not (get-in db [:site :location :currency]))
-         (rf/dispatch [::se/detect-location]))
-       (let [account-id (get-in db [:security :account])
-             accounts (get-in db [:security :accounts])
-             account (when account-id (account-id accounts))
-             subscribed-properties (get-in account [:subscription :properties] 1)]
-         (-> (assoc-in db [:site :active-page] :subscription)
-             (assoc-in [:site :active-panel] :subscription-view)
-             (assoc-in [:site :heading] "Subscription")
-             (assoc-in [:site :subscription :properties] (inc subscribed-properties))))))))
+     #(do
+        (js/console.log "hi five")
+        (when (not (get-in db [:site :location :currency]))
+          (rf/dispatch [::se/detect-location]))
+        (let [account-id (get-in db [:security :account])
+              accounts (get-in db [:security :accounts])
+              account (when account-id (account-id accounts))
+              subscribed-properties (get-in account [:subscription :properties] 1)]
+          (-> (assoc-in db [:site :active-page] :subscription)
+              (assoc-in [:site :active-panel] :subscription-view)
+              (assoc-in [:site :heading] "Subscription")
+              (assoc-in [:site :subscription :properties] (inc subscribed-properties))))))))
 
 (rf/reg-event-fx
  ::manage-subscription
