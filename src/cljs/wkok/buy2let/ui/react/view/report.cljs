@@ -1,4 +1,4 @@
-(ns wkok.buy2let.report.views
+(ns wkok.buy2let.ui.react.view.report
   (:require-macros [reagent-mui.util :refer [react-component]])
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
@@ -9,6 +9,7 @@
             [wkok.buy2let.site.subs :as ss]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]
+            [wkok.buy2let.ui.react.component.invoice :as invoice]
             [wkok.buy2let.period :as period]
             [tick.core :as t]
             [clojure.string :as s]
@@ -99,7 +100,7 @@
                                    :charge-id (:id charge))]
         (when (not-empty @(rf/subscribe [::cs/invoices-for invoice-options]))
           [grid {:item true}
-           [shared/invoices-button charge invoice-options :small]])))
+           [invoice/invoices-button charge invoice-options :small]])))
 
     ;; Temporary to access legacy attachments, remove in 2023
     (when (= true (:show-invoices report))

@@ -1,4 +1,4 @@
-(ns wkok.buy2let.account.views
+(ns wkok.buy2let.ui.react.view.account
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.string :as s]

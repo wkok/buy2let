@@ -1,4 +1,4 @@
-(ns wkok.buy2let.reconcile.views
+(ns wkok.buy2let.ui.react.view.reconcile
   (:require-macros [reagent-mui.util :refer [react-component]])
   (:require
    [clojure.string :as s]
@@ -37,6 +37,8 @@
    [wkok.buy2let.reconcile.events :as re]
    [wkok.buy2let.reconcile.subs :as rs]
    [wkok.buy2let.shared :as shared]
+   [wkok.buy2let.ui.react.component.invoice :as invoice]
+   [wkok.buy2let.ui.react.component.anchor :as anchor]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.styles :refer [classes]]
    [wkok.buy2let.site.subs :as ss]))
@@ -190,7 +192,7 @@
     (let [invoice-options (assoc options
                                  :charge-id (:id charge))]
       (when (not-empty @(rf/subscribe [::cs/invoices-for invoice-options]))
-        [shared/invoices-button charge invoice-options :small]))]
+        [invoice/invoices-button charge invoice-options :small]))]
    [table-cell {:align :center}
     (let [note (get-in ledger [:this-month :breakdown (:id charge) :note])]
       (when (not (s/blank? note))
@@ -407,7 +409,7 @@
 
 (defn prev-month [charge values state]
   (when-let [amount (get-in values [:prev-month :breakdown (:id charge) :amount])]
-    (shared/anchor #(swap-amount amount (:id charge) state js/parseFloat Math/abs shared/format-money)
+    (anchor/anchor #(swap-amount amount (:id charge) state js/parseFloat Math/abs shared/format-money)
                    (str "(use previous: " (shared/format-money amount) ")"))))
 
 (defn edit-amount-field
@@ -546,7 +548,7 @@
                        :spacing 1
                        :justify-content :space-between}
                  [edit-amount-field charge form]
-                 [shared/invoices-button charge options :medium :primary]
+                 [invoice/invoices-button charge options :medium :primary]
 
                  ;; Temporary to access legacy attachments, remove in 2023
                  [edit-invoice-field charge options form]]

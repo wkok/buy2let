@@ -4,7 +4,7 @@
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.site.effects :as sfx]
-            [wkok.buy2let.account.views :as av]
+            [wkok.buy2let.ui.react.view.account :as av]
             [wkok.buy2let.backend.effects]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.spec :as spec]

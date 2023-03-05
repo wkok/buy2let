@@ -7,10 +7,6 @@
    goog.string.format ; https://clojurescript.org/reference/google-closure-library#requiring-a-function
    [nano-id.core :as nid]
    [re-frame.core :as rf]
-   [reagent-mui.icons.attach-file :refer [attach-file]]
-   [reagent-mui.material.icon-button :refer [icon-button]]
-   [reagent-mui.material.link :refer [link]]
-   [reagent-mui.material.tooltip :refer [tooltip]]
    [tick.alpha.interval :as t.i]
    [tick.core :as t]
    [wkok.buy2let.account.subs :as as]
@@ -163,14 +159,6 @@
            calc-totals)
        (assoc-in db [:site :show-progress] false)))))
 
-
-; See: https://github.com/facebook/react/issues/16382
-(defn anchor
-  [on-click label]
-  [link {:href "#" :on-click #(do (.preventDefault %)
-                                  (on-click))}
-   label])
-
 (defn has-role [role]
   (let [claims @(rf/subscribe [::bs/claims])
         account-id @(rf/subscribe [::as/account])]
@@ -249,18 +237,6 @@
  ::log-analytics
  (fn [_ [_ options]]
    (mm/log-analytics options)))
-
-(defn invoices-button
-  [charge {:keys [property year month]} size color]
-  [tooltip {:title "Invoices"}
-   [icon-button {:color color
-                 :size size
-                 :on-click #(js/window.location.assign (str "#/reconcile/" (-> property :id name)
-                                                            "/" (-> month name)
-                                                            "/" (-> year name)
-                                                            "/" (-> charge :id name)
-                                                            "/invoices"))}
-    [attach-file {:font-size size}]]])
 
 (defn filter-charge-invoices
   [db options]

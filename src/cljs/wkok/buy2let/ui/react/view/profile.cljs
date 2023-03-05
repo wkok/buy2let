@@ -1,4 +1,4 @@
-(ns wkok.buy2let.profile.views
+(ns wkok.buy2let.ui.react.view.profile
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [wkok.buy2let.backend.events :as be]

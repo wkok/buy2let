@@ -1,4 +1,4 @@
-(ns wkok.buy2let.subscription.views
+(ns wkok.buy2let.ui.react.view.subscription
   (:require [re-frame.core :as rf]
             [clojure.string :as str]
             [wkok.buy2let.backend.subs :as bs]

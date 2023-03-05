@@ -1,17 +1,22 @@
-{:deps   {:aliases [:client]}
-
- :nrepl  {:port 8777}
+{:deps true
 
  :dev-http {8280 "resources/public"}
 
- :builds {:app {:target           :browser
-                :output-dir       "resources/public/js/compiled"
-                :asset-path       "/js/compiled"
-                :compiler-options {:externs ["externs/google_visualization_api.js"]}
-                :modules          {:app {:init-fn  wkok.buy2let.core/init
-                                         :entries [wkok.buy2let.backend.demo]
-                                         :preloads [day8.re-frame-10x.preload]}}
-                :dev              {:compiler-options {:closure-defines {re-frame.trace.trace-enabled?        true
-                                                                        day8.re-frame.tracing.trace-enabled? true}}}}
-          :ci {:target :karma
-               :output-to  "karma/ci.js"}}}
+ :builds       {:react {:target           :browser
+                        :output-dir       "resources/public/js/compiled"
+                        :asset-path       "/js/compiled"
+                        :compiler-options {:externs ["externs/google_visualization_api.js"]}
+                        :modules          {:app {:init-fn wkok.buy2let.ui.react.app/init
+                                                 :entries [wkok.buy2let.backend.demo]
+                                                 :preloads [day8.re-frame-10x.preload]}}
+                        :dev              {:compiler-options {:closure-defines {re-frame.trace.trace-enabled?        true
+                                                                                day8.re-frame.tracing.trace-enabled? true}}}}
+                :native {:target           :react-native
+                         :init-fn          wkok.buy2let.ui.native.app/init
+                         :output-dir       "app"
+                         :compiler-options {:infer-externs :auto}
+                         :devtools         {:autoload true
+                                            :preloads [shadow.expo.keep-awake
+                                                       wkok.buy2let.backend.demo]}}
+                :ci {:target :karma
+                     :output-to  "karma/ci.js"}}}

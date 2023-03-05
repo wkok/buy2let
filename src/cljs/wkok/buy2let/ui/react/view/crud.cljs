@@ -1,4 +1,4 @@
-(ns wkok.buy2let.crud.views
+(ns wkok.buy2let.ui.react.view.crud
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.string :as s]
@@ -7,7 +7,7 @@
             [wkok.buy2let.crud.events :as ce]
             [wkok.buy2let.crud.subs :as cs]
             [wkok.buy2let.currencies :as currencies]
-            [wkok.buy2let.component.attachment :as attachment]
+            [wkok.buy2let.ui.react.component.attachment :as attachment]
             [fork.re-frame :as fork]
             [clojure.walk :as w]
             [reagent-mui.material.list :refer [list]]

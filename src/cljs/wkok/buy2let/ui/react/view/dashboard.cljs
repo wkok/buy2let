@@ -1,4 +1,4 @@
-(ns wkok.buy2let.dashboard.views
+(ns wkok.buy2let.ui.react.view.dashboard
   (:require [re-frame.core :as rf]
             [clojure.string :as s]
             [reagent.core :as ra]
