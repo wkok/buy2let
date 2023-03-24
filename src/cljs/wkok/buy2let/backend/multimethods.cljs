@@ -1,6 +1,6 @@
 (ns wkok.buy2let.backend.multimethods)
 
-(def dispatcher (fn [] (keyword js/impl)))
+(def dispatcher (fn [] (keyword #_"demo" js/impl)))
 
 (defmulti app-name dispatcher)
 
@@ -85,4 +85,3 @@
 (defmulti log-analytics dispatcher)
 
 (defmulti sign-in-method dispatcher)
-

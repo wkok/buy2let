@@ -1,28 +1,51 @@
 {
-    "author": "Werner Kok",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/wkok/buy2let.git"
-    },
-    "devDependencies": {
-        "check-prop-types": "^1.1.2",
-        "karma": "^6.4.1",
-        "karma-chrome-launcher": "^3.1.1",
-        "karma-cljs-test": "^0.1.0",
-        "karma-junit-reporter": "^2.0.1",
-        "shadow-cljs": "^2.21.0"
-    },
-    "dependencies": {
-        "@emotion/react": "11.10.6",
-        "@emotion/styled": "11.10.6",
-        "@js-joda/core": "5.5.2",
-        "@js-joda/locale_en-us": "4.8.6",
-        "@js-joda/timezone": "2.17.2",
-        "@mui/material": "5.11.8",
-        "@mui/x-date-pickers": "5.0.20",
-        "highlight.js": "11.5.1",
-        "react": "17.0.2",
-        "react-dom": "17.0.2"
-    }
+  "author": "Werner Kok",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wkok/buy2let.git"
+  },
+  "scripts": {
+    "server": "npx shadow-cljs server",
+    "start": "npx expo start",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios",
+    "web": "npx expo start --web",
+    "web-only": "npx expo start --web-only",
+    "release": "npx shadow-cljs release app",
+    "eject": "npx expo eject",
+    "eas-build-pre-install": "bash eas-build-pre-install.sh",
+    "eas-build-post-install": "npx shadow-cljs release app"
+  },
+  "devDependencies": {
+    "check-prop-types": "^1.1.2",
+    "karma": "^6.4.1",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-cljs-test": "^0.1.0",
+    "karma-junit-reporter": "^2.0.1",
+    "shadow-cljs": "^2.21.0"
+  },
+  "dependencies": {
+    "@emotion/react": "11.10.6",
+    "@emotion/styled": "11.10.6",
+    "@js-joda/core": "3.2.0",
+    "@js-joda/locale_en-us": "3.1.1",
+    "@js-joda/timezone": "2.5.0",
+    "@mui/material": "5.11.8",
+    "@mui/x-date-pickers": "5.0.20",
+    "@react-navigation/native": "^6.1.6",
+    "@types/react-native": "~0.69.1",
+    "expo": "^46.0.16",
+    "expo-cli": "^6.0.2",
+    "expo-status-bar": "^1.4.0",
+    "highlight.js": "11.5.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-native": "0.69.6",
+    "react-native-paper": "^5.3.1",
+    "react-native-safe-area-context": "^4.3.1",
+    "react-native-web": "^0.18.9",
+    "typescript": "^4.6.3"
+  },
+  "private": true
 }

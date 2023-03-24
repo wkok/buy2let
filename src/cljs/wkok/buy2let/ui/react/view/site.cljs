@@ -1,4 +1,4 @@
-(ns wkok.buy2let.site.views
+(ns wkok.buy2let.ui.react.view.site
   (:require
    [clojure.string :as str]
    [re-frame.core :as rf]
@@ -45,26 +45,26 @@
    [reagent-mui.styles :as styles]
    [reagent-mui.x.localization-provider :refer [localization-provider]]
    [reagent.core :as ra]
-   [wkok.buy2let.about.views :as about]
+   [wkok.buy2let.ui.react.view.about :as about]
    [wkok.buy2let.account.subs :as as]
-   [wkok.buy2let.account.views :as account]
+   [wkok.buy2let.ui.react.view.account :as account]
    [wkok.buy2let.backend.events :as be]
    [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.backend.subs :as bs]
    [wkok.buy2let.crud.impl :as crud-impl]
    [wkok.buy2let.crud.subs :as cs]
-   [wkok.buy2let.dashboard.views :as dashboard]
+   [wkok.buy2let.ui.react.view.dashboard :as dashboard]
    [wkok.buy2let.db.default :as ddb]
-   [wkok.buy2let.opensource.views :as opensource]
-   [wkok.buy2let.profile.views :as profile]
-   [wkok.buy2let.reconcile.views :as reconcile]
-   [wkok.buy2let.report.views :as report]
-   [wkok.buy2let.site.dialog :as dialog]
+   [wkok.buy2let.ui.react.opensource :as opensource]
+   [wkok.buy2let.ui.react.view.profile :as profile]
+   [wkok.buy2let.ui.react.view.reconcile :as reconcile]
+   [wkok.buy2let.ui.react.view.report :as report]
+   [wkok.buy2let.ui.react.component.dialog :as dialog]
    [wkok.buy2let.site.events :as se]
    [wkok.buy2let.site.styles :refer [classes custom-styles from-theme]]
    [wkok.buy2let.site.subs :as subs]
-   [wkok.buy2let.subscription.views :as subscription]
-   [wkok.buy2let.wizard.views :as wizard])
+   [wkok.buy2let.ui.react.view.subscription :as subscription]
+   [wkok.buy2let.ui.react.view.wizard :as wizard])
   (:import
    (goog.i18n DateTimeSymbols_en_US)))
 

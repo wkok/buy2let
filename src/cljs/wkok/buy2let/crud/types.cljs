@@ -1,28 +1,17 @@
 (ns wkok.buy2let.crud.types
-  (:require [re-frame.core :as rf]
-            [reagent.core :as ra]
-            [wkok.buy2let.crud.subs :as cs]
-            [wkok.buy2let.crud.events :as ce]
-            [wkok.buy2let.site.events :as se]
-            [wkok.buy2let.shared :as shared]
-            [wkok.buy2let.account.subs :as as]
-            [wkok.buy2let.site.styles :refer [classes]]
-            [clojure.string :as s]
-            [reagent-mui.icons.add :refer [add]]
-            [reagent-mui.material.form-control-label :refer [form-control-label]]
-            [reagent-mui.material.text-field :refer [text-field]]
-            [reagent-mui.material.checkbox :refer [checkbox]]
-            [reagent-mui.material.grid :refer [grid]]
-            [reagent-mui.material.tooltip :refer [tooltip]]
-            [reagent-mui.material.menu-item :refer [menu-item]]
-            [reagent-mui.material.list-item :refer [list-item]]
-            [reagent-mui.material.list-subheader :refer [list-subheader]]
-            [reagent-mui.material.list-item-secondary-action :refer [list-item-secondary-action]]
-            [reagent-mui.material.icon-button :refer [icon-button]]
-            [reagent-mui.material.list :refer [list]]
-            [reagent-mui.icons.visibility-outlined :refer [visibility-outlined]]
-            [wkok.buy2let.reconcile.subs :as rs]
-            [wkok.buy2let.site.subs :as ss]))
+  (:require
+   [clojure.string :as s]
+   [re-frame.core :as rf]
+   [wkok.buy2let.account.subs :as as]
+   [wkok.buy2let.ui.react.component.icon :as icon]
+   [wkok.buy2let.ui.react.component.invoice :as inv]
+   [wkok.buy2let.ui.react.component.property :as prop]
+   [wkok.buy2let.crud.events :as ce]
+   [wkok.buy2let.crud.subs :as cs]
+   [wkok.buy2let.reconcile.subs :as rs]
+   [wkok.buy2let.shared :as shared]
+   [wkok.buy2let.site.events :as se]
+   [wkok.buy2let.site.subs :as ss]))
 
 (defn validate-name [values]
   (when (s/blank? (get values "name"))
@@ -49,59 +38,9 @@
                  {:key :purchase-price :type :number :label "Purchase Price"}
                  {:key :cash-invested :type :number :label "Cash Invested"}]
    :validate-fn #(merge (validate-name %) (validate-who-pays %) (validate-currency %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon [add]
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/properties/add") :icon icon/add-icon
                                  :title "Add"}}}
-   :extra       (fn [{:keys [values state errors touched _ handle-blur]}]
-                  [grid {:item true}
-                   [list {:subheader (ra/as-element [list-subheader "Charges to account for"])}
-                    (-> (for [charge (filter #(not (:reserved %))
-                                             @(rf/subscribe [::cs/charges]))]
-                          (let [charge-id (name (:id charge))
-                                charge-selected (contains? (get values "charges") charge-id)]
-                            ^{:key (:id charge)}
-                            [list-item
-                             [grid {:container true
-                                    :direction :row}
-                              [grid {:item true :xs 12 :sm 6}
-                               [form-control-label
-                                {:control (ra/as-element
-                                           [checkbox {:type      :checkbox
-                                                      :name      charge-id
-                                                      :color :primary
-                                                      :checked   charge-selected
-                                                      :on-change #(if (-> % .-target .-checked)
-                                                                    (swap! state assoc-in [:values "charges" charge-id] {})
-                                                                    (swap! state update-in [:values "charges"] dissoc charge-id))
-                                                      :on-blur   handle-blur}])
-                                 :label (:name charge)}]]
-                              (when charge-selected
-                                [grid {:item true :xs 12 :sm 6
-                                       :class (:who-pays-whom classes)}
-                                 (let [field-name (str charge-id "-wpw")
-                                       error? (and (touched field-name)
-                                                   (not (s/blank? (get errors field-name))))]
-                                   [text-field {:variant :standard
-                                                :select true
-                                                :name      field-name
-                                                :label "Arrangement"
-                                                :value     (or (get-in values ["charges" charge-id "who-pays-whom"]) "")
-                                                :on-change #(swap! state assoc-in [:values "charges" charge-id "who-pays-whom"]
-                                                                   (-> % .-target .-value keyword))
-                                                :error error?
-                                                :helper-text (when error? (get errors field-name))
-                                                :full-width true}
-                                    [menu-item {:value :ac} "Agent Commission"]
-                                    [menu-item {:value :apo} "Agent pays Owner"]
-                                    [menu-item {:value :aps} "Agent pays Supplier"]
-                                    [menu-item {:value :mi} "Mortgage Interest"]
-                                    [menu-item {:value :oca} "Owner charges Agent"]
-                                    [menu-item {:value :oct} "Owner charges Tenant"]
-                                    [menu-item {:value :opa} "Owner pays Agent"]
-                                    [menu-item {:value :opb} "Owner pays Bank"]
-                                    [menu-item {:value :ops} "Owner pays Supplier"]
-                                    [menu-item {:value :tpa} "Tenant pays Agent"]
-                                    [menu-item {:value :tpo} "Tenant pays Owner"]])])]]))
-                        doall)]])
+   :extra prop/property-charges
    :singular "property"
    :allow-hidden? #(let [properties @(rf/subscribe [::cs/properties])]
                      (> (count properties) 1))
@@ -113,7 +52,7 @@
    :subs        ::cs/all-charges
    :fields      [{:key :name :type :text :default true}]
    :validate-fn #(validate-name %)
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon [add]
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/charges/add") :icon icon/add-icon
                                  :title "Add"}}}
    :singular "charge"
    :show-show-hidden? #(let [charges @(rf/subscribe [::cs/hidden-charges])]
@@ -170,21 +109,13 @@
    :validate-fn validate-name
    :uri-path-fn get-invoices-uri-path
    :actions     {:list {:left-1 {:fn #(rf/dispatch [::ce/invoice-add])
-                                 :icon [add]
+                                 :icon icon/add-icon
                                  :title "Add"}}}
    :singular "invoice"
    :show-show-hidden? #(let [invoices @(rf/subscribe [::cs/hidden-invoices])]
                          (>= (count invoices) 1))
    :calculated-fn #(-> % upload-invoice-attachment)
-   :secondary-action  (fn [invoice]
-                        (when (:attached invoice)
-                          (ra/as-element
-                           [list-item-secondary-action
-                            [tooltip {:title "View"}
-                             [icon-button {:edge :end
-                                           :color :primary
-                                           :on-click #(rf/dispatch [::shared/view-attachment :invoices (:id invoice)])}
-                              [visibility-outlined]]]])))})
+   :secondary-action inv/attachment-button})
 
 (defn select-lower-weighted [roles]
   (let [weighted {1 "viewer"
@@ -228,7 +159,7 @@
                     :roles ["viewer"]}
               :edit {:send-invite false}}
    :validate-fn #(merge (validate-name %) (validate-email %))
-   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon [add]
+   :actions     {:list {:left-1 {:fn   #(js/window.location.assign "#/delegates/add") :icon icon/add-icon
                                  :title "Add"}}}
    :hidden-label "revoked"
    :singular "delegate"

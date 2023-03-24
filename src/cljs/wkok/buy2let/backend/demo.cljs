@@ -4,7 +4,6 @@
             [wkok.buy2let.shared :as shared]
             [wkok.buy2let.period :as period]
             [wkok.buy2let.backend.multimethods :as mm]
-            [reagent.dom :as rd]
             [clojure.string :as str]
             [tick.core :as t]
             [cljc.java-time.month :as tm]))
@@ -15,12 +14,12 @@
 (defmethod mm/init :demo [_])
 
 (defmethod mm/init-auth :demo
-  [{:keys [render-main-panel sign-in-panel]}]
+  [{:keys [render-main-panel render-sign-in-panel]}]
   (if (str/includes? (shared/url-full-href) "auth=demo")
     (let [auth {:uid "1234" :display-name "Demo User" :email "demo@email.com"}]
       (rf/dispatch [:get-user auth])
       (render-main-panel))
-    (rd/render [sign-in-panel] (.getElementById js/document "app"))))
+    (render-sign-in-panel)))
 
 (defmethod mm/packages :demo []
   [])

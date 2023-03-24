@@ -1,4 +1,4 @@
-(ns wkok.buy2let.site.dialog
+(ns wkok.buy2let.ui.react.component.dialog
   (:require [re-frame.core :as rf]
             [reagent.core :as ra]
             [clojure.set :as set]

@@ -1,4 +1,4 @@
-(ns wkok.buy2let.component.attachment
+(ns wkok.buy2let.ui.react.component.attachment
   (:require [re-frame.core :as rf]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.shared :as shared]

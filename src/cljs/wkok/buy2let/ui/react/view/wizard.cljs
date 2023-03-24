@@ -1,4 +1,4 @@
-(ns wkok.buy2let.wizard.views
+(ns wkok.buy2let.ui.react.view.wizard
   (:require
    [clojure.string :as str]
    [re-frame.core :as rf]

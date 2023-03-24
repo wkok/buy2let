@@ -1,6 +1,6 @@
 (ns wkok.buy2let.crud.impl
   (:require [wkok.buy2let.crud.types :as type]
-            [wkok.buy2let.crud.views :as crud]
+            [wkok.buy2let.ui.react.view.crud :as crud]
             [wkok.buy2let.site.subs :as subs]
             [re-frame.core :as rf]))
 

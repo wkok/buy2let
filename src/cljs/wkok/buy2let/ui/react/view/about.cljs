@@ -1,4 +1,4 @@
-(ns wkok.buy2let.about.views
+(ns wkok.buy2let.ui.react.view.about
   (:require [re-frame.core :as rf]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.site.styles :refer [classes]]
@@ -17,7 +17,7 @@
     [grid {:item true}
      [list
       [list-item {:button true}
-       [list-item-text {:primary "Version" :secondary "0.3.0"}]]
+       [list-item-text {:primary "Version" :secondary "0.4.0"}]]
       [list-item {:button true
                   :component "a"
                   :href (mm/terms-of-service-url)

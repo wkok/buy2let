@@ -42,7 +42,7 @@ jobs:
 
     - name: Test
       run: |
-        clojure -M:client release ci
+        clojure -M:shadow-cljs release ci
         ./node_modules/karma/bin/karma start --single-run || true
 
     - name: Publish Test Report
@@ -52,7 +52,7 @@ jobs:
         report_paths: '**/karma/results/TESTS-*.xml'
 
     - name: Compile
-      run: clojure -M:client release app
+      run: clojure -M:shadow-cljs release react
 
     - name: Prepare Site
       run: |

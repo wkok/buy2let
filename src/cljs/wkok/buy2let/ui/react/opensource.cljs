@@ -1,6 +1,6 @@
-(ns wkok.buy2let.opensource.views
+(ns wkok.buy2let.ui.react.opensource
   (:require [re-frame.core :as rf]
-            [wkok.buy2let.shared :as shared]
+            [wkok.buy2let.ui.react.component.anchor :as anchor]
             [wkok.buy2let.backend.multimethods :as mm]
             [wkok.buy2let.site.events :as se]
             [wkok.buy2let.legal.opensource.bsd :as bsd]
@@ -129,7 +129,7 @@
             [link {:href (-> package :url)
                    :target "_blank"} (-> package :name)]]
            [table-cell
-            [shared/anchor
+            [anchor/anchor
              #(rf/dispatch [::se/dialog {:panel [text-field {:multiline true
                                                              :value (-> package :license :text)
                                                              :disabled true

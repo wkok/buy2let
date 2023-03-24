@@ -1,4 +1,4 @@
-(ns wkok.buy2let.core
+(ns wkok.buy2let.ui.react.app
   (:require
    [goog.events :as events]
    [re-frame.core :as rf]
@@ -7,7 +7,7 @@
    [wkok.buy2let.backend.multimethods :as mm]
    [wkok.buy2let.charts :as charts]
    [wkok.buy2let.site.routes :as routes]
-   [wkok.buy2let.site.views :as views])
+   [wkok.buy2let.ui.react.view.site :as views])
   (:import
    [goog History]
    [goog.history EventType]))
@@ -15,7 +15,7 @@
 (defn ^:dev/after-load start []
   (js/console.log "start")
   (mm/init-auth {:render-main-panel #(rd/render [views/main-panel] (.getElementById js/document "app"))
-                 :sign-in-panel views/sign-in-panel}))
+                 :render-sign-in-panel #(rd/render [views/sign-in-panel] (.getElementById js/document "app"))}))
 
 (defn- init-history []
   (doto (History.)
