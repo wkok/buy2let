@@ -30,7 +30,7 @@ View the [Online Demo](https://wkok.github.io/buy2let/demo)
 ```bash
 npm install
 
-clj -M:client watch app
+clj -M:shadow-cljs watch react
 ```
 
 shadow-cljs will automatically push cljs changes to the browser.
